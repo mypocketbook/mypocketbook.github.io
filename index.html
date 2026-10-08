@@ -462,7 +462,26 @@ async function openDir(h,picked){
   if(migrated) toast("Brought in your data from the old Pocketbook");
   return true;
 }
-async function runSetup(){ await seedSofiV2(); await seedJpmV3(); await seedJpmOpening(); }
+async function runSetup(){ await seedSofiV2(); await seedJpmV3(); await seedJpmOpening(); await fixZelleV1(); }
+// One-time correction you asked for: the $600 went JPM Chase -> SoFi Checking by Zelle on Oct 2,
+// and the loan was paid from SoFi Checking on Oct 5 (as SoFi shows it).
+async function fixZelleV1(){
+  if(STORE["meta-fix-zelle-v1"]) return;
+  const acc=k=>STORE[k]&&STORE[k].kind==="account";
+  const jpm=Object.keys(STORE).find(k=>acc(k)&&STORE[k].type==="checking"&&/jpm/i.test(STORE[k].name||""));
+  const loanId=Object.keys(STORE).find(k=>STORE[k]&&STORE[k].kind==="loan"&&/sofi/i.test(STORE[k].name||""));
+  const payId=loanId&&Object.keys(STORE).find(k=>{const t=STORE[k]; return t&&t.kind==="txn"&&t.type==="loanpay"&&t.loan===loanId&&Math.abs((+t.amount||0)-600)<0.005;});
+  if(!jpm||!payId) return; // wait until the account and payment exist
+  let sofi=Object.keys(STORE).find(k=>acc(k)&&STORE[k].type==="checking"&&/sofi/i.test(STORE[k].name||""));
+  const now=Date.now();
+  if(!sofi){ sofi=newId(); STORE[sofi]={kind:"account",name:"SoFi Checking ••1252",type:"checking",opening:0,asOf:"2026-10-01",asOfAt:0,created:now}; }
+  STORE[jpm]=Object.assign({},STORE[jpm],{asOf:"2026-10-01",asOfAt:0});
+  STORE[payId]=Object.assign({},STORE[payId],{from:sofi,date:"2026-10-05",desc:"SoFi loan payment"});
+  if(!Object.values(STORE).some(t=>t&&t.kind==="txn"&&t.type==="transfer"&&t.from===jpm&&t.to===sofi&&t.date==="2026-10-02"&&Math.abs((+t.amount||0)-600)<0.005))
+    STORE[newId()]={kind:"txn",type:"transfer",amount:600,date:"2026-10-02",desc:"Zelle to SoFi",from:jpm,to:sofi,created:now};
+  STORE["meta-fix-zelle-v1"]={kind:"meta",done:true};
+  await persist();
+}
 // JPM Chase: $1,726.19 when Pocketbook was started (Oct 4, 2026), before the Oct 5 SoFi payment of $600.
 async function seedJpmOpening(){
   if(STORE["meta-seed-jpm-opening-v2"]) return;
