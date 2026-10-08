@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0D1017">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pocketbook">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Pocketbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: phone-first ledger. One column, sticky header, bottom tab bar with a central add button, bottom sheets for forms. */
+:root{
+  --bg:#EEF1F6; --surface:#FFFFFF; --sunk:#E3E8F0; --ink:#131826; --muted:#5B6378; --line:#D5DBE6;
+  --accent:#3550D4; --accent-ink:#FFFFFF; --pos:#18805A; --neg:#BF3F12; --card:#7A3FC4;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1017; --surface:#171B26; --sunk:#10141C; --ink:#E9ECF4; --muted:#99A1B6; --line:#272D3B;
+  --accent:#8099FF; --accent-ink:#0D1017; --pos:#4CC994; --neg:#F28B62; --card:#B98BF2; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1017; --surface:#171B26; --sunk:#10141C; --ink:#E9ECF4; --muted:#99A1B6; --line:#272D3B;
+  --accent:#8099FF; --accent-ink:#0D1017; --pos:#4CC994; --neg:#F28B62; --card:#B98BF2; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.app{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:0 120px}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header.top h1{font-family:var(--f-display);font-weight:700;font-size:22px;margin:0;letter-spacing:-.02em}
+header.top h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.back{border:1px solid var(--line);background:var(--surface);width:34px;height:34px;flex:none;border-radius:999px;font-size:22px;line-height:1;color:var(--ink)}
+.monthnav{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px}
+.monthnav button{border:0;background:none;width:32px;height:32px;border-radius:999px;font-size:18px;color:var(--muted)}
+.monthnav button:hover{background:var(--sunk)}
+.monthnav span{font-weight:600;font-size:13px;min-width:78px;text-align:center}
+
+.hero{padding-block:8px 18px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.big{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:clamp(34px,10vw,44px);font-weight:500;letter-spacing:-.03em;margin:2px 0 10px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.split>div{background:var(--surface);padding:10px 12px;min-width:0}
+.split .v{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:16px}
+
+h2{font-family:var(--f-display);font-weight:500;font-size:17px;margin:22px 0 8px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+h2 button{border:0;background:none;color:var(--accent);font-family:var(--f-body);font-size:13px;font-weight:600;padding:4px 0}
+
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;width:100%;border:0;background:none;text-align:left;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+button.row:hover{background:var(--sunk)}
+.row .main{flex:1;min-width:0}
+.row .t,.row .m{display:block}
+.kv>div:last-child:nth-child(odd){grid-column:1/-1}
+.row .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .m{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .amt{font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.badge{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--sunk);color:var(--muted)}
+.badge.checking{color:var(--accent)} .badge.credit{color:var(--card)} .badge.cash{color:var(--pos)}
+.pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--muted)}
+.owed{font-size:11px;color:var(--muted);display:block;text-align:right}
+
+.day{font-size:12px;font-weight:600;color:var(--muted);margin:16px 2px 6px;display:flex;justify-content:space-between}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-top:4px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.proj{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:10px}
+.proj+.proj{margin-top:10px}
+.proj .head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.proj .name{font-family:var(--f-display);font-weight:500;font-size:17px;min-width:0;overflow-wrap:anywhere}
+.proj .bal{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:20px}
+.bar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.proj .foot{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted);align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-weight:600;font-size:13.5px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--neg)}
+.btn.wide{width:100%;padding:13px;font-size:15px}
+
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:22px 18px;text-align:center;color:var(--muted);display:grid;gap:12px;justify-items:center}
+.empty strong{color:var(--ink);font-family:var(--f-display);font-weight:500;font-size:17px}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;height:62px}
+nav.tabs button{border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted);height:100%}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-current="page"]{color:var(--accent)}
+.fab{position:fixed;z-index:11;right:max(16px,calc(50% - 264px));bottom:calc(78px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border:0;border-radius:18px;background:var(--accent);color:var(--accent-ink);font-size:30px;line-height:1;display:grid;place-items:center;box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 38%,transparent)}
+.badge.loan{color:var(--neg)} .badge.lent{color:var(--pos)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+.kv>div{background:var(--surface);padding:10px 12px;min-width:0}
+.kv .v{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:15px}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--muted);margin-left:6px;vertical-align:middle}
+.sched{margin-top:4px}.sched summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;padding:6px 0}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-top:6px}
+.tbl table{border-collapse:collapse;width:100%;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:12.5px}
+.tbl th{font-family:var(--f-body);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{text-align:right;padding:7px 10px;border-top:1px solid var(--line);white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.pill.due{background:color-mix(in srgb,var(--neg) 14%,var(--surface));color:var(--neg)}
+
+.scrim{position:fixed;inset:0;background:color-mix(in srgb,#000 45%,transparent);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:92%;overflow-y:auto;border-radius:20px 20px 0 0;padding:8px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.sheet .grab{width:40px;height:4px;border-radius:9px;background:var(--line);margin:4px auto 10px}
+.sheet h3{font-family:var(--f-display);font-weight:700;font-size:20px;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sheet h3 button{border:0;background:var(--sunk);width:32px;height:32px;border-radius:99px;font-size:18px;color:var(--muted)}
+.seg{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;scrollbar-width:none}
+.field{display:grid;gap:5px;margin-bottom:12px}
+.field label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;min-width:0}
+.field input.amount{font-family:var(--f-num);font-size:26px;padding:10px 12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two>.field{min-width:0}
+.hint{font-size:12.5px;color:var(--muted);margin:-4px 0 12px}
+.err{color:var(--neg);font-size:13px;margin:0 0 10px}
+.actions{display:flex;gap:8px;margin-top:6px}
+.actions .btn{flex:1;padding:12px}
+.confirm{background:color-mix(in srgb,var(--neg) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--neg) 35%,var(--line));border-radius:12px;padding:12px;margin-top:10px;display:grid;gap:10px;font-size:14px}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(146px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:500;z-index:30;max-width:calc(100% - 32px)}
+.notice{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;color:var(--muted);margin-top:12px}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div style="display:flex;align-items:center;gap:6px;min-width:0">
+      <button type="button" id="backBtn" class="back" aria-label="Back" hidden>‹</button>
+      <h1 id="title">Overview</h1>
+    </div>
+    <div class="monthnav" id="monthnav">
+      <button type="button" id="prevM" aria-label="Previous month">‹</button>
+      <span id="monthLabel"></span>
+      <button type="button" id="nextM" aria-label="Next month">›</button>
+    </div>
+  </header>
+  <main id="view"></main>
+</div>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="in">
+    <button type="button" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg>Home</button>
+    <button type="button" data-tab="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h14M5 12h14M5 18h9"/></svg>Activity</button>
+    <button type="button" data-tab="accounts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Accounts</button>
+    <button type="button" data-tab="loans"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16M5 20v-8M9.5 20v-8M14.5 20v-8M19 20v-8M3 10l9-6 9 6z"/></svg>Loans</button>
+    <button type="button" data-tab="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M7 8h7.5a3 3 0 0 1 0 6H8"/><circle cx="12" cy="12" r="9.5"/></svg>Projects</button>
+  </div>
+</nav>
+<button type="button" class="fab" id="addBtn" aria-label="Add transaction">+</button>
+
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<div id="sheetRoot"></div>
+<div id="toastRoot"></div>
+
+<script src="supabase.js"></script>
+<script>
+(function(){
+const TYPES = {
+  expense:{label:"Expense"}, income:{label:"Income"}, transfer:{label:"Transfer"},
+  cardpay:{label:"Card payment"}, loanpay:{label:"Loan payment"}, save:{label:"Save to project"}
+};
+const ACCT_TYPES = {checking:"Checking", credit:"Credit card", cash:"Cash"};
+const EXP_CATS = ["Food & dining","Groceries","Gas","Transport","Bills & utilities","Rent / housing","Shopping","Health","Fitness","Entertainment","Subscriptions","Personal care","Gifts","Travel","Other"];
+const INC_CATS = ["Salary","Freelance","Refund","Gift","Other"];
+
+const S = {db:null,col:null,uid:null,status:"loading",accounts:[],projects:[],loans:[],txns:[],openLoan:null,
+  tab:"home",open:null,month:ymOf(todayStr()),acct:"all"};
+try{ const t=localStorage.getItem("pb_tab"); if(t) S.tab=t; }catch(e){}
+
+/* ---------- helpers ---------- */
+function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function ymOf(s){return s.slice(0,7);}
+function shiftMonth(ym,n){let [y,m]=ym.split("-").map(Number);m+=n;while(m<1){m+=12;y--;}while(m>12){m-=12;y++;}return y+"-"+String(m).padStart(2,"0");}
+function monthName(ym,long){const [y,m]=ym.split("-").map(Number);return new Date(y,m-1,1).toLocaleDateString("en-US",{month:long?"long":"short",year:"numeric"});}
+function dayName(s){const [y,m,d]=s.split("-").map(Number);const dt=new Date(y,m-1,d);const t=todayStr();
+  if(s===t) return "Today"; const yd=new Date();yd.setDate(yd.getDate()-1);
+  if(dt.toDateString()===yd.toDateString()) return "Yesterday";
+  return dt.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
+const fmt=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"});
+function money(n){return fmt.format(Math.round((n||0)*100)/100);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function $(id){return document.getElementById(id);}
+function acctById(id){return S.accounts.find(a=>a.id===id);}
+function projById(id){return S.projects.find(p=>p.id===id);}
+function acctName(id){const a=acctById(id);return a?a.name:"Deleted account";}
+function loanById(id){return S.loans.find(l=>l.id===id);}
+function loanName(id){const l=loanById(id);return l?l.name:"Deleted loan";}
+function projName(id){const p=projById(id);return p?p.name:"Deleted project";}
+function initials(s){return (s||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase();}
+
+function toast(msg){const r=$("toastRoot");r.innerHTML='<div class="toast" role="status">'+esc(msg)+'</div>';clearTimeout(toast.t);toast.t=setTimeout(()=>r.innerHTML="",2400);}
+
+/* ---------- money math ---------- */
+// Every account keeps a signed balance. Credit cards start negative (amount owed) and go more negative with charges.
+function compute(){
+  const bal={}, proj={};
+  S.accounts.forEach(a=>{const o=+a.opening||0; bal[a.id]= a.type==="credit" ? -o : o;});
+  S.projects.forEach(p=>proj[p.id]=0);
+  const loan={}; S.loans.forEach(l=>loan[l.id]=+l.balance||0);
+  let cur=null; const adj=(id,d)=>{ if(id in bal&&(!cur||counts(cur,id))) bal[id]+=d; };
+  for(const t of S.txns){
+    cur=t; const a=+t.amount||0;
+    if(t.type==="expense"){adj(t.from,-a); if(t.project && t.project in proj) proj[t.project]-=a;}
+    else if(t.type==="income"){adj(t.to,a);}
+    else if(t.type==="transfer"||t.type==="cardpay"){adj(t.from,-a);adj(t.to,a);}
+    else if(t.type==="save"){if(t.project in proj) proj[t.project]+=a;}
+    else if(t.type==="loanpay"){adj(t.from,-a);adj(t.to,a); if(t.loan in loan) loan[t.loan]-=Math.max(0,a-(+t.interest||0));}
+  }
+  let liquid=0, owed=0, aside=0, loansOwe=0, loansLent=0;
+  S.loans.forEach(l=>{ if(l.dir==="lent") loansLent+=loan[l.id]; else loansOwe+=loan[l.id]; });
+  S.accounts.forEach(a=>{ if(a.type==="credit") owed+=-bal[a.id]; else liquid+=bal[a.id]; });
+  Object.values(proj).forEach(v=>aside+=v);
+  return {bal,proj,loan,liquid,owed,aside,loansOwe,loansLent,net:liquid-owed-loansOwe+loansLent,free:liquid-owed-aside};
+}
+function monthStats(ym){
+  let spent=0,income=0,saved=0,cards=0,loans=0;
+  for(const t of S.txns){ if(!t.date||ymOf(t.date)!==ym) continue; const a=+t.amount||0;
+    if(t.type==="expense") spent+=a; else if(t.type==="income") income+=a; else if(t.type==="save") saved+=a; else if(t.type==="cardpay") cards+=a; else if(t.type==="loanpay") loans+=a; }
+  return {spent,income,saved,cards,loans};
+}
+function sortTx(list){return list.slice().sort((x,y)=> (y.date||"").localeCompare(x.date||"") || (y.created||0)-(x.created||0));}
+
+function txDest(t){
+  if(t.type==="expense") return t.payee||t.category||"Expense";
+  if(t.type==="income") return acctName(t.to);
+  if(t.type==="save") return projName(t.project);
+  if(t.type==="loanpay") return t.to?acctName(t.to):loanName(t.loan);
+  return acctName(t.to);
+}
+function txDisplay(t){
+  const a=+t.amount||0; let title, meta, sign="", cls="";
+  const desc=t.desc||t.note||"";
+  if(t.type==="expense"){title=desc||t.payee||t.category||"Expense";meta=acctName(t.from)+" → "+txDest(t)+(t.category?" · "+t.category:"")+(t.project?" · from "+projName(t.project):"");sign="−";cls="neg";}
+  else if(t.type==="income"){title=desc||t.category||"Income";meta=(t.payer||"Income")+" → "+acctName(t.to);sign="+";cls="pos";}
+  else if(t.type==="transfer"){title=desc||"Transfer";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
+  else if(t.type==="cardpay"){title=desc||"Card payment";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
+  else if(t.type==="save"){title=desc||("Saved to "+projName(t.project));meta=acctName(t.from)+" → "+projName(t.project)+" (project)";cls="pos";sign="+";}
+  else if(t.type==="loanpay"){ const l=loanById(t.loan), lent=l&&l.dir==="lent";
+    title=desc||(lent?"Loan repayment received":"Loan payment");
+    meta=(lent? loanName(t.loan)+" → "+acctName(t.to) : (t.from?acctName(t.from):"Before Pocketbook")+" → "+loanName(t.loan))+(+t.interest?" · interest "+money(t.interest):"");
+    cls=lent?"pos":"mut"; sign=lent?"+":""; }
+  const badge={expense:"−",income:"+",transfer:"⇄",cardpay:"▭",loanpay:"⌂",save:"◎"}[t.type]||"•";
+  return {title,meta,amt:sign+money(a),cls,badge};
+}
+// How one entry changes one account's signed balance.
+// An account's balance is "as of" a day. Transactions up to that day are already in it, so they are history only.
+function counts(t,id){
+  const a=acctById(id); if(!a||!t.date) return true;
+  const asOf=a.asOf||(a.created?dIso(new Date(a.created)):""); if(!asOf) return true;
+  if(t.date>asOf) return true; if(t.date<asOf) return false;
+  return (t.created||0)>(a.asOfAt||a.created||0);
+}
+function deltaFor(t,id,raw){
+  if(!raw&&!counts(t,id)) return 0;
+  const a=+t.amount||0; let d=0;
+  if(t.type==="expense"&&t.from===id) d-=a;
+  if(t.type==="income"&&t.to===id) d+=a;
+  if((t.type==="transfer"||t.type==="cardpay"||t.type==="loanpay")){ if(t.from===id) d-=a; if(t.to===id) d+=a; }
+  return d;
+}
+
+/* ---------- persistence ---------- */
+/* Folder storage: data lives in pocketbook-data.json inside the Pocketbook folder, backups in its backups/ subfolder.
+   Uses Chrome's File System Access API. The folder handle is remembered in IndexedDB so it reconnects with one click. */
+const DATA_FILE="pocketbook-data.json", BK_DIR="backups", KEEP_BACKUPS=60;
+// MODE "folder": Chrome-style browsers save into the Pocketbook folder. MODE "local": Safari saves inside the browser on this Mac.
+let MODE="folder"; const LKEY="pocketbook_data_v2", SNAPKEY="pocketbook_snapshots", KEEP_SNAPS=30;
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ localStorage.setItem(k,v); }
+function snaps(){ try{ return JSON.parse(lsGet(SNAPKEY)||"{}")||{}; }catch(e){ return {}; } }
+let STORE={}, DIR=null, lastMod=0, writing=Promise.resolve(), diskSnapshot=null, pendingRestore=null;
+S.backups=[]; S.connectMsg="";
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("pocketbook",1);r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function kvGet(k){try{const db=await idb();return await new Promise(res=>{const q=db.transaction("kv").objectStore("kv").get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);});}catch(e){return null;}}
+async function kvSet(k,v){try{const db=await idb();await new Promise(res=>{const t=db.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=res;t.onerror=res;});}catch(e){}}
+function newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function payload(){return {app:"Pocketbook",version:1,saved:new Date().toISOString(),data:STORE};}
+async function writeFile(dir,name,text){ const fh=await dir.getFileHandle(name,{create:true}); const w=await fh.createWritable(); await w.write(text); await w.close(); return fh; }
+async function readData(){
+  try{ const f=await (await DIR.getFileHandle(DATA_FILE)).getFile(); lastMod=f.lastModified; const txt=await f.text(); diskSnapshot=txt||null;
+    if(!txt.trim()) return {}; const j=JSON.parse(txt); return (j&&j.data)||{}; }
+  catch(e){ if(e&&e.name==="NotFoundError"){ diskSnapshot=null; return {}; } throw e; }
+}
+/* ---------- cloud (Supabase): data lives in your private table, shared by your Mac and iPhone ---------- */
+const SB_URL="https://ywstydrhzrdozkatmtdq.supabase.co", SB_KEY="sb_publishable_FDBCMDIQlD2ALD1e892beQ_LHtSdBcL", TABLE="pocketbook_items";
+let SB=null, UID=null, SYNCED={}, cloudBusy=0, reloadTimer=null, rtChannel=null; S.loginMsg="";
+function cacheSave(){ try{ localStorage.setItem("pb_cloud_cache",JSON.stringify(STORE)); }catch(e){} }
+async function cloudLoad(){
+  const {data,error}=await SB.from(TABLE).select("id,doc").limit(20000);
+  if(error) throw error;
+  const st={}, sy={}, bk=[];
+  (data||[]).forEach(r=>{ if(/^snap-/.test(r.id)){ bk.push(r.id); return; } st[r.id]=r.doc; sy[r.id]=JSON.stringify(r.doc); });
+  STORE=st; SYNCED=sy; S.backups=bk.sort().reverse().map(id=>"pocketbook-"+id.slice(5)+".json"); cacheSave();
+}
+async function cloudPersist(){
+  cloudBusy++;
+  try{
+    const ups=[], dels=[];
+    Object.keys(STORE).forEach(k=>{ const j=JSON.stringify(STORE[k]); if(SYNCED[k]!==j) ups.push({user_id:UID,id:k,doc:STORE[k],updated_at:new Date().toISOString()}); });
+    Object.keys(SYNCED).forEach(k=>{ if(!(k in STORE)) dels.push(k); });
+    if(!ups.length&&!dels.length) return true;
+    // once a day, keep a copy of how things were before the first change
+    const snapId="snap-"+todayStr();
+    if(!S.backups.includes("pocketbook-"+todayStr()+".json")&&Object.keys(SYNCED).length){
+      const before={}; Object.keys(SYNCED).forEach(k=>before[k]=JSON.parse(SYNCED[k]));
+      const r=await SB.from(TABLE).upsert({user_id:UID,id:snapId,doc:{kind:"snapshot",data:before}});
+      if(!r.error){ S.backups.unshift("pocketbook-"+todayStr()+".json"); pruneCloudSnaps(); }
+    }
+    if(ups.length){ const {error}=await SB.from(TABLE).upsert(ups); if(error) throw error; }
+    if(dels.length){ const {error}=await SB.from(TABLE).delete().in("id",dels); if(error) throw error; }
+    ups.forEach(u=>SYNCED[u.id]=JSON.stringify(u.doc)); dels.forEach(k=>delete SYNCED[k]);
+    cacheSave(); return true;
+  }catch(e){
+    toast(navigator.onLine===false?"You're offline. That change wasn't saved, try again when you're connected.":"Couldn't save. Check your connection and try again.");
+    return false;
+  }finally{ cloudBusy--; }
+}
+async function pruneCloudSnaps(){
+  const ids=S.backups.map(n=>"snap-"+n.replace(/^pocketbook-|\.json$/g,"")).sort();
+  const extra=ids.slice(0,Math.max(0,ids.length-30)); if(!extra.length) return;
+  const r=await SB.from(TABLE).delete().in("id",extra); if(!r.error) S.backups=S.backups.filter(n=>!extra.includes("snap-"+n.replace(/^pocketbook-|\.json$/g,"")));
+}
+function scheduleReload(){ clearTimeout(reloadTimer); reloadTimer=setTimeout(async()=>{
+  if(cloudBusy||$("sheetRoot").innerHTML||S.status!=="ready") { scheduleReload(); return; }
+  try{ const before=JSON.stringify(STORE); await cloudLoad(); if(JSON.stringify(STORE)!==before) refresh(); }catch(e){}
+},700); }
+async function cloudReady(){
+  S.status="loading"; render();
+  try{ const {data}=await SB.auth.getSession(); UID=data&&data.session?data.session.user.id:null; }catch(e){}
+  try{ await cloudLoad(); }catch(e){
+    try{ STORE=JSON.parse(localStorage.getItem("pb_cloud_cache")||"{}"); }catch(_){ STORE={}; }
+    refresh(); toast("Can't reach your data right now. Showing the last saved copy."); return;
+  }
+  await runSetup(); refresh();
+  if(!rtChannel){ rtChannel=SB.channel("pb-items").on("postgres_changes",{event:"*",schema:"public",table:TABLE},()=>scheduleReload()).subscribe(); }
+}
+async function cloudStart(){
+  MODE="cloud";
+  if(!window.supabase||!window.supabase.createClient){ S.status="login"; S.loginMsg="The app didn't load completely. Check your connection and reload."; render(); return; }
+  SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"pb-auth"}});
+  const {data}=await SB.auth.getSession();
+  if(data&&data.session) await cloudReady(); else { S.status="login"; render(); }
+  SB.auth.onAuthStateChange((ev)=>{ if(ev==="SIGNED_OUT"){ STORE={}; SYNCED={}; try{ localStorage.removeItem("pb_cloud_cache"); }catch(e){} S.status="login"; render(); } });
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&S.status==="ready") scheduleReload(); });
+}
+async function signIn(e){
+  e.preventDefault();
+  const email=$("lg_email").value.trim(), pw=$("lg_pw").value;
+  if(!email||!pw){ S.loginMsg="Enter your email and password."; render(); return; }
+  $("lg_btn").disabled=true; $("lg_btn").textContent="Signing in…";
+  const {error}=await SB.auth.signInWithPassword({email,password:pw});
+  if(error){ S.loginMsg=/invalid/i.test(error.message)?"That email and password don't match. Use the user you created in Supabase.":"Couldn't sign in: "+error.message; render(); return; }
+  S.loginMsg=""; await cloudReady();
+}
+async function listBackups(){
+  if(MODE==="cloud") return S.backups.slice();
+  if(MODE==="local"){ S.backups=Object.keys(snaps()).sort().reverse().map(k=>"pocketbook-"+k+".json"); return S.backups.slice(); }
+  const out=[]; try{ const d=await DIR.getDirectoryHandle(BK_DIR,{create:true});
+    for await (const [n,h] of d.entries()) if(h.kind==="file"&&/^pocketbook-.*\.json$/.test(n)) out.push(n); }catch(e){}
+  S.backups=out.sort().reverse(); return out;
+}
+async function pruneBackups(d){ const names=(await listBackups()).slice().sort(); while(names.length>KEEP_BACKUPS){ try{ await d.removeEntry(names.shift()); }catch(e){ break; } } await listBackups(); }
+// Once a day, before the first change, copy the data file as it was into backups/.
+async function dailyBackup(){
+  if(!diskSnapshot) return; const name="pocketbook-"+todayStr()+".json";
+  const d=await DIR.getDirectoryHandle(BK_DIR,{create:true});
+  try{ await d.getFileHandle(name); return; }catch(e){}
+  await writeFile(d,name,diskSnapshot); await pruneBackups(d);
+}
+async function persist(){
+  if(MODE==="cloud") return cloudPersist();
+  if(MODE==="local"){
+    try{
+      const prev=lsGet(LKEY), sn=snaps(), today=todayStr();
+      if(prev&&!sn[today]){ try{ sn[today]=JSON.parse(prev).data||{}; const ks=Object.keys(sn).sort(); while(ks.length>KEEP_SNAPS) delete sn[ks.shift()]; lsSet(SNAPKEY,JSON.stringify(sn)); }catch(e){} }
+      lsSet(LKEY,JSON.stringify(payload())); await listBackups(); return true;
+    }catch(e){ toast("Couldn't save. Safari's storage for this page is full or blocked."); return false; }
+  }
+  const run=writing.then(async()=>{ await dailyBackup(); const text=JSON.stringify(payload(),null,1); const fh=await writeFile(DIR,DATA_FILE,text); lastMod=(await fh.getFile()).lastModified; diskSnapshot=text; });
+  writing=run.catch(()=>{});
+  try{ await run; return true; }
+  catch(e){ toast("Couldn't save to the Pocketbook folder. Reconnect it and try again."); S.status="connect"; S.connectMsg="Pocketbook lost access to its folder."; render(); return false; }
+}
+function refresh(){
+  const acc=[],pr=[],tx=[],ln=[];
+  Object.keys(STORE).forEach(id=>{const v=Object.assign({id},STORE[id]); if(v.kind==="account")acc.push(v); else if(v.kind==="project")pr.push(v); else if(v.kind==="loan")ln.push(v); else if(v.kind==="txn")tx.push(v);});
+  S.accounts=acc;S.projects=pr;S.loans=ln;S.txns=tx;S.status="ready";
+  if(S.acct!=="all"&&!acctById(S.acct)) S.acct="all";
+  render();
+}
+async function save(id,data){
+  const key=id||newId(), prev=STORE[key]; STORE[key]=data;
+  if(!(await persist())){ if(prev) STORE[key]=prev; else delete STORE[key]; return false; }
+  refresh(); return true;
+}
+async function remove(id){
+  const prev=STORE[id]; delete STORE[id];
+  if(!(await persist())){ STORE[id]=prev; return false; }
+  refresh(); return true;
+}
+async function openDir(h,picked){
+  let hasApp=false; try{ await h.getFileHandle("Pocketbook.html"); hasApp=true; }catch(e){}
+  if(!hasApp){ S.status="connect"; S.connectMsg='The folder "'+h.name+'" doesn\'t contain Pocketbook.html. Choose the Pocketbook folder.'; render(); return false; }
+  DIR=h; await kvSet("dir",h);
+  try{ STORE=await readData(); }catch(e){ S.status="connect"; S.connectMsg="pocketbook-data.json in that folder couldn't be read. Restore a backup from the backups folder."; render(); return false; }
+  let migrated=false;
+  if(!Object.keys(STORE).length){ try{ const old=JSON.parse(localStorage.getItem("pocketbook_data_v1")||"null"); if(old&&typeof old==="object"&&Object.keys(old).length){ STORE=old; migrated=true; } }catch(e){} }
+  await runSetup(); await listBackups(); S.connectMsg=""; refresh();
+  if(migrated) toast("Brought in your data from the old Pocketbook");
+  return true;
+}
+async function runSetup(){ await seedSofiV2(); await seedJpmV3(); await seedJpmOpening(); }
+// JPM Chase: $1,726.19 when Pocketbook was started (Oct 4, 2026), before the Oct 5 SoFi payment of $600.
+async function seedJpmOpening(){
+  if(STORE["meta-seed-jpm-opening-v2"]) return;
+  const id=Object.keys(STORE).find(k=>STORE[k]&&STORE[k].kind==="account"&&/jpm|chase|1252/i.test(STORE[k].name||""));
+  if(!id) return;
+  STORE[id]=Object.assign({},STORE[id],{opening:1726.19,asOf:"2026-10-04",asOfAt:new Date(2026,9,4,19,52).getTime()});
+  STORE["meta-seed-jpm-opening"]={kind:"meta",done:true};
+  STORE["meta-seed-jpm-opening-v2"]={kind:"meta",done:true};
+  await persist();
+}
+// Import a backup saved by the old Pocketbook (Save backup → Downloads) or any Pocketbook backup file.
+function importFile(file){
+  const r=new FileReader();
+  r.onload=()=>{ try{ const j=JSON.parse(r.result); const data=j&&j.data&&typeof j.data==="object"?j.data:j; if(!data||typeof data!=="object") throw 0;
+      pendingRestore=data; const n=Object.values(data).filter(v=>v&&v.kind==="txn").length, na=Object.values(data).filter(v=>v&&v.kind==="account").length;
+      $("importBox").innerHTML='<div class="confirm"><span>Bring in '+na+' accounts and '+n+' transactions from this file? It replaces what is in the app now (a backup is saved first).</span><div class="actions" style="margin:0"><button type="button" class="btn" data-act="cancelimport">Cancel</button><button type="button" class="btn primary" data-act="doimport">Bring it in</button></div></div>';
+    }catch(e){ $("importBox").innerHTML='<p class="err">That file is not a Pocketbook backup.</p>'; } };
+  r.readAsText(file);
+}
+// One-time setup: the SoFi loan as of Oct 4, 2026 (balance, rate, term given by you).
+async function seedOnce(){
+  if(STORE["meta-seed-sofi"]) return;
+  if(!Object.values(STORE).some(v=>v&&v.kind==="loan"&&/sofi/i.test(v.name||""))){
+    STORE[newId()]={kind:"loan",name:"SoFi loan",dir:"owe",party:"SoFi",balance:14576.95,balanceDate:"2026-10-04",original:"",
+      payment:532.13,rate:17.14,apr:17.41,termMonths:36,startDate:"2026-08-19",dueDay:19,created:Date.now()};
+  }
+  STORE["meta-seed-sofi"]={kind:"meta",done:true};
+  await persist();
+}
+// From your SoFi disclosure (Aug 19, 2026) and statement (Oct 4, 2026).
+async function seedSofiV2(){
+  if(STORE["meta-seed-sofi-v2"]) return;
+  let id=Object.keys(STORE).find(k=>STORE[k]&&STORE[k].kind==="loan"&&/sofi/i.test(STORE[k].name||""));
+  const base=id?STORE[id]:{kind:"loan",name:"SoFi loan",dir:"owe",created:Date.now()};
+  if(!id) id=newId();
+  STORE[id]=Object.assign({},base,{party:"SoFi Bank",original:15000,balance:15000,balanceDate:"2026-08-19",payment:535.74,rate:17.14,apr:17.41,
+    termMonths:36,startDate:"2026-08-19",dueDay:19,method:"daily"});
+  if(!Object.values(STORE).some(v=>v&&v.kind==="txn"&&v.loan===id&&v.date==="2026-09-04"))
+    STORE[newId()]={kind:"txn",type:"loanpay",loan:id,amount:534.11,interest:111.06,date:"2026-09-04",desc:"SoFi loan payment",from:"",to:"",created:Date.now()};
+  STORE["meta-seed-sofi"]={kind:"meta",done:true};
+  STORE["meta-seed-sofi-v2"]={kind:"meta",done:true};
+  await persist();
+}
+// SoFi payments made from JPM Checking ••1252 (from your SoFi activity).
+async function seedJpmV3(){
+  if(STORE["meta-seed-jpm-v4"]) return;
+  // undo the account the previous version created, if it is still empty and unused
+  Object.keys(STORE).forEach(k=>{const a=STORE[k]; if(a&&a.kind==="account"&&a.name==="JPM Checking ••1252"&&!(+a.opening)){
+    const other=Object.keys(STORE).find(j=>j!==k&&STORE[j]&&STORE[j].kind==="account"&&/jpm|chase/i.test(STORE[j].name||""));
+    if(other){ Object.values(STORE).forEach(t=>{ if(t&&t.kind==="txn"){ if(t.from===k) t.from=other; if(t.to===k) t.to=other; } }); delete STORE[k]; } }});
+  const jpm=Object.keys(STORE).find(k=>STORE[k]&&STORE[k].kind==="account"&&/jpm|chase|1252/i.test(STORE[k].name||""))||"";
+  const loanId=Object.keys(STORE).find(k=>STORE[k]&&STORE[k].kind==="loan"&&/sofi/i.test(STORE[k].name||""));
+  if(loanId){
+    Object.keys(STORE).forEach(k=>{const t=STORE[k]; if(t&&t.kind==="txn"&&t.loan===loanId&&(t.date==="2026-09-04"||t.date==="2026-10-05")&&!t.from&&jpm) t.from=jpm;});
+    if(!Object.values(STORE).some(v=>v&&v.kind==="txn"&&v.loan===loanId&&v.date==="2026-10-05"))
+      STORE[newId()]={kind:"txn",type:"loanpay",loan:loanId,amount:600,interest:212.10,date:"2026-10-05",desc:"SoFi loan payment (one-time)",from:jpm,to:"",created:Date.now()};
+  }
+  if(jpm) STORE["meta-seed-jpm-v4"]={kind:"meta",done:true};
+  await persist();
+}
+async function startLocal(){
+  MODE="local"; let migrated=false;
+  try{ const raw=lsGet(LKEY); STORE=raw?((JSON.parse(raw)||{}).data||{}):{}; }catch(e){ STORE={}; }
+  if(!Object.keys(STORE).length){ try{ const old=JSON.parse(lsGet("pocketbook_data_v1")||"null"); if(old&&typeof old==="object"&&Object.keys(old).length){ STORE=old; migrated=true; } }catch(e){} }
+  try{ localStorage.setItem("pb_probe","1"); localStorage.removeItem("pb_probe"); }catch(e){ S.status="nostore"; render(); return; }
+  await runSetup(); await listBackups(); refresh();
+  if(migrated) toast("Brought in your data from the old Pocketbook");
+  window.addEventListener("storage",e=>{ if(e.key===LKEY){ try{ STORE=(JSON.parse(e.newValue)||{}).data||{}; refresh(); }catch(_){} } });
+}
+async function connect(mode){ // mode: "auto" (on load), "click", "pick"
+  if(!window.showDirectoryPicker){ await startLocal(); return; }
+  if(mode!=="pick"){
+    const h=await kvGet("dir");
+    if(h){ try{
+        let perm=await h.queryPermission({mode:"readwrite"});
+        if(perm!=="granted"&&mode==="click") perm=await h.requestPermission({mode:"readwrite"});
+        if(perm==="granted"){ if(await openDir(h)) return; else if(mode==="auto") return; }
+      }catch(e){} }
+    if(mode==="auto"){ S.status="connect"; S.savedName=h?h.name:""; render(); return; }
+  }
+  let h; try{ h=await window.showDirectoryPicker({id:"pocketbook",mode:"readwrite"}); }catch(e){ return; }
+  await openDir(h,true);
+}
+async function backupNow(){
+  const d=new Date(), stamp=todayStr()+"-"+String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0");
+  if(MODE==="local"||MODE==="cloud"){
+    try{
+      const blob=new Blob([JSON.stringify(payload(),null,1)],{type:"application/json"});
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="pocketbook-"+stamp+".json";
+      document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+      try{ localStorage.setItem("pb_lastfile",todayStr()); }catch(e){}
+      toast("Backup file saved");
+    }catch(e){ toast("Couldn't save the backup file."); }
+    render(); return;
+  }
+  try{ const bd=await DIR.getDirectoryHandle(BK_DIR,{create:true}); await writeFile(bd,"pocketbook-"+stamp+".json",JSON.stringify(payload(),null,1)); await pruneBackups(bd); toast("Backup saved in the backups folder"); }
+  catch(e){ toast("Couldn't save the backup. Reconnect the folder and try again."); }
+  render();
+}
+function backupLabel(n){ const m=n.match(/pocketbook-(\d{4}-\d{2}-\d{2})(?:-(\d{2})(\d{2}))?\.json/); if(!m) return n;
+  const [y,mo,da]=m[1].split("-").map(Number); let s=new Date(y,mo-1,da).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
+  return s+(m[2]?" · "+m[2]+":"+m[3]:" · start of day"); }
+function openRestore(){
+  let h=sheetHead("Restore a backup");
+  h+='<p class="hint" style="margin:0 0 12px">'+(MODE==="local"?'Pocketbook keeps a copy of your data once a day, before your first change (last 30 days). To bring back a backup file instead, use Import a file.':'Pocketbook copies your data into the backups folder once a day, before your first change.')+' Pick the point to go back to.</p>';
+  h+= S.backups.length? '<div class="list">'+S.backups.map(n=>'<button class="row" data-restore="'+esc(n)+'"><span class="badge">↺</span><span class="main"><span class="t">'+esc(backupLabel(n))+'</span><span class="m">'+esc(n)+'</span></span></button>').join("")+'</div>'
+    : '<div class="empty">No backups yet. The first one is made tomorrow, or tap Save backup now.</div>';
+  h+='<div id="restoreBox"></div>';
+  openSheet(h);
+}
+async function pickRestore(name){
+  if(MODE==="cloud"){
+    const id="snap-"+name.replace(/^pocketbook-|\.json$/g,"");
+    const {data,error}=await SB.from(TABLE).select("doc").eq("id",id).maybeSingle();
+    if(error||!data||!data.doc||!data.doc.data){ $("restoreBox").innerHTML='<p class="err">That copy couldn\'t be read.</p>'; return; }
+    pendingRestore=data.doc.data; const n=Object.values(pendingRestore).filter(v=>v&&v.kind==="txn").length;
+    $("restoreBox").innerHTML='<div class="confirm"><span>Go back to '+esc(backupLabel(name))+' ('+n+' transactions)? Changes made after it will be lost.</span><div class="actions" style="margin:0"><button type="button" class="btn" data-act="cancelrestore">Cancel</button><button type="button" class="btn primary" data-act="dorestore">Restore</button></div></div>';
+    return;
+  }
+  if(MODE==="local"){
+    const m=name.match(/pocketbook-(.+)\.json/), data=m&&snaps()[m[1]];
+    if(!data){ $("restoreBox").innerHTML='<p class="err">That copy couldn\'t be read.</p>'; return; }
+    pendingRestore=data; const n=Object.values(data).filter(v=>v&&v.kind==="txn").length;
+    $("restoreBox").innerHTML='<div class="confirm"><span>Go back to '+esc(backupLabel(name))+' ('+n+' transactions)? Changes made after it will be lost.</span><div class="actions" style="margin:0"><button type="button" class="btn" data-act="cancelrestore">Cancel</button><button type="button" class="btn primary" data-act="dorestore">Restore</button></div></div>';
+    return;
+  }
+  try{ const d=await DIR.getDirectoryHandle(BK_DIR); const j=JSON.parse(await (await (await d.getFileHandle(name)).getFile()).text());
+    if(!j||typeof j.data!=="object") throw 0; pendingRestore=j.data;
+    const n=Object.values(j.data).filter(v=>v&&v.kind==="txn").length;
+    $("restoreBox").innerHTML='<div class="confirm"><span>Go back to '+esc(backupLabel(name))+' ('+n+' transactions)? Changes made after it will be lost. A copy of what you have now is saved first.</span><div class="actions" style="margin:0"><button type="button" class="btn" data-act="cancelrestore">Cancel</button><button type="button" class="btn primary" data-act="dorestore">Restore</button></div></div>';
+  }catch(e){ $("restoreBox").innerHTML='<p class="err">That backup file couldn\'t be read.</p>'; }
+}
+
+/* ---------- render ---------- */
+function render(){
+  document.querySelectorAll("nav.tabs [data-tab]").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===S.tab?"page":"false"));
+  if(S.status==="ready"){ if(S.open&&!acctById(S.open)) S.open=null; if(S.openLoan&&!loanById(S.openLoan)) S.openLoan=null; }
+  const openA=S.open&&acctById(S.open), openL=!openA&&S.openLoan&&loanById(S.openLoan);
+  $("title").textContent= openA? openA.name : openL? openL.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans"}[S.tab];
+  $("backBtn").hidden=!(openA||openL);
+  $("monthnav").hidden = !!(openA||openL) || !(S.tab==="home"||S.tab==="activity");
+  $("monthLabel").textContent=monthName(S.month);
+  const v=$("view");
+  if(S.status==="loading"){v.innerHTML='<div class="notice">Loading your books…</div>';return;}
+  if(S.status==="login"){
+    $("title").textContent="Pocketbook"; $("monthnav").hidden=true; $("addBtn").hidden=true; document.querySelector("nav.tabs").hidden=true;
+    v.innerHTML='<form id="loginForm" class="empty" style="text-align:left;justify-items:stretch;margin-top:12px" novalidate><strong>Sign in</strong><span>Use the email and password of the user you created in Supabase. You stay signed in on this device.</span>'+
+      '<div class="field" style="margin:0"><label for="lg_email">Email</label><input id="lg_email" type="email" autocomplete="username" inputmode="email" autocapitalize="off"></div>'+
+      '<div class="field" style="margin:0"><label for="lg_pw">Password</label><input id="lg_pw" type="password" autocomplete="current-password"></div>'+
+      (S.loginMsg?'<p class="err" role="alert" style="margin:0">'+esc(S.loginMsg)+'</p>':'')+
+      '<button id="lg_btn" type="submit" class="btn primary wide">Sign in</button></form>';
+    $("loginForm").addEventListener("submit",signIn); return;
+  }
+  $("addBtn").hidden=false; document.querySelector("nav.tabs").hidden=false;
+  if(S.status==="nostore"){v.innerHTML='<div class="empty"><strong>Safari is blocking storage for this page</strong><span>Open Pocketbook in a normal Safari window, not a Private window.</span></div>';return;}
+  if(S.status==="nofs"){v.innerHTML='<div class="empty" style="text-align:left;justify-items:start"><strong>Open Pocketbook in Google Chrome</strong><span>This browser can\'t save into the Pocketbook folder. In Finder, right-click <b>Pocketbook.html</b>, choose <b>Open With</b>, then <b>Google Chrome</b>. To make it the default, choose <b>Get Info</b>, set <b>Open with</b> to Chrome and click <b>Change All</b>.</span></div>';return;}
+  if(S.status==="connect"){v.innerHTML='<div class="empty"><strong>Open your Pocketbook folder</strong><span>Your data is kept in a file inside the Pocketbook folder, next to this app. Chrome asks you once each time you open the app.</span>'+
+    (S.connectMsg?'<p class="err" role="alert" style="margin:0">'+esc(S.connectMsg)+'</p>':'')+
+    '<button class="btn primary" data-act="connect">'+(S.savedName?'Open "'+esc(S.savedName)+'" folder':'Choose the Pocketbook folder')+'</button>'+
+    (S.savedName?'<button class="btn" data-act="pickfolder">Choose a different folder</button>':'')+
+    '<span class="hint" style="margin:0">In the window that opens, select the <b>Pocketbook</b> folder, click <b>Open</b>, then allow Chrome to edit files there.</span></div>';return;}
+  v.innerHTML = openA ? viewAccount(openA) : openL ? viewLoan(openL) : ({home:viewHome,activity:viewActivity,projects:viewProjects,accounts:viewAccounts,loans:viewLoans}[S.tab])();
+}
+
+function viewAccount(a){
+  const credit=a.type==="credit";
+  const mine=S.txns.filter(t=>t.from===a.id||t.to===a.id);
+  // running balance, oldest first
+  const asc=mine.slice().sort((x,y)=>(x.date||"").localeCompare(y.date||"")||(x.created||0)-(y.created||0));
+  let run=credit?-(+a.opening||0):(+a.opening||0); const after={};
+  asc.forEach(t=>{run+=deltaFor(t,a.id);after[t.id]=run;});
+  const show=v=>credit?money(-v):money(v);
+  let h='<section class="hero"><div class="eyebrow">'+ACCT_TYPES[a.type]+(credit?" · amount owed":" · balance")+'</div>'+
+    '<div class="big '+((credit? -run>0 : run<0)?"neg":"")+'">'+show(run)+'</div>'+
+    ((a.asOf||a.created)?'<p class="hint" style="margin:-4px 0 12px">Starting balance of '+show(credit?-(+a.opening||0):(+a.opening||0))+' as of '+esc(fmtDate(a.asOf?pDate(a.asOf):new Date(a.created)))+'.</p>':'')+
+    '<div class="actions" style="margin:0"><button class="btn" data-editacct="'+esc(a.id)+'">Edit account</button><button class="btn primary" data-addin="'+esc(a.id)+'">+ Add transaction</button></div></section>';
+  if(!mine.length) return h+'<div class="empty"><strong>No transactions in '+esc(a.name)+' yet</strong><span>Each one you add needs a date, a description and where the money went.</span></div>';
+  const groups={}; sortTx(mine).forEach(t=>(groups[t.date]=groups[t.date]||[]).push(t));
+  Object.keys(groups).sort().reverse().forEach(d=>{
+    h+='<div class="day"><span>'+esc(dayName(d))+'</span><span>'+esc(d)+'</span></div><div class="list">'+groups[d].map(t=>{
+      const x=txDisplay(t), dl=deltaFor(t,a.id,true), inBal=!counts(t,a.id);
+      const amt = t.type==="save" ? '<span class="mut">'+money(t.amount)+'</span>' : '<span class="'+(inBal?"mut":(dl<0?"neg":"pos"))+'">'+(dl<0?"−":"+")+money(Math.abs(dl))+'</span>';
+      return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+x.badge+'</span><span class="main"><span class="t">'+esc(x.title)+'</span><span class="m">'+esc(x.meta)+'</span></span>'+
+        '<span class="amt">'+amt+'<span class="owed">'+(inBal?"already in balance":(credit?"owed ":"bal ")+show(after[t.id]))+'</span></span></button>';
+    }).join("")+'</div>';
+  });
+  return h;
+}
+
+function setupEmpty(){
+  return (S.tab==="accounts"?'':'')+'<div class="empty"><strong>Set up your accounts</strong><span>Add the places your money lives, then log what you spend, earn and move.</span>'+
+    '<button class="btn primary" data-act="quicksetup">Add Checking, Credit card and Cash</button>'+
+    '<button class="btn" data-act="newacct">Add one account myself</button>'+
+    '<button class="btn" data-act="importfile">Import from the old Pocketbook</button><div id="importBox" style="width:100%"></div>'+
+    '</div>';
+}
+
+function backupNudge(){
+  if(MODE!=="local") return ""; /* cloud keeps daily copies itself */ const ds=daysSinceFile();
+  if(ds!==null&&ds<7) return "";
+  return '<div class="confirm" style="margin:6px 0 4px;background:var(--surface);border-color:var(--line)"><span>'+(ds===null?'You haven\'t saved a backup file yet.':'Your last backup file is '+ds+' days old.')+' Keep one in the Pocketbook folder in case Safari\'s data is ever cleared.</span><div class="actions" style="margin:0"><button type="button" class="btn primary" data-act="export">Save backup file</button></div></div>';
+}
+function viewHome(){
+  if(!S.accounts.length) return setupEmpty();
+  const c=compute(), m=monthStats(S.month);
+  let h=backupNudge()+'<section class="hero"><div class="eyebrow">Free to spend</div><div class="big '+(c.free<0?"neg":"")+'">'+money(c.free)+'</div>'+
+    '<div class="split"><div><div class="eyebrow">Cash + checking</div><div class="v">'+money(c.liquid)+'</div></div>'+
+    '<div><div class="eyebrow">Cards owed</div><div class="v '+(c.owed>0?"neg":"")+'">'+money(c.owed)+'</div></div>'+
+    '<div><div class="eyebrow">Set aside, projects</div><div class="v">'+money(c.aside)+'</div></div>'+
+    '<div><div class="eyebrow">Net balance</div><div class="v">'+money(c.net)+'</div></div>'+
+    (S.loans.length?'<div><div class="eyebrow">Loans I owe</div><div class="v '+(c.loansOwe>0?"neg":"")+'">'+money(c.loansOwe)+'</div></div><div><div class="eyebrow">Owed to me</div><div class="v">'+money(c.loansLent)+'</div></div>':'')+
+    '</div></section>';
+  h+='<h2>'+esc(monthName(S.month,true))+'</h2><div class="split">'+
+    '<div><div class="eyebrow">Spent</div><div class="v neg">'+money(m.spent)+'</div></div>'+
+    '<div><div class="eyebrow">Income</div><div class="v pos">'+money(m.income)+'</div></div>'+
+    '<div><div class="eyebrow">Card payments</div><div class="v">'+money(m.cards)+'</div></div>'+
+    '<div><div class="eyebrow">Net this month</div><div class="v">'+money(m.income-m.cards-m.loans)+'</div></div>'+
+    '<div><div class="eyebrow">Loan payments</div><div class="v">'+money(m.loans)+'</div></div>'+
+    '<div><div class="eyebrow">Saved to projects</div><div class="v">'+money(m.saved)+'</div></div></div>';
+  h+='<h2>Accounts <button data-tab-go="accounts">Manage</button></h2>'+acctRows(c);
+  const recent=sortTx(S.txns).slice(0,5);
+  h+='<h2>Recent <button data-tab-go="activity">See all</button></h2>';
+  h+= recent.length? '<div class="list">'+recent.map(txRow).join("")+'</div>' :
+    '<div class="empty"><strong>No entries yet</strong><span>Tap + to log your first expense, income, transfer or card payment.</span></div>';
+  return h;
+}
+
+function acctRows(c,editable){
+  return '<div class="list">'+S.accounts.slice().sort((a,b)=>Object.keys(ACCT_TYPES).indexOf(a.type)-Object.keys(ACCT_TYPES).indexOf(b.type)||a.name.localeCompare(b.name)).map(a=>{
+    const b=c.bal[a.id]; const credit=a.type==="credit";
+    const shown = credit? money(-b) : money(b);
+    return '<button class="row" data-openacct="'+esc(a.id)+'"><span class="badge '+a.type+'">'+esc(initials(a.name))+'</span>'+
+      '<span class="main"><span class="t">'+esc(a.name)+'</span><span class="m">'+ACCT_TYPES[a.type]+'</span></span>'+
+      '<span class="amt '+(credit&&-b>0?"neg":(!credit&&b<0?"neg":""))+'">'+shown+(credit?'<span class="owed">owed</span>':'')+'</span></button>';
+  }).join("")+'</div>';
+}
+
+function txRow(t){
+  const d=txDisplay(t);
+  return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(d.meta)+'</span></span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';
+}
+
+function viewActivity(){
+  if(!S.accounts.length) return setupEmpty();
+  let list=S.txns.filter(t=>t.date&&ymOf(t.date)===S.month);
+  if(S.acct!=="all") list=list.filter(t=>t.from===S.acct||t.to===S.acct);
+  list=sortTx(list);
+  let h='<div class="chips" role="group" aria-label="Filter by account"><button class="chip" data-filteracct="all" aria-pressed="'+(S.acct==="all")+'">All accounts</button>'+
+    S.accounts.map(a=>'<button class="chip" data-filteracct="'+esc(a.id)+'" aria-pressed="'+(S.acct===a.id)+'">'+esc(a.name)+'</button>').join("")+'</div>';
+  if(!list.length) return h+'<div class="empty" style="margin-top:14px"><strong>Nothing in '+esc(monthName(S.month,true))+'</strong><span>Entries you add for this month'+(S.acct!=="all"?" and account":"")+' show up here, grouped by day.</span></div>';
+  const groups={}; list.forEach(t=>(groups[t.date]=groups[t.date]||[]).push(t));
+  Object.keys(groups).sort().reverse().forEach(d=>{
+    const spent=groups[d].filter(t=>t.type==="expense").reduce((s,t)=>s+(+t.amount||0),0);
+    h+='<div class="day"><span>'+esc(dayName(d))+'</span><span class="num">'+(spent?"spent "+money(spent):"")+'</span></div><div class="list">'+groups[d].map(txRow).join("")+'</div>';
+  });
+  return h;
+}
+
+function viewProjects(){
+  const c=compute();
+  let h='<p class="hint" style="margin:4px 0 14px">Money you set aside stays in your account but is reserved for the project. Expenses paid "from a project" come out of its balance.</p>';
+  if(!S.projects.length) return h+'<div class="empty"><strong>No projects yet</strong><span>Create one for anything you are saving toward, like a trip, a new laptop or a car upgrade.</span><button class="btn primary" data-act="newproj">New project</button></div>';
+  h+=S.projects.slice().sort((a,b)=>(a.created||0)-(b.created||0)).map(p=>{
+    const b=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,b/goal*100)):0;
+    return '<div class="proj"><div class="head"><span class="name">'+esc(p.name)+'</span><span class="bal">'+money(b)+'</span></div>'+
+      (goal?'<div class="bar" role="img" aria-label="'+Math.round(pct)+'% of goal"><i style="width:'+pct+'%"></i></div>':'')+
+      '<div class="foot"><span>'+(goal?Math.round(pct)+'% of '+money(goal)+(b<goal?' · '+money(goal-b)+' to go':' · goal reached'):'No goal set')+'</span>'+
+      '<span style="display:flex;gap:6px"><button class="btn" data-viewproj="'+esc(p.id)+'">History</button><button class="btn primary" data-saveto="'+esc(p.id)+'">Add money</button></span></div></div>';
+  }).join("");
+  h+='<div style="margin-top:14px"><button class="btn wide" data-act="newproj">New project</button></div>';
+  return h;
+}
+
+function viewAccounts(){
+  if(!S.accounts.length) return setupEmpty();
+  const miss=["credit","cash"].filter(k=>!S.accounts.some(x=>x.type===k));
+  return '<p class="hint" style="margin:4px 0 14px">Open an account to see its transactions and add new ones.</p>'+acctRows(compute(),true)+
+    (miss.length?'<div style="margin-top:10px"><button class="btn wide" data-act="quicksetup">Add '+miss.map(k=>k==="credit"?"a Credit card":"Cash").join(" and ")+'</button></div>':'')+
+    '<div style="margin-top:14px"><button class="btn wide" data-act="newacct">Add account</button></div>'+backupBlock();
+}
+function daysSinceFile(){ const d=lsGet("pb_lastfile"); if(!d) return null; return Math.round((pDate(todayStr())-pDate(d))/86400000); }
+function backupBlock(){
+  const last=S.backups[0];
+  if(MODE==="cloud"){ const ds=daysSinceFile();
+    return '<h2>Data &amp; backups</h2><p class="hint" style="margin:0 0 10px">Your data is saved online in your private Pocketbook database and syncs between your Mac and iPhone. A copy is kept automatically each day (last 30). <b>Save backup file</b> also gives you a file to keep. '+
+      (ds===null?'No backup file yet.':'Last backup file: '+(ds===0?'today':ds===1?'yesterday':ds+' days ago')+'.')+'</p>'+
+      '<div class="actions" style="margin:0"><button class="btn" data-act="export">Save backup file</button><button class="btn" data-act="importfile">Import a file</button></div>'+
+      '<div class="actions" style="margin-top:8px"><button class="btn" data-act="import">Go back to an earlier day</button><button class="btn" data-act="signout">Sign out</button></div><div id="importBox"></div>';
+  }
+  if(MODE==="local"){ const ds=daysSinceFile();
+    return '<h2>Data &amp; backups</h2><p class="hint" style="margin:0 0 10px">Your data is saved in Safari on this Mac, with a copy kept automatically each day. <b>Save backup file</b> puts a full copy in a file you keep. Set Safari to ask where to save (Safari, Settings, General, File download location: Ask for each download) and choose the <b>Pocketbook</b> folder. '+
+      (ds===null?'No backup file yet.':'Last backup file: '+(ds===0?'today':ds===1?'yesterday':ds+' days ago')+'.')+'</p>'+
+      '<div class="actions" style="margin:0"><button class="btn" data-act="export">Save backup file</button><button class="btn" data-act="importfile">Import a file</button></div>'+
+      '<div style="margin-top:8px"><button class="btn wide" data-act="import">Go back to an earlier day</button></div><div id="importBox"></div>';
+  }
+  return '<h2>Data &amp; backups</h2><p class="hint" style="margin:0 0 10px">Saved in <b>'+esc(DIR?DIR.name:"Pocketbook")+'/pocketbook-data.json</b>. Backups go in its <b>backups</b> folder, one a day automatically.'+(last?' Latest: '+esc(backupLabel(last))+'.':' No backup yet.')+'</p>'+
+    '<div class="actions" style="margin:0"><button class="btn" data-act="export">Save backup now</button><button class="btn" data-act="import">Restore a backup</button></div>'+
+    '<div class="actions" style="margin-top:8px"><button class="btn" data-act="importfile">Import a file</button><button class="btn" data-act="pickfolder">Change folder</button></div><div id="importBox"></div>';
+}
+
+/* ---------- loans ---------- */
+function ordinal(n){const s=["th","st","nd","rd"],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+function nextDue(l){
+  const day=parseInt(l.dueDay,10); if(!day) return null;
+  const now=new Date(), ym=ymOf(todayStr());
+  const paid=S.txns.some(t=>t.loan===l.id&&t.date&&ymOf(t.date)===ym);
+  let y=now.getFullYear(), m=now.getMonth()+(paid?1:0);
+  const dim=new Date(y,m+1,0).getDate(); const d=new Date(y,m,Math.min(day,dim));
+  const days=Math.round((d-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);
+  return {date:d,days,paid};
+}
+function dueText(n){ if(!n) return ""; const ds=n.date.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  if(n.days<0) return "Overdue since "+ds; if(n.days===0) return "Due today"; if(n.days===1) return "Due tomorrow"; return "Due "+ds; }
+function viewLoans(){
+  const c=compute();
+  let h='<p class="hint" style="margin:4px 0 14px">Track loans you are paying off and money you lent to someone. Payments come out of checking or cash.</p>';
+  if(!S.loans.length) return h+'<div class="empty"><strong>No active loans</strong><span>Add a car loan, personal loan, or money someone owes you. Enter what is left today and log each payment as you make it.</span><button class="btn primary" data-act="newloan">Add a loan</button></div>';
+  const monthly=S.loans.filter(l=>l.dir!=="lent").reduce((s,l)=>s+(+l.payment||0),0);
+  h+='<div class="split" style="margin-bottom:16px"><div><div class="eyebrow">I still owe</div><div class="v neg">'+money(c.loansOwe)+'</div></div><div><div class="eyebrow">Monthly payments</div><div class="v">'+money(monthly)+'</div></div>'+
+    (c.loansLent?'<div><div class="eyebrow">Owed to me</div><div class="v pos">'+money(c.loansLent)+'</div></div><div><div class="eyebrow">Loans</div><div class="v">'+S.loans.length+'</div></div>':'')+'</div>';
+  const sorted=S.loans.slice().sort((a,b)=>(a.dir==="lent")-(b.dir==="lent")||(a.created||0)-(b.created||0));
+  h+='<div class="list">'+sorted.map(l=>{
+    const left=c.loan[l.id], lent=l.dir==="lent", n=lent?null:nextDue(l);
+    const pill = n&&left>0 ? '<span class="pill'+(n.days<=5?" due":"")+'">'+esc(dueText(n))+'</span>' : (left<=0?'<span class="pill">Paid off</span>':'');
+    const meta=[lent?"Owed to me":(l.party||"Loan")]; if(+l.payment) meta.push(money(l.payment)+"/mo"); if(+l.rate) meta.push(l.rate+"% interest");
+    return '<button class="row" data-openloan="'+esc(l.id)+'"><span class="badge '+(lent?"lent":"loan")+'">'+esc(initials(l.name))+'</span><span class="main"><span class="t">'+esc(l.name)+pill+'</span><span class="m">'+esc(meta.join(" · "))+'</span></span>'+
+      '<span class="amt '+(lent?"pos":(left>0?"neg":""))+'">'+money(left)+'<span class="owed">left</span></span></button>';
+  }).join("")+'</div>';
+  return h+'<div style="margin-top:14px"><button class="btn wide" data-act="newloan">Add a loan</button></div>';
+}
+function dIso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function pDate(s){const [y,m,d]=String(s).split("-").map(Number);return new Date(y,(m||1)-1,d||1);}
+// Simple interest charged per day; the daily rate is the yearly rate divided by the days in that calendar year.
+function dailyInterest(bal,rate,from,to){
+  let sum=0; const d=new Date(from.getFullYear(),from.getMonth(),from.getDate());
+  for(let i=0;d<to&&i<4000;i++){ const y=d.getFullYear(), diy=((y%4===0&&y%100!==0)||y%400===0)?366:365; sum+=bal*rate/100/diy; d.setDate(d.getDate()+1); }
+  return sum;
+}
+function lastPayDate(l,before,excludeId){
+  let best=l.balanceDate||l.startDate||"";
+  S.txns.forEach(t=>{ if(t.loan===l.id&&t.id!==excludeId&&t.date&&t.date<before&&t.date>best) best=t.date; });
+  return best;
+}
+function periodInterest(l,bal,fromIso,toDate){
+  const rate=+l.rate||0;
+  if(l.method==="daily"&&fromIso) return Math.round(dailyInterest(bal,rate,pDate(fromIso),toDate)*100)/100;
+  return Math.round(bal*rate/100/12*100)/100;
+}
+// Payment plan for what is still owed: one payment a month on the due day.
+function loanSchedule(l,bal){
+  const pay=+l.payment||0, rows=[]; let b=Math.round(bal*100)/100;
+  if(!(pay>0)||b<=0) return rows;
+  const d0=nextDue(l), day=+l.dueDay||1; let y,m;
+  if(d0){y=d0.date.getFullYear();m=d0.date.getMonth();} else {const n=new Date();y=n.getFullYear();m=n.getMonth()+1;}
+  let prev=lastPayDate(l,"9999-12-31");
+  for(let i=0;b>0.004&&i<600;i++){
+    const dim=new Date(y,m+1,0).getDate(), due=new Date(y,m,Math.min(day,dim));
+    const it=periodInterest(l,b,prev,due); if(+l.rate&&pay<=it&&i>0) return null;
+    let pr=Math.round((pay-it)*100)/100; if(pr<0) pr=0; if(pr>b||b-pr<=5) pr=b; b=Math.round((b-pr)*100)/100;
+    rows.push({date:due,pay:Math.round((it+pr)*100)/100,int:it,prin:pr,bal:b});
+    prev=dIso(due); m++; if(m>11){m=0;y++;}
+  }
+  return rows;
+}
+function splitFor(l,amount,dateIso,excludeId){
+  const c=compute(); let left=c.loan[l.id]||0;
+  if(excludeId){ const t=S.txns.find(x=>x.id===excludeId); if(t) left+=Math.max(0,(+t.amount||0)-(+t.interest||0)); }
+  const when=dateIso||todayStr();
+  const it=Math.min(amount,periodInterest(l,left,lastPayDate(l,when,excludeId),pDate(when)));
+  return {int:it,prin:Math.round((amount-it)*100)/100};
+}
+function fmtDate(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
+function viewLoan(l){
+  const c=compute(), left=c.loan[l.id], lent=l.dir==="lent", orig=+l.original||0;
+  const pays=sortTx(S.txns.filter(t=>t.loan===l.id));
+  const paid=pays.reduce((s,t)=>s+(+t.amount||0),0), intPaid=pays.reduce((s,t)=>s+(+t.interest||0),0);
+  const pct=orig?Math.max(0,Math.min(100,(orig-left)/orig*100)):0, n=lent?null:nextDue(l);
+  let h='<section class="hero"><div class="eyebrow">'+(lent?"Still owed to me":"Still owed")+(l.party?" · "+esc(l.party):"")+'</div><div class="big '+(lent?"":(left>0?"neg":""))+'">'+money(left)+'</div>';
+  if(orig) h+='<div class="bar" role="img" aria-label="'+Math.round(pct)+'% paid off" style="margin-bottom:6px"><i style="width:'+pct+'%"></i></div><div class="hint" style="margin:0 0 12px">'+Math.round(pct)+'% of '+money(orig)+' paid off</div>';
+  h+='<div class="actions" style="margin:0"><button class="btn" data-editloan="'+esc(l.id)+'">Edit loan</button><button class="btn primary" data-payloan="'+esc(l.id)+'">'+(lent?"+ Log repayment":"+ Log payment")+'</button></div></section>';
+  h+='<div class="kv">'+
+    '<div><div class="eyebrow">Monthly payment</div><div class="v">'+(+l.payment?money(l.payment):"Not set")+'</div></div>'+
+    '<div><div class="eyebrow">'+(lent?"Expected":"Next due")+'</div><div class="v">'+(n?esc(dueText(n)):(l.dueDay?ordinal(+l.dueDay)+" of month":"Not set"))+'</div></div>'+
+    '<div><div class="eyebrow">Interest rate</div><div class="v">'+(+l.rate?esc(l.rate)+"%"+(l.apr?"":" APR"):"Not set")+'</div></div>'+
+    (l.apr?'<div><div class="eyebrow">APR</div><div class="v">'+esc(l.apr)+'%</div></div>':'')+
+    (l.termMonths?'<div><div class="eyebrow">Term</div><div class="v">'+esc(l.termMonths)+' months, fixed</div></div>':'')+
+    (l.startDate?'<div><div class="eyebrow">Started</div><div class="v">'+esc(fmtDate(new Date(l.startDate+"T12:00:00")))+'</div></div>':'')+
+    '<div><div class="eyebrow">'+(lent?"Received so far":"Paid so far")+'</div><div class="v">'+money(paid)+'</div></div>'+
+    (lent?'':'<div><div class="eyebrow">Interest paid</div><div class="v">'+money(intPaid)+'</div></div><div><div class="eyebrow">Payments logged</div><div class="v">'+pays.length+'</div></div>')+
+    '</div>';
+  if(!lent&&left>0&&+l.rate&&+l.payment){
+    const rows=loanSchedule(l,left);
+    if(rows===null) h+='<h2>Payment plan</h2><p class="err">The monthly payment does not cover the monthly interest, so this loan would never be paid off. Check the payment amount.</p>';
+    else if(rows.length){
+      const nx=rows[0], last=rows[rows.length-1], ti=rows.reduce((a,x)=>a+x.int,0);
+      h+='<h2>Payment plan</h2><div class="kv">'+
+        '<div><div class="eyebrow">Next payment</div><div class="v">'+money(nx.pay)+'</div></div>'+
+        '<div><div class="eyebrow">Of which interest / principal</div><div class="v"><span class="neg">'+money(nx.int)+'</span> / '+money(nx.prin)+'</div></div>'+
+        '<div><div class="eyebrow">Payments left</div><div class="v">'+rows.length+'</div></div>'+
+        '<div><div class="eyebrow">Paid off</div><div class="v">'+esc(fmtDate(last.date))+'</div></div>'+
+        '<div><div class="eyebrow">Interest still to pay</div><div class="v neg">'+money(ti)+'</div></div>'+
+        '<div><div class="eyebrow">Total still to pay</div><div class="v">'+money(left+ti)+'</div></div></div>'+
+        '<p class="hint">'+(l.method==="daily"?'Interest counted by day at '+esc(l.rate)+'% from your last payment to each due date, the way your lender charges it. Paying early or late moves the split by a few dollars.':'Estimated with '+esc(l.rate)+'% a year charged monthly on what you still owe.')+'</p>'+
+        '<details class="sched"><summary>See every payment</summary><div class="tbl"><table><thead><tr><th>Date</th><th>Payment</th><th>Interest</th><th>Principal</th><th>Left</th></tr></thead><tbody>'+
+        rows.map(x=>'<tr><td>'+esc(x.date.toLocaleDateString("en-US",{month:"short",year:"numeric"}))+'</td><td>'+money(x.pay)+'</td><td>'+money(x.int)+'</td><td>'+money(x.prin)+'</td><td>'+money(x.bal)+'</td></tr>').join("")+
+        '</tbody></table></div></details>';
+    }
+  }
+  h+='<h2>Payment history</h2>';
+  h+= pays.length? '<div class="list">'+pays.map(t=>{const x=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+x.badge+'</span><span class="main"><span class="t">'+esc(x.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(x.meta)+'</span></span><span class="amt">'+money(t.amount)+'</span></button>';}).join("")+'</div>'
+    : '<div class="empty">No payments logged yet.</div>';
+  return h;
+}
+function openLoanForm(l){
+  const edit=!!l; l=l||{name:"",dir:"owe",party:"",original:"",balance:"",rate:"",payment:"",dueDay:""};
+  const num=v=>v===0||v?esc(v):"";
+  let h=sheetHead(edit?"Edit loan":"New loan")+'<form id="loanForm" novalidate>'+
+    '<div class="seg" role="group" aria-label="Loan direction"><button type="button" class="chip" data-loandir="owe" aria-pressed="'+(l.dir!=="lent")+'">I owe this</button><button type="button" class="chip" data-loandir="lent" aria-pressed="'+(l.dir==="lent")+'">Someone owes me</button></div>'+
+    '<div class="field"><label for="l_name">Loan name</label><input id="l_name" maxlength="40" placeholder="e.g. Car loan, Personal loan" value="'+esc(l.name)+'"></div>'+
+    '<div class="field"><label for="l_party" id="l_partyL">'+(l.dir==="lent"?"Who owes you (optional)":"Lender (optional)")+'</label><input id="l_party" maxlength="40" placeholder="e.g. bank or person" value="'+esc(l.party)+'"></div>'+
+    '<div class="two"><div class="field"><label for="l_bal">Still owed today</label><input id="l_bal" class="amount" inputmode="decimal" placeholder="0.00" value="'+num(l.balance)+'"></div>'+
+    '<div class="field"><label for="l_orig">Original amount (optional)</label><input id="l_orig" class="amount" inputmode="decimal" placeholder="0.00" value="'+num(l.original)+'"></div></div>'+
+    '<div class="two"><div class="field"><label for="l_pay">Monthly payment (optional)</label><input id="l_pay" inputmode="decimal" placeholder="0.00" value="'+num(l.payment)+'"></div>'+
+    '<div class="field"><label for="l_due">Due day of month (optional)</label><input id="l_due" inputmode="numeric" placeholder="e.g. 15" value="'+num(l.dueDay)+'"></div></div>'+
+    '<div class="two"><div class="field"><label for="l_rate">Interest rate % (optional)</label><input id="l_rate" inputmode="decimal" placeholder="e.g. 6.9" value="'+num(l.rate)+'"></div>'+
+    '<div class="field"><label for="l_apr">APR % (optional)</label><input id="l_apr" inputmode="decimal" placeholder="e.g. 7.2" value="'+num(l.apr)+'"></div></div>'+
+    '<div class="field"><label for="l_method">Interest is charged</label><select id="l_method">'+opts([{v:"daily",l:"By day (most bank and personal loans)"},{v:"monthly",l:"Once a month"}],l.method||"daily")+'</select></div>'+
+    '<div class="two"><div class="field"><label for="l_term">Term in months (optional)</label><input id="l_term" inputmode="numeric" placeholder="e.g. 36" value="'+num(l.termMonths)+'"></div>'+
+    '<div class="field"><label for="l_start">Start date (optional)</label><input id="l_start" type="date" value="'+esc(l.startDate||"")+'"></div></div>'+
+    '<div id="lErr"></div><div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Add loan")+'</button></div><div id="delBox"></div></form>';
+  draft=Object.assign({},l,{kind:"loan"});
+  openSheet(h);
+  $("loanForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const p=id=>{const v=$(id).value.trim().replace(/[$,%\s]/g,"");return v===""?0:parseFloat(v);};
+    const name=$("l_name").value.trim(), bal=p("l_bal"), orig=p("l_orig"), pay=p("l_pay"), rate=p("l_rate"), due=p("l_due");
+    const err=m=>{$("lErr").innerHTML='<p class="err" role="alert">'+esc(m)+'</p>';};
+    if(!name) return err("Give the loan a name.");
+    if(isNaN(bal)||bal<0) return err("Enter how much is still owed, like 8400.00.");
+    if([orig,pay,rate].some(v=>isNaN(v)||v<0)) return err("Amounts and rate must be numbers.");
+    if(isNaN(due)||due<0||due>31||due%1) return err("Due day must be a day of the month, 1 to 31.");
+    const r2=v=>Math.round(v*100)/100;
+    if(await save(l.id,{kind:"loan",name,dir:draft.dir==="lent"?"lent":"owe",party:$("l_party").value.trim(),balance:r2(bal),original:r2(orig),payment:r2(pay),rate:rate,apr:p("l_apr")||"",termMonths:p("l_term")||"",startDate:$("l_start").value||"",method:$("l_method").value,balanceDate:(l.balanceDate&&+l.balance===r2(bal))?l.balanceDate:todayStr(),dueDay:due||"",created:l.created||Date.now()})){closeSheet();toast(edit?"Loan updated":"Loan added");}
+  });
+}
+
+/* ---------- sheets ---------- */
+function openSheet(html){
+  $("sheetRoot").innerHTML='<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true">'+'<div class="grab"></div>'+html+'</div></div>';
+  $("scrim").addEventListener("click",e=>{if(e.target.id==="scrim") closeSheet();});
+  const f=$("sheetRoot").querySelector("input.amount,input,select"); if(f && !("ontouchstart" in window)) f.focus();
+}
+function closeSheet(){$("sheetRoot").innerHTML="";}
+function sheetHead(t){return '<h3><span>'+esc(t)+'</span><button type="button" data-act="close" aria-label="Close">×</button></h3>';}
+function opts(list,sel,placeholder){return (placeholder?'<option value="">'+esc(placeholder)+'</option>':'')+list.map(o=>'<option value="'+esc(o.v)+'"'+(o.v===sel?" selected":"")+'>'+esc(o.l)+'</option>').join("");}
+function acctOpts(filter){return S.accounts.filter(filter||(()=>true)).map(a=>({v:a.id,l:a.name+" · "+ACCT_TYPES[a.type]}));}
+
+let draft=null;
+function openTx(tx,preset){
+  if(!S.accounts.length){toast("Add an account first.");S.tab="accounts";S.open=null;render();return;}
+  draft = tx? Object.assign({},tx,{desc:tx.desc||tx.note||""}) : Object.assign({type:"expense",date:todayStr(),amount:"",from:"",to:"",category:"",project:"",desc:"",payee:"",payer:""},preset||{});
+  if(!tx&&!(preset&&preset.type)){
+    const a=draft.ctx&&acctById(draft.ctx);
+    if(a&&a.type==="checking") draft.type="cardpay";
+  }
+  if(!tx&&draft.ctx) placeCtx();
+  if(!tx&&draft.type==="loanpay"&&!draft.from){ const chk=S.accounts.find(a=>a.type==="checking"); if(chk){draft.from=chk.id;draft.to=chk.id;} }
+  if(!tx&&draft.type==="loanpay"){ if(!draft.loan){ const ow=S.loans.filter(x=>x.dir!=="lent"); if(ow.length===1) draft.loan=ow[0].id; } loanDefaults(); }
+  if(!tx&&draft.type==="expense"&&!draft.from){ const card=S.accounts.find(a=>a.type==="credit"); if(card) draft.from=card.id; }
+  renderTx();
+}
+// When adding from inside an account, put that account on the right side of the entry.
+function placeCtx(){
+  const a=acctById(draft.ctx); if(!a) return; const credit=a.type==="credit";
+  if(draft.type==="income"){ if(!credit) draft.to=a.id; }
+  else if(draft.type==="cardpay"){ if(credit) draft.to=a.id; else draft.from=a.id; }
+  else if(draft.type==="transfer"||draft.type==="save"){ if(!credit) draft.from=a.id; }
+  else if(draft.type==="loanpay"){ if(!credit){ draft.from=a.id; draft.to=a.id; } }
+  else draft.from=a.id;
+}
+function payeeList(){const set=new Set();S.txns.forEach(t=>{if(t.payee)set.add(t.payee);});return [...set].sort().slice(0,200);}
+function renderTx(errMsg){
+  const t=draft, edit=!!t.id, liquid=a=>a.type!=="credit", credit=a=>a.type==="credit";
+  const ctx=t.ctx&&acctById(t.ctx);
+  let h=sheetHead(edit?"Edit transaction":(ctx?"New in "+ctx.name:"New transaction"));
+  const order = (ctx&&ctx.type!=="credit") ? ["cardpay","transfer","loanpay","income","save","expense"] : Object.keys(TYPES);
+  h+='<div class="seg" role="group" aria-label="Transaction type">'+order.map(k=>'<button type="button" class="chip" data-txtype="'+k+'" aria-pressed="'+(t.type===k)+'">'+TYPES[k].label+'</button>').join("")+'</div>';
+  h+='<form id="txForm" novalidate>';
+  h+='<div class="two"><div class="field"><label for="f_date">Date made</label><input id="f_date" type="date" value="'+esc(t.date)+'"></div>'+
+     '<div class="field"><label for="f_amount">Amount</label><input id="f_amount" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount)+'"></div></div>';
+  h+='<div class="field"><label for="f_desc">Description</label><input id="f_desc" maxlength="120" placeholder="'+({expense:"e.g. Weekly groceries",income:"e.g. Paycheck Oct 1–15",transfer:"e.g. ATM withdrawal",cardpay:"e.g. October statement",loanpay:"e.g. SoFi loan payment",save:"e.g. Monthly deposit"}[t.type])+'" value="'+esc(t.desc)+'"></div>';
+  if(t.type==="expense"){
+    h+='<div class="field"><label for="f_from">Paid with</label><select id="f_from">'+opts(acctOpts(credit).concat(acctOpts(liquid)),t.from,"Choose card or account")+'</select></div>';
+    h+='<div class="field"><label for="f_payee">Destination: who you paid</label><input id="f_payee" list="payees" maxlength="60" placeholder="e.g. Publix, Shell, Netflix" value="'+esc(t.payee)+'"><datalist id="payees">'+payeeList().map(p=>'<option value="'+esc(p)+'"></option>').join("")+'</datalist></div>';
+    h+='<div class="field"><label for="f_cat">Category (optional)</label><select id="f_cat">'+opts(EXP_CATS.map(c=>({v:c,l:c})),t.category,"No category")+'</select></div>';
+    if(S.projects.length) h+='<div class="field"><label for="f_proj">Paid from project savings (optional)</label><select id="f_proj">'+opts(S.projects.map(p=>({v:p.id,l:p.name})),t.project,"No, regular spending")+'</select></div>';
+  } else if(t.type==="income"){
+    h+='<div class="field"><label for="f_payer">Received from (optional)</label><input id="f_payer" maxlength="60" placeholder="e.g. Employer name" value="'+esc(t.payer)+'"></div>';
+    h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(),t.to,"Choose account")+'</select></div>';
+    h+='<div class="field"><label for="f_cat">Category (optional)</label><select id="f_cat">'+opts(INC_CATS.map(c=>({v:c,l:c})),t.category,"No category")+'</select></div>';
+  } else if(t.type==="transfer"){
+    h+='<div class="two"><div class="field"><label for="f_from">From</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose")+'</select></div>'+
+       '<div class="field"><label for="f_to">Destination</label><select id="f_to"><option value="">Choose</option>'+
+       '<optgroup label="Accounts">'+opts(acctOpts(liquid),t.to)+'</optgroup>'+
+       (S.accounts.some(credit)?'<optgroup label="Credit cards (card payment)">'+opts(acctOpts(credit),t.to)+'</optgroup>':'')+
+       (S.loans.some(x=>x.dir!=="lent")?'<optgroup label="Loans (loan payment)">'+opts(S.loans.filter(x=>x.dir!=="lent").map(x=>({v:"loan:"+x.id,l:x.name})),"")+'</optgroup>':'')+
+       '</select></div></div>';
+    h+='<p class="hint">Move money to another of your accounts, or pick a card or loan to log a payment.</p>';
+  } else if(t.type==="cardpay"){
+    h+='<div class="field"><label for="f_from">Paid from</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose account")+'</select></div>';
+    h+='<div class="field"><label for="f_to">Destination card</label><select id="f_to">'+opts(acctOpts(credit),t.to,S.accounts.some(credit)?"Choose card":"Add a credit card account first")+'</select></div>';
+  } else if(t.type==="loanpay"){
+    const l=loanById(t.loan), lent=l&&l.dir==="lent";
+    if(!S.loans.length) h+='<p class="hint">You have no loans yet. <button type="button" class="btn" data-act="newloan">Add a loan</button></p>';
+    h+='<div class="field"><label for="f_loan">'+(lent?"Loan (who is paying you back)":"Destination loan")+'</label><select id="f_loan">'+opts(S.loans.map(x=>({v:x.id,l:x.name+(x.dir==="lent"?" · owed to me":"")})),t.loan,"Choose loan")+'</select></div>';
+    if(lent){
+      h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(liquid),t.to,"Choose account")+'</select></div>';
+    } else {
+      h+='<div class="field"><label for="f_from">Paid from</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose account")+'</select></div>';
+      h+='<div class="field"><label for="f_int">Of which interest</label><input id="f_int" inputmode="decimal" placeholder="0.00" value="'+esc(t.interest||"")+'"></div>';
+      h+='<p class="hint" id="splitHint">'+(l&&+l.rate?(l.method==="daily"?'Counted by day at '+esc(l.rate)+'% since your last payment. ':'Filled in from your '+esc(l.rate)+'% rate. ')+'Change it to match your statement if it differs. ':'')+'Only the part that is not interest lowers what you still owe.</p>';
+    }
+  } else if(t.type==="save"){
+    if(!S.projects.length) h+='<p class="hint">You have no projects yet. <button type="button" class="btn" data-act="newproj">Create one</button></p>';
+    h+='<div class="field"><label for="f_from">Money comes from</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose account")+'</select></div>';
+    h+='<div class="field"><label for="f_proj">Destination project</label><select id="f_proj">'+opts(S.projects.map(p=>({v:p.id,l:p.name})),t.project,"Choose project")+'</select></div>';
+    h+='<p class="hint">The money stays in that account but counts as reserved for this project.</p>';
+  }
+  if(errMsg) h+='<p class="err" role="alert">'+esc(errMsg)+'</p>';
+  h+='<div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Add transaction")+'</button></div>';
+  h+='<div id="delBox"></div></form>';
+  openSheet(h);
+  $("txForm").addEventListener("submit",submitTx);
+  const fl=$("f_loan"); if(fl) fl.addEventListener("change",()=>{readTxForm();draft.intAuto=true;loanDefaults();renderTx();});
+  const fi=$("f_int"), fa=$("f_amount");
+  if(fi) fi.addEventListener("input",()=>{draft.intAuto=false;});
+  if(fi&&fa) fa.addEventListener("input",()=>{ if(!draft.intAuto) return; const l=loanById($("f_loan")&&$("f_loan").value); const a=parseFloat(fa.value.replace(/[$,\s]/g,""));
+    if(l&&+l.rate&&a>0) fi.value=splitFor(l,a,$("f_date").value,draft.id).int.toFixed(2); });
+  const fd=$("f_date"); if(fi&&fa&&fd) fd.addEventListener("change",()=>{ if(!draft.intAuto) return; const l=loanById($("f_loan")&&$("f_loan").value); const a=parseFloat(fa.value.replace(/[$,\s]/g,""));
+    if(l&&+l.rate&&a>0) fi.value=splitFor(l,a,fd.value,draft.id).int.toFixed(2); });
+  const ft=$("f_to"); if(ft&&t.type==="transfer") ft.addEventListener("change",()=>{
+    const v=ft.value; readTxForm();
+    if(v.startsWith("loan:")){ draft.type="loanpay"; draft.loan=v.slice(5); draft.to=""; draft.intAuto=true; loanDefaults(); renderTx(); }
+    else { const a=acctById(v); if(a&&a.type==="credit"){ draft.type="cardpay"; renderTx(); } } });
+}
+// New loan payment: suggest the monthly payment, a description and the interest part.
+function loanDefaults(){
+  const t=draft, l=loanById(t.loan); if(t.id||!l||l.dir==="lent") return;
+  if(!t.amount&&+l.payment) t.amount=String(l.payment);
+  if(!t.desc||/ payment$/.test(t.desc)) t.desc=l.name+" payment";
+  const a=parseFloat(String(t.amount).replace(/[$,\s]/g,""));
+  if(t.intAuto!==false&&+l.rate&&a>0){ t.interest=splitFor(l,a,t.date).int.toFixed(2); t.intAuto=true; }
+}
+function readTxForm(){
+  const g=id=>{const el=$(id);return el?el.value.trim():undefined;};
+  const map={amount:"f_amount",date:"f_date",desc:"f_desc",from:"f_from",to:"f_to",category:"f_cat",project:"f_proj",payee:"f_payee",payer:"f_payer",loan:"f_loan",interest:"f_int"};
+  for(const k in map){const v=g(map[k]); if(v!==undefined) draft[k]=v;}
+}
+async function submitTx(e){
+  e.preventDefault(); readTxForm(); const t=draft;
+  if(!t.date) return renderTx("Pick the date the transaction was made.");
+  const amt=parseFloat(String(t.amount).replace(/[$,\s]/g,""));
+  if(!(amt>0)) return renderTx("Enter an amount greater than zero.");
+  if(!t.desc) return renderTx("Add a short description.");
+  const lentLoan = t.type==="loanpay" && loanById(t.loan) && loanById(t.loan).dir==="lent";
+  const need={expense:["from","payee"],income:["to"],transfer:["from","to"],cardpay:["from","to"],save:["from","project"],loanpay:["loan",lentLoan?"to":"from"]}[t.type];
+  const intr=t.type==="loanpay"&&!lentLoan&&t.interest?parseFloat(String(t.interest).replace(/[$,\s]/g,"")):0;
+  if(isNaN(intr)||intr<0||intr>amt) return renderTx("Interest must be a number between 0 and the payment amount.");
+  const names={loan:"the loan",from:"the account the money came from",to:"the destination account",payee:"Enter who you paid (the destination).",project:"the destination project"};
+  for(const k of need) if(!t[k]) return renderTx(k==="payee"?names.payee:"Choose "+names[k]+".");
+  if(t.type==="transfer"&&t.from===t.to) return renderTx("From and Destination must be different accounts.");
+  const doc={kind:"txn",type:t.type,amount:Math.round(amt*100)/100,date:t.date,desc:t.desc,from:t.type==="income"?"":(t.from||""),created:t.created||Date.now(),
+    to:["income","transfer","cardpay"].includes(t.type)?t.to:"",
+    payee:t.type==="expense"?t.payee:"", payer:t.type==="income"?(t.payer||""):"",
+    category:["expense","income"].includes(t.type)?(t.category||""):"",
+    project:t.type==="save"||t.type==="expense"?(t.project||""):""};
+  if(t.type==="loanpay"){ doc.loan=t.loan; doc.from=lentLoan?"":t.from; doc.to=lentLoan?t.to:""; doc.interest=Math.round(intr*100)/100; }
+  if(await save(t.id,doc)){closeSheet();toast(t.id?"Transaction updated":"Transaction added"); if(!S.open) S.month=ymOf(doc.date); render();}
+}
+
+function openAcct(a){
+  const edit=!!a; a=a||{name:"",type:"checking",opening:""};
+  let h=sheetHead(edit?"Edit account":"New account")+'<form id="acctForm" novalidate>'+
+    '<div class="field"><label for="a_name">Name</label><input id="a_name" maxlength="40" placeholder="e.g. Chase checking, Visa" value="'+esc(a.name)+'"></div>'+
+    '<div class="field"><label for="a_type">Type</label><select id="a_type">'+opts(Object.keys(ACCT_TYPES).map(k=>({v:k,l:ACCT_TYPES[k]})),a.type)+'</select></div>'+
+    '<div class="field"><label for="a_open" id="a_openL">'+(a.type==="credit"?"Amount owed right now":"Current balance")+'</label><input id="a_open" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(a.opening)+'"></div>'+
+    '<div class="field"><label for="a_asof">Balance as of</label><input id="a_asof" type="date" value="'+esc(a.asOf||(a.created?dIso(new Date(a.created)):todayStr()))+'"></div>'+
+    '<p class="hint">Use the balance your bank shows for this day. Transactions dated on or before it are already included, so they won\'t change it again. Everything after adjusts it.</p><div id="aErr"></div>'+
+    '<div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Add account")+'</button></div><div id="delBox"></div></form>';
+  draft=Object.assign({},a,{kind:"account"});
+  openSheet(h);
+  $("a_type").addEventListener("change",e=>{$("a_openL").textContent=e.target.value==="credit"?"Amount owed right now":"Current balance";});
+  $("acctForm").addEventListener("submit",async e=>{
+    e.preventDefault(); const name=$("a_name").value.trim(); const op=parseFloat(($("a_open").value||"0").replace(/[$,\s]/g,""));
+    if(!name){$("aErr").innerHTML='<p class="err" role="alert">Give the account a name.</p>';return;}
+    if(isNaN(op)){$("aErr").innerHTML='<p class="err" role="alert">Enter the balance as a number, like 1250.00.</p>';return;}
+    if(await save(a.id,{kind:"account",name,type:$("a_type").value,opening:Math.round(op*100)/100,asOf:$("a_asof").value||todayStr(),
+      asOfAt:((a.asOf||(a.created?dIso(new Date(a.created)):""))===$("a_asof").value&&+a.opening===Math.round(op*100)/100&&(a.asOfAt||a.created))?(a.asOfAt||a.created):Date.now(),created:a.created||Date.now()})){closeSheet();toast(edit?"Account updated":"Account added");}
+  });
+}
+
+function openProj(p){
+  const edit=!!p; p=p||{name:"",goal:""};
+  let h=sheetHead(edit?"Edit project":"New project")+'<form id="projForm" novalidate>'+
+    '<div class="field"><label for="p_name">Project name</label><input id="p_name" maxlength="40" placeholder="e.g. Vacation fund" value="'+esc(p.name)+'"></div>'+
+    '<div class="field"><label for="p_goal">Savings goal (optional)</label><input id="p_goal" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(p.goal||"")+'"></div><div id="pErr"></div>'+
+    '<div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Create project")+'</button></div><div id="delBox"></div></form>';
+  draft=Object.assign({},p,{kind:"project"});
+  openSheet(h);
+  $("projForm").addEventListener("submit",async e=>{
+    e.preventDefault(); const name=$("p_name").value.trim(); const g=$("p_goal").value.trim(); const goal=g?parseFloat(g.replace(/[$,\s]/g,"")):0;
+    if(!name){$("pErr").innerHTML='<p class="err" role="alert">Give the project a name.</p>';return;}
+    if(isNaN(goal)||goal<0){$("pErr").innerHTML='<p class="err" role="alert">Enter the goal as a number, like 2500.</p>';return;}
+    if(await save(p.id,{kind:"project",name,goal:Math.round(goal*100)/100,created:p.created||Date.now()})){closeSheet();toast(edit?"Project updated":"Project created");}
+  });
+}
+
+function openProjHistory(id){
+  const p=projById(id); if(!p) return; const c=compute();
+  const list=sortTx(S.txns.filter(t=>t.project===id));
+  let h=sheetHead(p.name)+'<div class="split" style="margin-bottom:14px"><div><div class="eyebrow">Balance</div><div class="v">'+money(c.proj[id])+'</div></div><div><div class="eyebrow">Goal</div><div class="v">'+(p.goal?money(p.goal):"None")+'</div></div></div>';
+  h+= list.length? '<div class="list">'+list.map(t=>{const d=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(d.meta)+'</span></span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';}).join("")+'</div>'
+    : '<div class="empty">Nothing saved yet.</div>';
+  h+='<div class="actions" style="margin-top:14px"><button class="btn" data-editproj="'+esc(id)+'">Edit project</button><button class="btn primary" data-saveto="'+esc(id)+'">Add money</button></div>';
+  openSheet(h);
+}
+
+function askDelete(){
+  const d=draft; let msg, blocked=false;
+  if(d.kind==="account"){const n=S.txns.filter(t=>t.from===d.id||t.to===d.id).length; if(n){blocked=true;msg="This account has "+n+" entr"+(n===1?"y":"ies")+". Delete or move them first.";} else msg="Delete this account?";}
+  else if(d.kind==="project"){const n=S.txns.filter(t=>t.project===d.id).length; if(n){blocked=true;msg="This project has "+n+" entr"+(n===1?"y":"ies")+". Delete them first.";} else msg="Delete this project?";}
+  else if(d.kind==="loan"){const n=S.txns.filter(t=>t.loan===d.id).length; if(n){blocked=true;msg="This loan has "+n+" payment"+(n===1?"":"s")+". Delete them first.";} else msg="Delete this loan?";}
+  else msg="Delete this entry? This can't be undone.";
+  $("delBox").innerHTML='<div class="confirm"><span>'+esc(msg)+'</span>'+(blocked?'':'<div class="actions" style="margin:0"><button type="button" class="btn" data-act="canceldel">Keep it</button><button type="button" class="btn primary" style="background:var(--neg);border-color:var(--neg)" data-act="dodel">Delete</button></div>')+'</div>';
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const ds=b.dataset;
+  if(ds.restore){ await pickRestore(ds.restore); return; }
+  if(ds.tab){S.open=null;S.openLoan=null;S.tab=ds.tab;try{localStorage.setItem("pb_tab",S.tab);}catch(_){} render();window.scrollTo(0,0);return;}
+  if(ds.tabGo){S.open=null;S.openLoan=null;S.tab=ds.tabGo;render();window.scrollTo(0,0);return;}
+  if(ds.filteracct){S.acct=ds.filteracct;S.tab="activity";S.open=null;render();return;}
+  if(ds.openloan){S.openLoan=ds.openloan;S.open=null;render();window.scrollTo(0,0);return;}
+  if(ds.editloan){openLoanForm(loanById(ds.editloan));return;}
+  if(ds.payloan){openTx(null,{type:"loanpay",loan:ds.payloan});return;}
+  if(ds.openacct){S.open=ds.openacct;S.openLoan=null;render();window.scrollTo(0,0);return;}
+  if(ds.addin){openTx(null,{ctx:ds.addin});return;}
+  if(ds.editacct){openAcct(acctById(ds.editacct));return;}
+  if(ds.edittx){const t=S.txns.find(x=>x.id===ds.edittx); if(t) openTx(t); return;}
+  if(ds.saveto){openTx(null,{type:"save",project:ds.saveto});return;}
+  if(ds.viewproj){openProjHistory(ds.viewproj);return;}
+  if(ds.editproj){openProj(projById(ds.editproj));return;}
+  if(ds.loandir){draft.dir=ds.loandir;document.querySelectorAll("[data-loandir]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.loandir===ds.loandir));$("l_partyL").textContent=ds.loandir==="lent"?"Who owes you (optional)":"Lender (optional)";return;}
+  if(ds.txtype){readTxForm();draft.type=ds.txtype;if(!draft.id&&draft.ctx)placeCtx();
+    if(!draft.id&&draft.type==="loanpay"){ if(!draft.loan){const ow=S.loans.filter(x=>x.dir!=="lent"); if(ow.length===1) draft.loan=ow[0].id;} if(!draft.from){const chk=S.accounts.find(a=>a.type==="checking"); if(chk) draft.from=chk.id;} loanDefaults(); }
+    renderTx();return;}
+  switch(ds.act){
+    case "close": closeSheet(); break;
+    case "newacct": openAcct(); break;
+    case "newproj": openProj(); break;
+    case "newloan": openLoanForm(); break;
+    case "askdel": askDelete(); break;
+    case "canceldel": $("delBox").innerHTML=""; break;
+    case "dodel": if(await remove(draft.id)){closeSheet();toast("Deleted");} break;
+    case "export": await backupNow(); break;
+    case "import": await listBackups(); openRestore(); break;
+    case "cancelrestore": pendingRestore=null; $("restoreBox").innerHTML=""; break;
+    case "dorestore": { if(!pendingRestore) break; if(MODE==="folder") await backupNow(); const prev=STORE; STORE=pendingRestore; pendingRestore=null; if(await persist()){ closeSheet(); refresh(); toast("Backup restored"); } else STORE=prev; break; }
+    case "connect": await connect("click"); break;
+    case "signout": if(SB) await SB.auth.signOut(); break;
+    case "importfile": $("importFile").click(); break;
+    case "cancelimport": pendingRestore=null; $("importBox").innerHTML=""; break;
+    case "doimport": { if(!pendingRestore) break; if(Object.keys(STORE).length&&MODE==="folder") await backupNow(); const prev=STORE; STORE=pendingRestore; pendingRestore=null;
+      Object.keys(STORE).filter(k=>/^meta-seed/.test(k)).forEach(k=>delete STORE[k]);
+      await runSetup(); if(await persist()){ refresh(); toast("Data brought in"); } else STORE=prev; break; }
+    case "pickfolder": await connect("pick"); break;
+    case "quicksetup":
+      b.disabled=true; const now=Date.now();
+      const has=k=>S.accounts.some(x=>x.type===k); let ok=true;
+      if(ok&&!has("checking")) ok=await save(null,{kind:"account",name:"Checking",type:"checking",opening:0,asOf:todayStr(),asOfAt:now,created:now});
+      if(ok&&!has("credit")) ok=await save(null,{kind:"account",name:"Credit card",type:"credit",opening:0,asOf:todayStr(),asOfAt:now,created:now+1});
+      if(ok&&!has("cash")) ok=await save(null,{kind:"account",name:"Cash",type:"cash",opening:0,asOf:todayStr(),asOfAt:now,created:now+2});
+      if(ok){S.tab="accounts";toast("Accounts added. Tap each one to set its balance.");}
+      b.disabled=false; render(); break;
+  }
+});
+$("addBtn").addEventListener("click",()=>openTx(null,S.open?{ctx:S.open}:S.openLoan?{type:"loanpay",loan:S.openLoan}:null));
+$("backBtn").addEventListener("click",()=>{S.open=null;S.openLoan=null;render();window.scrollTo(0,0);});
+$("prevM").addEventListener("click",()=>{S.month=shiftMonth(S.month,-1);render();});
+$("nextM").addEventListener("click",()=>{S.month=shiftMonth(S.month,1);render();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape") closeSheet();});
+
+/* ---------- boot ---------- */
+render();
+cloudStart();
+$("importFile").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0]; if(f) importFile(f); e.target.value="";});
+// Pick up changes synced in by iCloud from another Mac when you come back to the window.
+async function checkDisk(){
+  if(S.status!=="ready"||!DIR||$("sheetRoot").innerHTML) return;
+  try{ await writing; const f=await (await DIR.getFileHandle(DATA_FILE)).getFile();
+    if(f.lastModified>lastMod){ STORE=await readData(); refresh(); toast("Updated with the latest saved data"); } }catch(e){}
+}
+window.addEventListener("focus",checkDisk);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) checkDisk(); });
+})();
+</script>
+</body>
+</html>
