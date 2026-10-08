@@ -66,7 +66,7 @@ button.row:hover{background:var(--sunk)}
 .row .main{flex:1;min-width:0}
 .row .t,.row .m{display:block}
 .kv>div:last-child:nth-child(odd){grid-column:1/-1}
-.row .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .m{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .amt{font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 .badge{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--sunk);color:var(--muted)}
@@ -126,6 +126,20 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{display:inline-block;width:12px;height:8px;border-radius:3px}
 .legend b{color:var(--ink);font-family:var(--f-num);font-weight:500}
+.datebtn{width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;min-height:46px;font-variant-numeric:tabular-nums}
+.datebtn[aria-expanded="true"]{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+.cal{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;margin:-2px 0 12px}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.calhead strong{font-weight:600}
+.calhead button{border:0;background:var(--sunk);width:34px;height:34px;border-radius:99px;font-size:18px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.calgrid .dow{font-size:11px;font-weight:600;color:var(--muted);padding:4px 0}
+.calgrid button{border:0;background:none;height:38px;border-radius:10px;font-size:15px;font-variant-numeric:tabular-nums}
+.calgrid button:hover{background:var(--sunk)}
+.calgrid button.tod{color:var(--accent);font-weight:700}
+.calgrid button.sel{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.calfoot{display:flex;gap:6px;margin-top:8px}
+.calfoot .btn{flex:1;padding:8px}
 .sched{margin-top:4px}.sched summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;padding:6px 0}
 .tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-top:6px}
 .tbl table{border-collapse:collapse;width:100%;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:12.5px}
@@ -266,7 +280,7 @@ function txDest(t){
 function txDisplay(t){
   const a=+t.amount||0; let title, meta, sign="", cls="";
   const desc=t.desc||t.note||"";
-  if(t.type==="expense"){title=desc||t.payee||t.category||"Expense";meta=acctName(t.from)+" → "+txDest(t)+(t.category?" · "+t.category:"")+(t.project?" · from "+projName(t.project):"");sign="−";cls="neg";}
+  if(t.type==="expense"){title=t.payee?(t.payee+(desc&&desc.toLowerCase()!==t.payee.toLowerCase()?" – "+desc:"")):(desc||t.category||"Expense");meta="Paid with "+acctName(t.from)+(t.category?" · "+t.category:"")+(t.project?" · from "+projName(t.project):"");sign="−";cls="neg";}
   else if(t.type==="income"){title=desc||t.category||"Income";meta=(t.payer||"Income")+" → "+acctName(t.to);sign="+";cls="pos";}
   else if(t.type==="transfer"){title=desc||"Transfer";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
   else if(t.type==="cardpay"){title=desc||"Card payment";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
@@ -940,7 +954,7 @@ function openLoanForm(l){
     '<div class="field"><label for="l_apr">APR % (optional)</label><input id="l_apr" inputmode="decimal" placeholder="e.g. 7.2" value="'+num(l.apr)+'"></div></div>'+
     '<div class="field"><label for="l_method">Interest is charged</label><select id="l_method">'+opts([{v:"daily",l:"By day (most bank and personal loans)"},{v:"monthly",l:"Once a month"}],l.method||"daily")+'</select></div>'+
     '<div class="two"><div class="field"><label for="l_term">Term in months (optional)</label><input id="l_term" inputmode="numeric" placeholder="e.g. 36" value="'+num(l.termMonths)+'"></div>'+
-    '<div class="field"><label for="l_start">Start date (optional)</label><input id="l_start" type="date" value="'+esc(l.startDate||"")+'"></div></div>'+
+    '<div class="field"><label for="l_start">Start date (optional)</label>'+dateField("l_start",l.startDate||"","Not set")+'</div></div>'+
     '<div id="lErr"></div><div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Add loan")+'</button></div><div id="delBox"></div></form>';
   draft=Object.assign({},l,{kind:"loan"});
   openSheet(h);
@@ -959,7 +973,31 @@ function openLoanForm(l){
 }
 
 /* ---------- sheets ---------- */
+/* ---------- calendar (built into the app so it opens and closes reliably in Safari) ---------- */
+let CAL=null;
+function fmtDateLong(iso){ return pDate(iso).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"}); }
+function dateField(id,val,empty){ return '<input type="hidden" id="'+id+'" value="'+esc(val||"")+'"><button type="button" class="datebtn" id="'+id+'_btn" data-calfor="'+id+'" aria-expanded="false">'+(val?esc(fmtDateLong(val)):esc(empty||"Choose date"))+'</button>'; }
+function openCal(id){
+  closeCal(); const btn=$(id+"_btn"); if(!btn) return;
+  CAL={for:id,ym:($(id).value||todayStr()).slice(0,7)};
+  const host=btn.closest(".two")||btn.closest(".field"); const box=document.createElement("div"); box.id="calBox"; box.className="cal";
+  host.insertAdjacentElement("afterend",box); btn.setAttribute("aria-expanded","true"); drawCal();
+}
+function closeCal(){ const b=$("calBox"); if(b) b.remove(); if(CAL&&$(CAL.for+"_btn")) $(CAL.for+"_btn").setAttribute("aria-expanded","false"); CAL=null; }
+function drawCal(){
+  const box=$("calBox"); if(!box||!CAL) return;
+  const [y,m]=CAL.ym.split("-").map(Number), first=new Date(y,m-1,1), days=new Date(y,m,0).getDate(), sel=$(CAL.for).value, t=todayStr();
+  const yd=new Date(); yd.setDate(yd.getDate()-1); const yIso=dIso(yd);
+  let h='<div class="calhead"><button type="button" data-calnav="-1" aria-label="Previous month">‹</button><strong>'+esc(first.toLocaleDateString("en-US",{month:"long",year:"numeric"}))+'</strong><button type="button" data-calnav="1" aria-label="Next month">›</button></div><div class="calgrid">'+
+    ["Su","Mo","Tu","We","Th","Fr","Sa"].map(d=>'<span class="dow">'+d+'</span>').join("");
+  for(let i=0;i<first.getDay();i++) h+='<span></span>';
+  for(let d=1;d<=days;d++){ const iso=y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0"); h+='<button type="button" data-calday="'+iso+'" class="'+(iso===sel?"sel ":"")+(iso===t?"tod":"")+'"'+(iso===sel?' aria-pressed="true"':'')+'>'+d+'</button>'; }
+  h+='</div><div class="calfoot"><button type="button" class="btn" data-calday="'+t+'">Today</button><button type="button" class="btn" data-calday="'+yIso+'">Yesterday</button><button type="button" class="btn" data-calclose="1">Close</button></div>';
+  box.innerHTML=h;
+}
+function pickDay(iso){ if(!CAL) return; const id=CAL.for; $(id).value=iso; $(id+"_btn").textContent=fmtDateLong(iso); closeCal(); $(id).dispatchEvent(new Event("change")); }
 function openSheet(html){
+  CAL=null;
   $("sheetRoot").innerHTML='<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true">'+'<div class="grab"></div>'+html+'</div></div>';
   $("scrim").addEventListener("click",e=>{if(e.target.id==="scrim") closeSheet();});
   const f=$("sheetRoot").querySelector("input.amount,input,select"); if(f && !("ontouchstart" in window)) f.focus();
@@ -1000,7 +1038,7 @@ function renderTx(errMsg){
   const order = (ctx&&ctx.type!=="credit") ? ["cardpay","transfer","loanpay","income","save","expense"] : Object.keys(TYPES);
   h+='<div class="seg" role="group" aria-label="Transaction type">'+order.map(k=>'<button type="button" class="chip" data-txtype="'+k+'" aria-pressed="'+(t.type===k)+'">'+TYPES[k].label+'</button>').join("")+'</div>';
   h+='<form id="txForm" novalidate>';
-  h+='<div class="two"><div class="field"><label for="f_date">Date made</label><input id="f_date" type="date" value="'+esc(t.date)+'"></div>'+
+  h+='<div class="two"><div class="field"><label for="f_date">Date made</label>'+dateField("f_date",t.date)+'</div>'+
      '<div class="field"><label for="f_amount">Amount</label><input id="f_amount" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount)+'"></div></div>';
   h+='<div class="field"><label for="f_desc">Description</label><input id="f_desc" maxlength="120" placeholder="'+({expense:"e.g. Weekly groceries",income:"e.g. Paycheck Oct 1–15",transfer:"e.g. ATM withdrawal",cardpay:"e.g. October statement",loanpay:"e.g. SoFi loan payment",save:"e.g. Monthly deposit"}[t.type])+'" value="'+esc(t.desc)+'"></div>';
   if(t.type==="expense"){
@@ -1098,7 +1136,7 @@ function openAcct(a){
     '<div class="field"><label for="a_name">Name</label><input id="a_name" maxlength="40" placeholder="e.g. Chase checking, Visa" value="'+esc(a.name)+'"></div>'+
     '<div class="field"><label for="a_type">Type</label><select id="a_type">'+opts(Object.keys(ACCT_TYPES).map(k=>({v:k,l:ACCT_TYPES[k]})),a.type)+'</select></div>'+
     '<div class="field"><label for="a_open" id="a_openL">'+(a.type==="credit"?"Amount owed right now":"Current balance")+'</label><input id="a_open" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(a.opening)+'"></div>'+
-    '<div class="field"><label for="a_asof">Balance as of</label><input id="a_asof" type="date" value="'+esc(a.asOf||(a.created?dIso(new Date(a.created)):todayStr()))+'"></div>'+
+    '<div class="field"><label for="a_asof">Balance as of</label>'+dateField("a_asof",a.asOf||(a.created?dIso(new Date(a.created)):todayStr()))+'</div>'+
     '<p class="hint">Use the balance your bank shows for this day. Transactions dated on or before it are already included, so they won\'t change it again. Everything after adjusts it.</p><div id="aErr"></div>'+
     '<div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Add account")+'</button></div><div id="delBox"></div></form>';
   draft=Object.assign({},a,{kind:"account"});
@@ -1152,6 +1190,10 @@ function askDelete(){
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button"); if(!b) return;
   const ds=b.dataset;
+  if(ds.calfor){ if(CAL&&CAL.for===ds.calfor) closeCal(); else openCal(ds.calfor); return; }
+  if(ds.calnav){ const [y,m]=CAL.ym.split("-").map(Number); const d=new Date(y,m-1+(+ds.calnav),1); CAL.ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); drawCal(); return; }
+  if(ds.calday){ pickDay(ds.calday); return; }
+  if(ds.calclose){ closeCal(); return; }
   if(ds.restore){ await pickRestore(ds.restore); return; }
   if(ds.tab){S.open=null;S.openLoan=null;S.tab=ds.tab;try{localStorage.setItem("pb_tab",S.tab);}catch(_){} render();window.scrollTo(0,0);return;}
   if(ds.tabGo){S.open=null;S.openLoan=null;S.tab=ds.tabGo;render();window.scrollTo(0,0);return;}
@@ -1207,7 +1249,7 @@ $("prevM").addEventListener("click",()=>{S.month=shiftMonth(S.month,-1);render()
 $("nextM").addEventListener("click",()=>{S.month=shiftMonth(S.month,1);render();});
 document.addEventListener("keydown",e=>{if(e.key==="Escape") closeSheet();});
 // Safari keeps its date picker open when you click elsewhere; close it by taking focus off the date field.
-document.addEventListener("pointerdown",e=>{ const a=document.activeElement; if(a&&a.type==="date"&&e.target!==a) a.blur(); },true);
+document.addEventListener("pointerdown",e=>{ if(CAL&&!e.target.closest("#calBox")&&!e.target.closest("[data-calfor]")) closeCal(); },true);
 
 /* ---------- boot ---------- */
 render();
