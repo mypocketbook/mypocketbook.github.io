@@ -106,6 +106,26 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .kv>div{background:var(--surface);padding:10px 12px;min-width:0}
 .kv .v{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:15px}
 .pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--muted);margin-left:6px;vertical-align:middle}
+.chartbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 8px 8px}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--f-num);font-size:11px}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart .ac{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round}
+.chart .ar{fill:color-mix(in srgb,var(--accent) 14%,transparent);stroke:none}
+.chart .pj{fill:none;stroke:var(--muted);stroke-width:2;stroke-dasharray:5 5}
+.chart .td{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 3;opacity:.5}
+.chart .tdl{fill:var(--ink);font-family:var(--f-body);font-weight:600}
+.chart .dot{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+.chart .dot2{fill:var(--pos);stroke:var(--surface);stroke-width:2}
+.stack{display:flex;height:14px;border-radius:99px;overflow:hidden;background:var(--sunk);gap:2px}
+.stack i{display:block;height:100%}
+.s-pp{background:var(--accent)} .s-pl{background:color-mix(in srgb,var(--accent) 35%,var(--sunk))}
+.s-ip{background:var(--neg)} .s-il{background:color-mix(in srgb,var(--neg) 35%,var(--sunk))}
+.s-dash{background:repeating-linear-gradient(90deg,var(--muted) 0 5px,transparent 5px 9px)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:8px;border-radius:3px}
+.legend b{color:var(--ink);font-family:var(--f-num);font-weight:500}
 .sched{margin-top:4px}.sched summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;padding:6px 0}
 .tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-top:6px}
 .tbl table{border-collapse:collapse;width:100%;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:12.5px}
@@ -806,6 +826,10 @@ function viewLoan(l){
   let h='<section class="hero"><div class="eyebrow">'+(lent?"Still owed to me":"Still owed")+(l.party?" · "+esc(l.party):"")+'</div><div class="big '+(lent?"":(left>0?"neg":""))+'">'+money(left)+'</div>';
   if(orig) h+='<div class="bar" role="img" aria-label="'+Math.round(pct)+'% paid off" style="margin-bottom:6px"><i style="width:'+pct+'%"></i></div><div class="hint" style="margin:0 0 12px">'+Math.round(pct)+'% of '+money(orig)+' paid off</div>';
   h+='<div class="actions" style="margin:0"><button class="btn" data-editloan="'+esc(l.id)+'">Edit loan</button><button class="btn primary" data-payloan="'+esc(l.id)+'">'+(lent?"+ Log repayment":"+ Log payment")+'</button></div></section>';
+  const tab=lent?"history":(S.loanTab||"progress");
+  if(!lent) h+='<div class="seg" role="tablist" aria-label="Loan views" style="margin:4px 0 14px">'+[["progress","Progress"],["plan","Plan"],["history","History"]].map(([k,t])=>'<button type="button" class="chip" role="tab" data-loantab="'+k+'" aria-pressed="'+(tab===k)+'">'+t+'</button>').join("")+'</div>';
+  if(tab==="progress") return h+loanProgress(l,left,pays);
+  if(tab==="history"&&!lent) return h+loanHistory(pays);
   h+='<div class="kv">'+
     '<div><div class="eyebrow">Monthly payment</div><div class="v">'+(+l.payment?money(l.payment):"Not set")+'</div></div>'+
     '<div><div class="eyebrow">'+(lent?"Expected":"Next due")+'</div><div class="v">'+(n?esc(dueText(n)):(l.dueDay?ordinal(+l.dueDay)+" of month":"Not set"))+'</div></div>'+
@@ -834,10 +858,72 @@ function viewLoan(l){
         '</tbody></table></div></details>';
     }
   }
-  h+='<h2>Payment history</h2>';
-  h+= pays.length? '<div class="list">'+pays.map(t=>{const x=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+x.badge+'</span><span class="main"><span class="t">'+esc(x.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(x.meta)+'</span></span><span class="amt">'+money(t.amount)+'</span></button>';}).join("")+'</div>'
-    : '<div class="empty">No payments logged yet.</div>';
+  if(lent) h+=loanHistory(pays);
   return h;
+}
+function loanHistory(pays){
+  return '<h2>Payment history</h2>'+(pays.length? '<div class="list">'+pays.map(t=>{const x=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+x.badge+'</span><span class="main"><span class="t">'+esc(x.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(x.meta)+(+t.interest?' · principal '+money((+t.amount||0)-(+t.interest||0)):'')+'</span></span><span class="amt">'+money(t.amount)+'</span></button>';}).join("")+'</div>'
+    : '<div class="empty">No payments logged yet.</div>');
+}
+function shortMoney(v){ return v>=1000?"$"+(Math.round(v/100)/10).toString().replace(/\.0$/,"")+"k":"$"+Math.round(v); }
+// Progress view: how far the loan has come and where it is going.
+function loanProgress(l,left,pays){
+  const orig=+l.original||Math.max(left,+l.balance||0), principalPaid=Math.max(0,orig-left);
+  const intPaid=pays.reduce((s,t)=>s+(+t.interest||0),0);
+  const rows=(+l.payment&&+l.rate&&left>0)?(loanSchedule(l,left)||[]):[];
+  const intLeft=rows.reduce((s,x)=>s+x.int,0), last=rows.length?rows[rows.length-1].date:null;
+  const pct=orig?Math.min(100,principalPaid/orig*100):0;
+  const made=pays.length, total=made+rows.length;
+  let h='<div class="kv">'+
+    '<div><div class="eyebrow">Principal paid</div><div class="v">'+money(principalPaid)+' <span class="mut">of '+money(orig)+'</span></div></div>'+
+    '<div><div class="eyebrow">Paid off</div><div class="v">'+Math.round(pct)+'%</div></div>'+
+    '<div><div class="eyebrow">Payments</div><div class="v">'+made+(total?' of '+total:'')+'</div></div>'+
+    '<div><div class="eyebrow">Debt-free on</div><div class="v">'+(last?esc(fmtDate(last)):(left<=0?"Paid off":"Set payment and rate"))+'</div></div>'+
+    '</div>';
+  h+=loanChart(l,orig,pays,rows);
+  // where the money goes
+  const totInt=intPaid+intLeft, totAll=orig+totInt||1;
+  const seg=(v,cls,lab)=>v>0?'<i class="'+cls+'" style="width:'+(v/totAll*100)+'%" title="'+esc(lab)+'"></i>':'';
+  h+='<h2>Where your payments go</h2><div class="stack" role="img" aria-label="Principal paid '+money(principalPaid)+', principal left '+money(left)+', interest paid '+money(intPaid)+', interest still to pay '+money(intLeft)+'">'+
+    seg(principalPaid,"s-pp","Principal paid")+seg(left,"s-pl","Principal left")+seg(intPaid,"s-ip","Interest paid")+seg(intLeft,"s-il","Interest still to pay")+'</div>'+
+    '<div class="legend"><span><i class="s-pp"></i>Principal paid <b>'+money(principalPaid)+'</b></span><span><i class="s-pl"></i>Principal left <b>'+money(left)+'</b></span>'+
+    '<span><i class="s-ip"></i>Interest paid <b>'+money(intPaid)+'</b></span><span><i class="s-il"></i>Interest still to pay <b>~'+money(intLeft)+'</b></span></div>'+
+    '<p class="hint">Over the whole loan you pay about <b>'+money(totInt)+'</b> in interest on '+money(orig)+'. Extra payments toward principal shrink the orange part.</p>';
+  // milestones
+  if(orig){
+    const ms=[25,50,75,100].map(p=>{ const target=orig*(1-p/100);
+      if(left<=target+0.005){ // reached: find when
+        let bal=orig, when=null; pays.slice().reverse().forEach(t=>{ bal-=Math.max(0,(+t.amount||0)-(+t.interest||0)); if(!when&&bal<=target+0.005) when=t.date; });
+        return {p,done:true,when:when?fmtDate(pDate(when)):""}; }
+      const r=rows.find(x=>x.bal<=target+0.005); return {p,done:false,when:r?fmtDate(r.date):""}; });
+    h+='<h2>Milestones</h2><div class="list">'+ms.map(m=>'<div class="row"><span class="badge" style="'+(m.done?'color:var(--pos)':'')+'">'+(m.done?"✓":m.p+"%")+'</span><span class="main"><span class="t">'+(m.p===100?"Loan paid off":m.p+"% of the principal paid")+'</span><span class="m">'+(m.done?"Reached"+(m.when?" on "+esc(m.when):""):(m.when?"Expected "+esc(m.when):"Set a monthly payment to see when"))+'</span></span></div>').join("")+'</div>';
+  }
+  return h;
+}
+function loanChart(l,orig,pays,rows){
+  if(!orig) return "";
+  const pts=[]; let bal=orig; const start=l.startDate?pDate(l.startDate):(pays.length?pDate(pays[pays.length-1].date):new Date());
+  pts.push({d:start,b:orig});
+  pays.slice().reverse().forEach(t=>{ bal=Math.max(0,bal-Math.max(0,(+t.amount||0)-(+t.interest||0))); pts.push({d:pDate(t.date),b:bal}); });
+  const today=pDate(todayStr()); pts.push({d:today,b:bal});
+  const proj=[{d:today,b:bal}].concat(rows.map(r=>({d:r.date,b:r.bal})));
+  const t0=start.getTime(), t1=Math.max(today.getTime()+86400000*30,(proj[proj.length-1]||{d:today}).d.getTime());
+  const W=360,H=210,L=40,R=10,T=12,B=24, iw=W-L-R, ih=H-T-B;
+  const X=d=>L+(d.getTime()-t0)/(t1-t0)*iw, Y=b=>T+ih-(b/orig)*ih;
+  const path=a=>a.map((p,i)=>(i?"L":"M")+X(p.d).toFixed(1)+" "+Y(p.b).toFixed(1)).join(" ");
+  // actual line drawn as steps (balance drops on payment day)
+  let step=""; pts.forEach((p,i)=>{ const x=X(p.d).toFixed(1), y=Y(p.b).toFixed(1); if(!i) step="M"+x+" "+y; else { step+=" L"+x+" "+Y(pts[i-1].b).toFixed(1)+" L"+x+" "+y; } });
+  let g=''; [0,.25,.5,.75,1].forEach(f=>{ const y=Y(orig*f).toFixed(1); g+='<line class="gl" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(L-6)+'" y="'+(+y+4)+'" text-anchor="end">'+shortMoney(orig*f)+'</text>'; });
+  for(let y=start.getFullYear()+1;y<=new Date(t1).getFullYear();y++){ const d=new Date(y,0,1); if(d.getTime()<=t0||d.getTime()>=t1) continue; const x=X(d).toFixed(1); g+='<line class="gl" x1="'+x+'" x2="'+x+'" y1="'+T+'" y2="'+(T+ih)+'"/><text x="'+x+'" y="'+(H-8)+'" text-anchor="middle">'+y+'</text>'; }
+  const tx=X(today).toFixed(1);
+  const area=step+" L"+tx+" "+(T+ih)+" L"+X(start).toFixed(1)+" "+(T+ih)+" Z";
+  const endP=proj[proj.length-1];
+  return '<h2>Balance over time</h2><div class="chartbox"><svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Loan balance from '+money(orig)+' down to '+money(bal)+' today'+(rows.length?', projected to reach $0 by '+fmtDate(endP.d):'')+'">'+g+
+    '<path class="ar" d="'+area+'"/>'+(rows.length?'<path class="pj" d="'+path(proj)+'"/>':'')+'<path class="ac" d="'+step+'"/>'+
+    '<line class="td" x1="'+tx+'" x2="'+tx+'" y1="'+T+'" y2="'+(T+ih)+'"/><text class="tdl" x="'+(+tx+5)+'" y="'+(T+12)+'">Today</text>'+
+    '<circle class="dot" cx="'+tx+'" cy="'+Y(bal).toFixed(1)+'" r="4.5"/>'+
+    (rows.length?'<circle class="dot2" cx="'+X(endP.d).toFixed(1)+'" cy="'+Y(0).toFixed(1)+'" r="4"/>':'')+
+    '</svg><div class="legend"><span><i class="s-pp"></i>Actual balance</span>'+(rows.length?'<span><i class="s-dash"></i>Projected with '+money(l.payment)+'/month</span>':'')+'</div></div>';
 }
 function openLoanForm(l){
   const edit=!!l; l=l||{name:"",dir:"owe",party:"",original:"",balance:"",rate:"",payment:"",dueDay:""};
@@ -1072,6 +1158,7 @@ document.addEventListener("click",async e=>{
   if(ds.filteracct){S.acct=ds.filteracct;S.tab="activity";S.open=null;render();return;}
   if(ds.openloan){S.openLoan=ds.openloan;S.open=null;render();window.scrollTo(0,0);return;}
   if(ds.editloan){openLoanForm(loanById(ds.editloan));return;}
+  if(ds.loantab){S.loanTab=ds.loantab;render();return;}
   if(ds.payloan){openTx(null,{type:"loanpay",loan:ds.payloan});return;}
   if(ds.openacct){S.open=ds.openacct;S.openLoan=null;render();window.scrollTo(0,0);return;}
   if(ds.addin){openTx(null,{ctx:ds.addin});return;}
