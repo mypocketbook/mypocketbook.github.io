@@ -1206,6 +1206,8 @@ $("backBtn").addEventListener("click",()=>{S.open=null;S.openLoan=null;render();
 $("prevM").addEventListener("click",()=>{S.month=shiftMonth(S.month,-1);render();});
 $("nextM").addEventListener("click",()=>{S.month=shiftMonth(S.month,1);render();});
 document.addEventListener("keydown",e=>{if(e.key==="Escape") closeSheet();});
+// Safari keeps its date picker open when you click elsewhere; close it by taking focus off the date field.
+document.addEventListener("pointerdown",e=>{ const a=document.activeElement; if(a&&a.type==="date"&&e.target!==a) a.blur(); },true);
 
 /* ---------- boot ---------- */
 render();
