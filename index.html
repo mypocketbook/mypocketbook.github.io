@@ -19,7 +19,7 @@
 /* Layout: phone-first ledger. One column, sticky header, bottom tab bar with a central add button, bottom sheets for forms. */
 :root{
   --bg:#EEF1F6; --surface:#FFFFFF; --sunk:#E3E8F0; --ink:#131826; --muted:#5B6378; --line:#D5DBE6;
-  --accent:#3550D4; --accent-ink:#FFFFFF; --pos:#18805A; --neg:#BF3F12; --card:#7A3FC4;
+  --accent:#3550D4; --accent-ink:#FFFFFF; --pos:#18805A; --neg:#BF3F12; --card:#7A3FC4; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235B6378' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
   --f-body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-num:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
@@ -27,10 +27,10 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0D1017; --surface:#171B26; --sunk:#10141C; --ink:#E9ECF4; --muted:#99A1B6; --line:#272D3B;
-  --accent:#8099FF; --accent-ink:#0D1017; --pos:#4CC994; --neg:#F28B62; --card:#B98BF2; color-scheme:dark}}
+  --accent:#8099FF; --accent-ink:#0D1017; --pos:#4CC994; --neg:#F28B62; --card:#B98BF2; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2399A1B6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0D1017; --surface:#171B26; --sunk:#10141C; --ink:#E9ECF4; --muted:#99A1B6; --line:#272D3B;
-  --accent:#8099FF; --accent-ink:#0D1017; --pos:#4CC994; --neg:#F28B62; --card:#B98BF2; color-scheme:dark}
+  --accent:#8099FF; --accent-ink:#0D1017; --pos:#4CC994; --neg:#F28B62; --card:#B98BF2; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2399A1B6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); color-scheme:dark}
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
@@ -126,7 +126,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{display:inline-block;width:12px;height:8px;border-radius:3px}
 .legend b{color:var(--ink);font-family:var(--f-num);font-weight:500}
-.datebtn{width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;min-height:46px;font-variant-numeric:tabular-nums}
+.datebtn{text-align:left;font-variant-numeric:tabular-nums}
 .datebtn[aria-expanded="true"]{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
 .cal{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;margin:-2px 0 12px}
 .calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
@@ -156,8 +156,11 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .seg{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;scrollbar-width:none}
 .field{display:grid;gap:5px;margin-bottom:12px}
 .field label{font-size:12.5px;font-weight:600;color:var(--muted)}
-.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;min-width:0}
-.field input.amount{font-family:var(--f-num);font-size:26px;padding:10px 12px}
+/* every box in a form has the same height */
+.field input,.field select,.field .datebtn{width:100%;height:52px;box-sizing:border-box;background-color:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 14px;font-size:16px;min-width:0;color:var(--ink);line-height:normal}
+.field select{-webkit-appearance:none;appearance:none;padding-right:40px;background-image:var(--chev);background-repeat:no-repeat;background-position:right 14px center;background-size:12px 8px;text-overflow:ellipsis}
+.field input.amount{font-family:var(--f-num);font-size:22px}
+.field input:focus,.field select:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .two>.field{min-width:0}
 .hint{font-size:12.5px;color:var(--muted);margin:-4px 0 12px}
