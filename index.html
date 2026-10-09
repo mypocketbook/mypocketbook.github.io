@@ -143,6 +143,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .fundtag{display:inline-block;margin-top:4px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--pos) 14%,var(--surface));color:var(--pos);font-variant-numeric:tabular-nums}
 .fundtag.low{background:color-mix(in srgb,var(--neg) 14%,var(--surface));color:var(--neg)}
 .badge.fundb{color:var(--pos)}
+.field select.flash{border-color:var(--pos);box-shadow:0 0 0 2px color-mix(in srgb,var(--pos) 35%,transparent)}
 .sched{margin-top:4px}.sched summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;padding:6px 0}
 .tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-top:6px}
 .tbl table{border-collapse:collapse;width:100%;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:12.5px}
@@ -257,8 +258,8 @@ function compute(){
   for(const t of S.txns){
     cur=t; const a=+t.amount||0;
     if(t.type==="expense"){adj(t.from,-a); if(t.project && t.project in proj) proj[t.project]-=a;}
-    else if(t.type==="income"){adj(t.to,a);}
-    else if(t.type==="transfer"||t.type==="cardpay"){adj(t.from,-a);adj(t.to,a);}
+    else if(t.type==="income"){adj(t.to,a); if(t.project && t.project in proj) proj[t.project]+=a;}
+    else if(t.type==="transfer"||t.type==="cardpay"){adj(t.from,-a);adj(t.to,a); if(t.type==="transfer"&&t.project && t.project in proj) proj[t.project]+=a;}
     else if(t.type==="save"){if(t.project in proj) proj[t.project]+=a;}
     else if(t.type==="loanpay"){adj(t.from,-a);adj(t.to,a); if(t.loan in loan) loan[t.loan]-=Math.max(0,a-(+t.interest||0));}
   }
@@ -724,28 +725,28 @@ function acctRows(c,editable){
   }).join("")+'</div>';
 }
 
-/* ---------- funds by keyword: "Car Fund + ..." adds, "Car Fund - ..." spends ---------- */
-function fundOf(t){
-  const m=String(t.desc||"").trim().match(/^(.{1,30}?\bfund)\b\s*([+\-–—])?/i); if(!m) return null;
-  const name=m[1].replace(/\s+/g," ").trim().replace(/\b\w/g,c=>c.toUpperCase());
-  // + adds, - spends; with no sign: expenses spend, transfers/income add, card and loan payments only show the balance
-  const sign=m[2]==="+"?1:(m[2]?-1:(t.type==="expense"?-1:(t.type==="cardpay"||t.type==="loanpay")?0:1));
-  return {name,sign};
-}
+/* ---------- projects on transactions: running "available" after each one ---------- */
+function projSign(t){ if(!t.project) return null; if(t.type==="expense") return -1; if(t.type==="cardpay"||t.type==="loanpay") return 0; return 1; }
 function computeFunds(){
   const asc=S.txns.slice().sort((x,y)=>(x.date||"").localeCompare(y.date||"")||(x.created||0)-(y.created||0));
-  const bal={}, after={}, last={};
-  asc.forEach(t=>{ const f=fundOf(t); if(!f) return; bal[f.name]=Math.round(((bal[f.name]||0)+f.sign*(+t.amount||0))*100)/100; after[t.id]={name:f.name,bal:bal[f.name],sign:f.sign}; last[f.name]=t.date; });
-  return {bal,after,last};
+  const bal={}, after={};
+  asc.forEach(t=>{ const sg=projSign(t); if(sg===null||!projById(t.project)) return; bal[t.project]=Math.round(((bal[t.project]||0)+sg*(+t.amount||0))*100)/100; after[t.id]={id:t.project,bal:bal[t.project],sign:sg}; });
+  return {bal,after};
 }
 function fundPill(t){
   const f=S.funds&&S.funds.after[t.id]; if(!f) return "";
-  return '<span class="fundtag'+(f.bal<0?" low":"")+'">'+(f.sign>0?"+ ":f.sign<0?"− ":"")+esc(f.name)+' · '+money(f.bal)+' available</span>';
+  return '<span class="fundtag'+(f.bal<0?" low":"")+'">'+(f.sign>0?"+ ":f.sign<0?"− ":"")+esc(projName(f.id))+' · '+money(f.bal)+' available</span>';
 }
 function fundsBlock(){
-  const b=S.funds?S.funds.bal:{}, names=Object.keys(b).sort(); if(!names.length) return "";
-  return '<h2>Savings funds</h2><div class="list">'+names.map(n=>'<div class="row"><span class="badge fundb">'+esc(initials(n))+'</span><span class="main"><span class="t">'+esc(n)+'</span><span class="m">Add with "'+esc(n)+' +", spend with "'+esc(n)+' -"</span></span><span class="amt '+(b[n]<0?"neg":"")+'">'+money(b[n])+'<span class="owed">available</span></span></div>').join("")+'</div>';
+  if(!S.projects.length) return "";
+  const c=compute();
+  return '<h2>Projects <button data-tab-go="projects">See all</button></h2><div class="list">'+S.projects.slice().sort((x,y)=>(x.created||0)-(y.created||0)).map(p=>{
+    const v=c.proj[p.id]||0, goal=+p.goal||0;
+    return '<button class="row" data-viewproj="'+esc(p.id)+'"><span class="badge fundb">'+esc(initials(p.name))+'</span><span class="main"><span class="t">'+esc(p.name)+'</span><span class="m">'+(goal?Math.round(Math.max(0,Math.min(100,v/goal*100)))+'% of '+money(goal):'No goal set')+'</span></span><span class="amt '+(v<0?"neg":"")+'">'+money(v)+'<span class="owed">available</span></span></button>';
+  }).join("")+'</div>';
 }
+function projectFor(desc){ const d=String(desc||"").trim().toLowerCase(); if(!d) return null; return S.projects.slice().sort((a,b)=>b.name.length-a.name.length).find(p=>d.startsWith(p.name.toLowerCase()))||null; }
+function projField(t,label,empty){ return S.projects.length?'<div class="field"><label for="f_proj">'+label+'</label><select id="f_proj">'+opts(S.projects.map(p=>({v:p.id,l:p.name})),t.project,empty)+'</select></div>':''; }
 function txRow(t){
   const d=txDisplay(t);
   return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(d.meta)+'</span>'+fundPill(t)+'</span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';
@@ -769,7 +770,7 @@ function viewActivity(){
 
 function viewProjects(){
   const c=compute();
-  let h=fundsBlock()+'<p class="hint" style="margin:14px 0 14px">Money you set aside stays in your account but is reserved for the project. Expenses paid "from a project" come out of its balance.</p>';
+  let h='<p class="hint" style="margin:4px 0 14px">Add money with a <b>Transfer</b> and choose the project. Spend it with an <b>Expense</b> "Paid from project". When you pay the card, you can tag the project too; that doesn\'t change it.</p>';
   if(!S.projects.length) return h+'<div class="empty"><strong>No projects yet</strong><span>Create one for anything you are saving toward, like a trip, a new laptop or a car upgrade.</span><button class="btn primary" data-act="newproj">New project</button></div>';
   h+=S.projects.slice().sort((a,b)=>(a.created||0)-(b.created||0)).map(p=>{
     const b=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,b/goal*100)):0;
@@ -1090,16 +1091,16 @@ function renderTx(errMsg){
   h+='<div class="two"><div class="field"><label for="f_date">Date made</label>'+dateField("f_date",t.date)+'</div>'+
      '<div class="field"><label for="f_amount">Amount</label><input id="f_amount" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount)+'"></div></div>';
   h+='<div class="field"><label for="f_desc">Description</label><input id="f_desc" maxlength="120" placeholder="'+({expense:"e.g. Weekly groceries",income:"e.g. Paycheck Oct 1–15",transfer:"e.g. ATM withdrawal",cardpay:"e.g. October statement",loanpay:"e.g. SoFi loan payment",save:"e.g. Monthly deposit"}[t.type])+'" value="'+esc(t.desc)+'"></div>';
-  { const f=fundOf({desc:t.desc,type:t.type}); h+='<p class="hint" id="fundHint" style="margin:-6px 0 12px">'+(f?(f.sign>0?"Adds to ":f.sign<0?"Spends from ":"Linked to, doesn\'t change ")+esc(f.name)+(S.funds&&S.funds.bal[f.name]!=null?" (now "+money(S.funds.bal[f.name])+")":"")+'.':'Tip: start with "Car Fund +" to add to a fund, or "Car Fund -" to spend from it.')+'</p>'; }
   if(t.type==="expense"){
     h+='<div class="field"><label for="f_from">Paid with</label><select id="f_from">'+opts(acctOpts(credit).concat(acctOpts(liquid)),t.from,"Choose card or account")+'</select></div>';
     h+='<div class="field"><label for="f_payee">Destination: who you paid</label><input id="f_payee" list="payees" maxlength="60" placeholder="e.g. Publix, Shell, Netflix" value="'+esc(t.payee)+'"><datalist id="payees">'+payeeList().map(p=>'<option value="'+esc(p)+'"></option>').join("")+'</datalist></div>';
     h+='<div class="field"><label for="f_cat">Category (optional)</label><select id="f_cat">'+opts(EXP_CATS.map(c=>({v:c,l:c})),t.category,"No category")+'</select></div>';
-    if(S.projects.length) h+='<div class="field"><label for="f_proj">Paid from project savings (optional)</label><select id="f_proj">'+opts(S.projects.map(p=>({v:p.id,l:p.name})),t.project,"No, regular spending")+'</select></div>';
+    h+=projField(t,"Paid from project (optional)","No, regular spending");
   } else if(t.type==="income"){
     h+='<div class="field"><label for="f_payer">Received from (optional)</label><input id="f_payer" maxlength="60" placeholder="e.g. Employer name" value="'+esc(t.payer)+'"></div>';
     h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(),t.to,"Choose account")+'</select></div>';
     h+='<div class="field"><label for="f_cat">Category (optional)</label><select id="f_cat">'+opts(INC_CATS.map(c=>({v:c,l:c})),t.category,"No category")+'</select></div>';
+    h+=projField(t,"Save it for a project (optional)","No project");
   } else if(t.type==="transfer"){
     h+='<div class="two"><div class="field"><label for="f_from">From</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose")+'</select></div>'+
        '<div class="field"><label for="f_to">Destination</label><select id="f_to"><option value="">Choose</option>'+
@@ -1107,10 +1108,13 @@ function renderTx(errMsg){
        (S.accounts.some(credit)?'<optgroup label="Credit cards (card payment)">'+opts(acctOpts(credit),t.to)+'</optgroup>':'')+
        (S.loans.some(x=>x.dir!=="lent")?'<optgroup label="Loans (loan payment)">'+opts(S.loans.filter(x=>x.dir!=="lent").map(x=>({v:"loan:"+x.id,l:x.name})),"")+'</optgroup>':'')+
        '</select></div></div>';
-    h+='<p class="hint">Move money to another of your accounts, or pick a card or loan to log a payment.</p>';
+    h+=projField(t,"Saving for a project? (optional)","No project");
+    h+='<p class="hint">Move money to another of your accounts, or pick a card or loan to log a payment. Choose a project to add this money to it.</p>';
   } else if(t.type==="cardpay"){
     h+='<div class="field"><label for="f_from">Paid from</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose account")+'</select></div>';
     h+='<div class="field"><label for="f_to">Destination card</label><select id="f_to">'+opts(acctOpts(credit),t.to,S.accounts.some(credit)?"Choose card":"Add a credit card account first")+'</select></div>';
+    h+=projField(t,"Paying off a project purchase? (optional)","No project");
+    if(S.projects.length) h+='<p class="hint">Tagging a project here doesn\'t change it; the purchase already came out of it.</p>';
   } else if(t.type==="loanpay"){
     const l=loanById(t.loan), lent=l&&l.dir==="lent";
     if(!S.loans.length) h+='<p class="hint">You have no loans yet. <button type="button" class="btn" data-act="newloan">Add a loan</button></p>';
@@ -1134,8 +1138,8 @@ function renderTx(errMsg){
   openSheet(h);
   $("txForm").addEventListener("submit",submitTx);
   const fl=$("f_loan"); if(fl) fl.addEventListener("change",()=>{readTxForm();draft.intAuto=true;loanDefaults();renderTx();});
-  const fdesc=$("f_desc"); if(fdesc) fdesc.addEventListener("input",()=>{ const f=fundOf({desc:fdesc.value,type:draft.type}), hn=$("fundHint"); if(!hn) return;
-    hn.textContent=f?((f.sign>0?"Adds to ":f.sign<0?"Spends from ":"Linked to, doesn't change ")+f.name+(S.funds&&S.funds.bal[f.name]!=null?" (now "+money(S.funds.bal[f.name])+")":"")+"."):'Tip: start with "Car Fund +" to add to a fund, or "Car Fund -" to spend from it.'; });
+  // typing a project's name at the start of the description picks that project
+  const fdesc=$("f_desc"), fp=$("f_proj"); if(fdesc&&fp) fdesc.addEventListener("input",()=>{ const p=projectFor(fdesc.value); if(p&&fp.value!==p.id){ fp.value=p.id; fp.classList.add("flash"); setTimeout(()=>fp.classList.remove("flash"),700); } });
   const fi=$("f_int"), fa=$("f_amount");
   if(fi) fi.addEventListener("input",()=>{draft.intAuto=false;});
   if(fi&&fa) fa.addEventListener("input",()=>{ if(!draft.intAuto) return; const l=loanById($("f_loan")&&$("f_loan").value); const a=parseFloat(fa.value.replace(/[$,\s]/g,""));
@@ -1177,7 +1181,7 @@ async function submitTx(e){
     to:["income","transfer","cardpay"].includes(t.type)?t.to:"",
     payee:t.type==="expense"?t.payee:"", payer:t.type==="income"?(t.payer||""):"",
     category:["expense","income"].includes(t.type)?(t.category||""):"",
-    project:t.type==="save"||t.type==="expense"?(t.project||""):""};
+    project:["save","expense","transfer","income","cardpay"].includes(t.type)?(t.project||""):""};
   if(t.type==="loanpay"){ doc.loan=t.loan; doc.from=lentLoan?"":t.from; doc.to=lentLoan?t.to:""; doc.interest=Math.round(intr*100)/100; }
   if(await save(t.id,doc)){closeSheet();toast(t.id?"Transaction updated":"Transaction added"); if(!S.open) S.month=ymOf(doc.date); render();}
 }
