@@ -257,11 +257,11 @@ function compute(){
   let cur=null; const adj=(id,d)=>{ if(id in bal&&(!cur||counts(cur,id))) bal[id]+=d; };
   for(const t of S.txns){
     cur=t; const a=+t.amount||0;
-    if(t.type==="expense"){adj(t.from,-a); if(t.project && t.project in proj) proj[t.project]-=a;}
-    else if(t.type==="income"){adj(t.to,a); if(t.project && t.project in proj) proj[t.project]+=a;}
-    else if(t.type==="transfer"||t.type==="cardpay"){adj(t.from,-a);adj(t.to,a); if(t.type==="transfer"&&t.project && t.project in proj) proj[t.project]+=a;}
-    else if(t.type==="save"){if(t.project in proj) proj[t.project]+=a;}
+    if(t.type==="expense"){adj(t.from,-a);}
+    else if(t.type==="income"){adj(t.to,a);}
+    else if(t.type==="transfer"||t.type==="cardpay"){adj(t.from,-a);adj(t.to,a);}
     else if(t.type==="loanpay"){adj(t.from,-a);adj(t.to,a); if(t.loan in loan) loan[t.loan]-=Math.max(0,a-(+t.interest||0));}
+    const pe=projEffect(t); if(pe&&pe.pid in proj) proj[pe.pid]+=pe.sign*a;
   }
   let liquid=0, owed=0, aside=0, loansOwe=0, loansLent=0;
   S.loans.forEach(l=>{ if(l.dir==="lent") loansLent+=loan[l.id]; else loansOwe+=loan[l.id]; });
@@ -726,11 +726,22 @@ function acctRows(c,editable){
 }
 
 /* ---------- projects on transactions: running "available" after each one ---------- */
-function projSign(t){ if(!t.project) return null; if(t.type==="expense") return -1; if(t.type==="cardpay"||t.type==="loanpay") return 0; return 1; }
+// Which project a transaction belongs to: the one you picked, or the one named in the description ("Carmencita" -> Carmencita's Fund).
+// Transfers, income and Save-to-project add. Card and loan payments from checking subtract (that is when the money really leaves).
+// Card purchases don't change it (it is subtracted when you pay the card). Purchases paid straight from checking or cash subtract.
+function projEffect(t){
+  const pid=(t.project&&projById(t.project))?t.project:((projectFor(t.desc)||{}).id); if(!pid) return null;
+  let sign=0;
+  if(t.type==="save"||t.type==="income"||t.type==="transfer") sign=1;
+  else if(t.type==="cardpay"||t.type==="loanpay") sign=-1;
+  else if(t.type==="expense"){ const a=acctById(t.from); sign=(a&&a.type==="credit")?0:-1; }
+  return {pid,sign};
+}
+function projSign(t){ const e=projEffect(t); return e?e.sign:null; }
 function computeFunds(){
   const asc=S.txns.slice().sort((x,y)=>(x.date||"").localeCompare(y.date||"")||(x.created||0)-(y.created||0));
   const bal={}, after={};
-  asc.forEach(t=>{ const sg=projSign(t); if(sg===null||!projById(t.project)) return; bal[t.project]=Math.round(((bal[t.project]||0)+sg*(+t.amount||0))*100)/100; after[t.id]={id:t.project,bal:bal[t.project],sign:sg}; });
+  asc.forEach(t=>{ const e=projEffect(t); if(!e) return; bal[e.pid]=Math.round(((bal[e.pid]||0)+e.sign*(+t.amount||0))*100)/100; after[t.id]={id:e.pid,bal:bal[e.pid],sign:e.sign}; });
   return {bal,after};
 }
 function fundPill(t){
@@ -745,8 +756,22 @@ function fundsBlock(){
     return '<button class="row" data-viewproj="'+esc(p.id)+'"><span class="badge fundb">'+esc(initials(p.name))+'</span><span class="main"><span class="t">'+esc(p.name)+'</span><span class="m">'+(goal?Math.round(Math.max(0,Math.min(100,v/goal*100)))+'% of '+money(goal):'No goal set')+'</span></span><span class="amt '+(v<0?"neg":"")+'">'+money(v)+'<span class="owed">available</span></span></button>';
   }).join("")+'</div>';
 }
-function projectFor(desc){ const d=String(desc||"").trim().toLowerCase(); if(!d) return null; return S.projects.slice().sort((a,b)=>b.name.length-a.name.length).find(p=>d.startsWith(p.name.toLowerCase()))||null; }
-function projField(t,label,empty){ return S.projects.length?'<div class="field"><label for="f_proj">'+label+'</label><select id="f_proj">'+opts(S.projects.map(p=>({v:p.id,l:p.name})),t.project,empty)+'</select></div>':''; }
+function normWords(x){ return " "+String(x||"").toLowerCase().replace(/[’']s\b/g,"").replace(/[’']/g,"").replace(/[^a-z0-9áéíóúñü]+/g," ").trim()+" "; }
+function projKeys(name){ return normWords(name).trim().split(" ").filter(w=>w.length>=3&&!["fund","funds","saving","savings","project","the","for","and","my"].includes(w)); }
+function projectFor(desc){
+  const d=normWords(desc); if(d.trim()==="") return null; let best=null, score=0;
+  S.projects.forEach(p=>{ const ks=projKeys(p.name); if(ks.length&&ks.every(k=>d.includes(" "+k+" ")||d.includes(" "+k))){ const sc=ks.join("").length; if(sc>score){score=sc;best=p;} } });
+  return best;
+}
+function projField(t,label,empty){ return S.projects.length?'<div class="field"><label for="f_proj">'+label+'</label><select id="f_proj">'+opts(S.projects.map(p=>({v:p.id,l:p.name})),t.project,empty)+'</select></div><p class="hint" id="projHint" style="margin:-6px 0 12px"></p>':''; }
+function updProjHint(){
+  const hn=$("projHint"); if(!hn) return;
+  const d=$("f_desc"), fp=$("f_proj"), fr=$("f_from");
+  const t={type:draft.type,desc:d?d.value:"",project:fp?fp.value:"",from:fr?fr.value:draft.from};
+  const e=projEffect(t); if(!e){ hn.textContent="Tip: write the project name in the description (e.g. \"Carmencita\") and it's detected automatically."; return; }
+  const now=(compute().proj[e.pid]||0), amt=parseFloat(String(($("f_amount")||{}).value||"").replace(/[$,\s]/g,""))||0, nm=projName(e.pid);
+  hn.textContent= e.sign>0 ? ("Adds to "+nm+": "+money(now)+" → "+money(now+amt)) : e.sign<0 ? ("Subtracts from "+nm+": "+money(now)+" → "+money(now-amt)) : (nm+": doesn't change now ("+money(now)+"). It's subtracted when you pay the card.");
+}
 function txRow(t){
   const d=txDisplay(t);
   return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(d.meta)+'</span>'+fundPill(t)+'</span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';
@@ -770,7 +795,7 @@ function viewActivity(){
 
 function viewProjects(){
   const c=compute();
-  let h='<p class="hint" style="margin:4px 0 14px">Add money with a <b>Transfer</b> and choose the project. Spend it with an <b>Expense</b> "Paid from project". When you pay the card, you can tag the project too; that doesn\'t change it.</p>';
+  let h='<p class="hint" style="margin:4px 0 14px">Write the project name in the description, like <b>"Carmencita"</b>. A <b>Transfer</b> adds to the project. A <b>Card payment</b> from checking subtracts from it. Card purchases don\'t change it until you pay the card. The money stays in your checking accounts; this shows how much of it is for each project.</p>';
   if(!S.projects.length) return h+'<div class="empty"><strong>No projects yet</strong><span>Create one for anything you are saving toward, like a trip, a new laptop or a car upgrade.</span><button class="btn primary" data-act="newproj">New project</button></div>';
   h+=S.projects.slice().sort((a,b)=>(a.created||0)-(b.created||0)).map(p=>{
     const b=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,b/goal*100)):0;
@@ -1095,7 +1120,7 @@ function renderTx(errMsg){
     h+='<div class="field"><label for="f_from">Paid with</label><select id="f_from">'+opts(acctOpts(credit).concat(acctOpts(liquid)),t.from,"Choose card or account")+'</select></div>';
     h+='<div class="field"><label for="f_payee">Destination: who you paid</label><input id="f_payee" list="payees" maxlength="60" placeholder="e.g. Publix, Shell, Netflix" value="'+esc(t.payee)+'"><datalist id="payees">'+payeeList().map(p=>'<option value="'+esc(p)+'"></option>').join("")+'</datalist></div>';
     h+='<div class="field"><label for="f_cat">Category (optional)</label><select id="f_cat">'+opts(EXP_CATS.map(c=>({v:c,l:c})),t.category,"No category")+'</select></div>';
-    h+=projField(t,"Paid from project (optional)","No, regular spending");
+    h+=projField(t,"For a project? (optional)","No project");
   } else if(t.type==="income"){
     h+='<div class="field"><label for="f_payer">Received from (optional)</label><input id="f_payer" maxlength="60" placeholder="e.g. Employer name" value="'+esc(t.payer)+'"></div>';
     h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(),t.to,"Choose account")+'</select></div>';
@@ -1113,8 +1138,7 @@ function renderTx(errMsg){
   } else if(t.type==="cardpay"){
     h+='<div class="field"><label for="f_from">Paid from</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose account")+'</select></div>';
     h+='<div class="field"><label for="f_to">Destination card</label><select id="f_to">'+opts(acctOpts(credit),t.to,S.accounts.some(credit)?"Choose card":"Add a credit card account first")+'</select></div>';
-    h+=projField(t,"Paying off a project purchase? (optional)","No project");
-    if(S.projects.length) h+='<p class="hint">Tagging a project here doesn\'t change it; the purchase already came out of it.</p>';
+    h+=projField(t,"For a project? (optional)","No project");
   } else if(t.type==="loanpay"){
     const l=loanById(t.loan), lent=l&&l.dir==="lent";
     if(!S.loans.length) h+='<p class="hint">You have no loans yet. <button type="button" class="btn" data-act="newloan">Add a loan</button></p>';
@@ -1139,7 +1163,10 @@ function renderTx(errMsg){
   $("txForm").addEventListener("submit",submitTx);
   const fl=$("f_loan"); if(fl) fl.addEventListener("change",()=>{readTxForm();draft.intAuto=true;loanDefaults();renderTx();});
   // typing a project's name at the start of the description picks that project
-  const fdesc=$("f_desc"), fp=$("f_proj"); if(fdesc&&fp) fdesc.addEventListener("input",()=>{ const p=projectFor(fdesc.value); if(p&&fp.value!==p.id){ fp.value=p.id; fp.classList.add("flash"); setTimeout(()=>fp.classList.remove("flash"),700); } });
+  const fdesc=$("f_desc"), fp=$("f_proj");
+  if(fdesc&&fp) fdesc.addEventListener("input",()=>{ const p=projectFor(fdesc.value); if(p&&fp.value!==p.id){ fp.value=p.id; fp.classList.add("flash"); setTimeout(()=>fp.classList.remove("flash"),700); } updProjHint(); });
+  ["f_proj","f_from","f_amount"].forEach(id=>{ const el=$(id); if(el) el.addEventListener(el.tagName==="SELECT"?"change":"input",updProjHint); });
+  updProjHint();
   const fi=$("f_int"), fa=$("f_amount");
   if(fi) fi.addEventListener("input",()=>{draft.intAuto=false;});
   if(fi&&fa) fa.addEventListener("input",()=>{ if(!draft.intAuto) return; const l=loanById($("f_loan")&&$("f_loan").value); const a=parseFloat(fa.value.replace(/[$,\s]/g,""));
