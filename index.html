@@ -86,6 +86,10 @@ button.row:hover{background:var(--sunk)}
 .proj .bal{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:20px}
 .bar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.where{display:grid;gap:4px;font-size:13.5px;border-top:1px solid var(--line);padding-top:8px}
+.where .wrow{display:flex;justify-content:space-between;gap:10px}
+.where .wrow span:last-child{font-variant-numeric:tabular-nums;font-weight:600}
+.where .neg{color:var(--neg,#c0392b)}
 .proj .foot{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted);align-items:center;flex-wrap:wrap}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-weight:600;font-size:13.5px}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
@@ -737,6 +741,17 @@ function projEffect(t){
   else if(t.type==="expense"){ const a=acctById(t.from); sign=(a&&a.type==="credit")?0:-1; }
   return {pid,sign};
 }
+// Which account holds the project money that moved: transfers/income land in the destination; Save-to-project stays in the source;
+// payments and purchases leave from the source.
+function projAcct(t,sign){ if(sign>0) return t.type==="save"?t.from:t.to; if(sign<0) return t.from; return null; }
+function projWhere(pid){
+  const m={}; S.txns.forEach(t=>{ const e=projEffect(t); if(!e||e.pid!==pid||!e.sign) return; const ac=projAcct(t,e.sign); if(!ac) return; m[ac]=Math.round(((m[ac]||0)+e.sign*(+t.amount||0))*100)/100; });
+  return Object.keys(m).filter(k=>Math.abs(m[k])>=0.005).map(k=>({id:k,amt:m[k]})).sort((a,b)=>b.amt-a.amt);
+}
+function whereBlock(pid){
+  const w=projWhere(pid); if(!w.length) return '';
+  return '<div class="where"><div class="eyebrow">Where the money is</div>'+w.map(x=>'<div class="wrow"><span>'+esc(acctName(x.id))+'</span><span class="'+(x.amt<0?"neg":"")+'">'+money(x.amt)+'</span></div>').join("")+'</div>';
+}
 function projSign(t){ const e=projEffect(t); return e?e.sign:null; }
 function computeFunds(){
   const asc=S.txns.slice().sort((x,y)=>(x.date||"").localeCompare(y.date||"")||(x.created||0)-(y.created||0));
@@ -800,7 +815,7 @@ function viewProjects(){
   h+=S.projects.slice().sort((a,b)=>(a.created||0)-(b.created||0)).map(p=>{
     const b=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,b/goal*100)):0;
     return '<div class="proj"><div class="head"><span class="name">'+esc(p.name)+'</span><span class="bal">'+money(b)+'</span></div>'+
-      (goal?'<div class="bar" role="img" aria-label="'+Math.round(pct)+'% of goal"><i style="width:'+pct+'%"></i></div>':'')+
+      (goal?'<div class="bar" role="img" aria-label="'+Math.round(pct)+'% of goal"><i style="width:'+pct+'%"></i></div>':'')+whereBlock(p.id)+
       '<div class="foot"><span>'+(goal?Math.round(pct)+'% of '+money(goal)+(b<goal?' · '+money(goal-b)+' to go':' · goal reached'):'No goal set')+'</span>'+
       '<span style="display:flex;gap:6px"><button class="btn" data-viewproj="'+esc(p.id)+'">History</button><button class="btn primary" data-saveto="'+esc(p.id)+'">Add money</button></span></div></div>';
   }).join("");
@@ -1252,8 +1267,8 @@ function openProj(p){
 
 function openProjHistory(id){
   const p=projById(id); if(!p) return; const c=compute();
-  const list=sortTx(S.txns.filter(t=>t.project===id));
-  let h=sheetHead(p.name)+'<div class="split" style="margin-bottom:14px"><div><div class="eyebrow">Balance</div><div class="v">'+money(c.proj[id])+'</div></div><div><div class="eyebrow">Goal</div><div class="v">'+(p.goal?money(p.goal):"None")+'</div></div></div>';
+  const list=sortTx(S.txns.filter(t=>{const e=projEffect(t);return e&&e.pid===id;}));
+  let h=sheetHead(p.name)+'<div class="split" style="margin-bottom:14px"><div><div class="eyebrow">Balance</div><div class="v">'+money(c.proj[id])+'</div></div><div><div class="eyebrow">Goal</div><div class="v">'+(p.goal?money(p.goal):"None")+'</div></div></div>'+(whereBlock(id)?'<div style="margin-bottom:14px">'+whereBlock(id)+'</div>':'');
   h+= list.length? '<div class="list">'+list.map(t=>{const d=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(d.meta)+'</span></span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';}).join("")+'</div>'
     : '<div class="empty">Nothing saved yet.</div>';
   h+='<div class="actions" style="margin-top:14px"><button class="btn" data-editproj="'+esc(id)+'">Edit project</button><button class="btn primary" data-saveto="'+esc(id)+'">Add money</button></div>';
