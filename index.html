@@ -114,7 +114,9 @@ button.row:hover{background:var(--sunk)}
 .vseg button[aria-pressed="true"]{background:var(--surface);color:var(--ink,inherit);box-shadow:0 1px 2px rgba(0,0,0,.15)}
 .mhead{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:2;display:flex;justify-content:space-between;align-items:baseline;background:var(--bg,inherit);padding:14px 2px 4px;font-family:var(--f-display);font-size:17px;font-weight:500;border-bottom:1px solid var(--line)}
 .mhead span:last-child{font-family:var(--f-num);font-size:13px;color:var(--muted)}
-.ring{display:flex;align-items:center;gap:14px}.ring svg{flex:none}
+.mcard{container-type:inline-size}
+.ring{display:flex;align-items:center;gap:22px}.ring svg{flex:none;width:clamp(150px,36cqi,240px);height:auto;aspect-ratio:1}
+@container (max-width:560px){.ring{flex-direction:column;align-items:stretch;gap:10px}.ring svg{width:min(230px,62cqi);margin:0 auto 4px}}
 .ring .rl{font-size:10px;fill:var(--muted)} .ring .rv{font-size:14px;font-family:var(--f-num);fill:var(--ink)}
 .rlist{flex:1;min-width:0;display:grid;gap:5px}
 .ri{display:grid;grid-template-columns:10px minmax(0,1fr) auto;column-gap:8px;align-items:center;font-size:13.5px;border:0;background:none;color:inherit;font-family:inherit;text-align:left;padding:3px 4px;margin:0 -4px;border-radius:8px;cursor:pointer;width:calc(100% + 8px)}
@@ -353,7 +355,7 @@ const TYPES = {
   cardpay:{label:"Card payment"}, loanpay:{label:"Loan payment"}, save:{label:"Save to project"}
 };
 const ACCT_TYPES = {checking:"Checking", cash:"Cash", savings:"Personal savings", credit:"Credit card"};
-const EXP_CATS = ["Food & dining","Groceries","Transport & gas","Bills & utilities","Rent / housing","Shopping","Health & personal care","Entertainment","Subscriptions","Travel"];
+const EXP_CATS = ["Food & dining","Groceries","Transport & gas","Bills & utilities","Rent / housing","Shopping","Health & personal care","Entertainment","Subscriptions","Travel","Loans"];
 // Older entries keep their original category; these merge them into the current list.
 const CAT_MERGE = {"Gas":"Transport & gas","Transport":"Transport & gas","Health":"Health & personal care","Fitness":"Health & personal care","Personal care":"Health & personal care",};
 // "Other" (and the old "Gifts" / "Gifts & other") was removed: those entries show as "Needs a category" until you pick one.
@@ -1066,7 +1068,7 @@ function catChart(ym){
     arcs+='<path d="M'+pt(R,s0)+' A'+R+' '+R+' 0 '+big+' 1 '+pt(R,s1)+' L'+pt(r,s1)+' A'+r+' '+r+' 0 '+big+' 0 '+pt(r,s0)+'Z" fill="'+p.col+'"><title>'+esc(p.label+": "+money(p.amt)+" ("+(p.amt/T*100).toFixed(1)+"%)")+'</title></path>';
     a0+=sweep; });
   const k=T>=10000?"$"+(T/1000).toFixed(1)+"k":money(T).replace(/\.\d\d$/,"");
-  return '<div class="subh" style="margin-top:12px"><span>Spending by category</span><span></span></div><div class="ring"><svg viewBox="0 0 120 120" width="124" height="124" role="img" aria-label="Spending by category, '+esc(money(T))+' total">'+arcs+
+  return '<div class="subh" style="margin-top:12px"><span>Spending by category</span><span></span></div><div class="ring"><svg viewBox="0 0 120 120" role="img" aria-label="Spending by category, '+esc(money(T))+' total">'+arcs+
     '<text x="60" y="56" text-anchor="middle" class="rl">spent</text><text x="60" y="72" text-anchor="middle" class="rv">'+esc(k)+'</text></svg>'+
     '<div class="rlist">'+parts.map(p=>'<button type="button" class="ri'+(p.none?' none':'')+'" data-catlist="'+esc(p.cat)+'" data-catym="'+esc(ym)+'" title="See these transactions"><span class="sw" style="background:'+p.col+'"></span><span class="rn">'+esc(p.label)+'</span><span class="rp">'+money(p.amt)+'<em>'+Math.round(p.amt/T*100)+'%</em></span></button>').join("")+'</div></div>'+
     (none?'<p class="hint" style="margin:6px 0 0">Tap "Needs a category" to see those expenses and pick one for each.</p>':'<p class="hint" style="margin:6px 0 0">Tap a category to see its transactions.</p>');
