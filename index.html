@@ -73,6 +73,15 @@ button.row:hover{background:var(--sunk)}
 .badge{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--sunk);color:var(--muted)}
 .badge.pic{background:#fff;padding:0;overflow:hidden}.badge.pic img{width:100%;height:100%;object-fit:cover;display:block}
 .iconpick{display:flex;align-items:center;gap:12px}.iconpick .badge{width:48px;height:48px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;min-width:0}
+.tile .v{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsum{font-family:var(--f-num);font-size:13px;font-weight:500;color:var(--muted)}
+.gsum.neg{color:var(--neg)} .gsum.pos{color:var(--pos)}
+.ubar{display:block;height:6px;border-radius:3px;background:var(--sunk);margin:6px 0 4px;overflow:hidden}
+.ubar i{display:block;height:100%;border-radius:3px;background:var(--pos)}
+.ubar.mid i{background:#D9A400} .ubar.hi i,.ubar.share i{background:var(--neg)} .ubar.goal i{background:var(--pos)}
+.badge.savings{color:var(--pos)}
 .badge.checking{color:var(--accent)} .badge.credit{color:var(--card)} .badge.cash{color:var(--pos)}
 .pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--muted)}
 .owed{font-size:11px;color:var(--muted);display:block;text-align:right}
@@ -223,7 +232,7 @@ const TYPES = {
   expense:{label:"Expense"}, income:{label:"Income"}, transfer:{label:"Transfer"},
   cardpay:{label:"Card payment"}, loanpay:{label:"Loan payment"}, save:{label:"Save to project"}
 };
-const ACCT_TYPES = {checking:"Checking", credit:"Credit card", cash:"Cash"};
+const ACCT_TYPES = {checking:"Checking", cash:"Cash", savings:"Personal savings", credit:"Credit card"};
 const EXP_CATS = ["Food & dining","Groceries","Gas","Transport","Bills & utilities","Rent / housing","Shopping","Health","Fitness","Entertainment","Subscriptions","Personal care","Gifts","Travel","Other"];
 const INC_CATS = ["Salary","Freelance","Refund","Gift","Other"];
 
@@ -277,11 +286,14 @@ function compute(){
     else if(t.type==="loanpay"){adj(t.from,-a);adj(t.to,a); if(t.loan in loan) loan[t.loan]-=Math.max(0,a-(+t.interest||0));}
     const pe=projEffect(t); if(pe&&pe.pid in proj) proj[pe.pid]+=pe.sign*a;
   }
-  let liquid=0, owed=0, aside=0, loansOwe=0, loansLent=0;
+  let liquid=0, owed=0, aside=0, loansOwe=0, loansLent=0, daily=0, personal=0, limit=0, asideDaily=0;
   S.loans.forEach(l=>{ if(l.dir==="lent") loansLent+=loan[l.id]; else loansOwe+=loan[l.id]; });
-  S.accounts.forEach(a=>{ if(a.type==="credit") owed+=-bal[a.id]; else liquid+=bal[a.id]; });
+  S.accounts.forEach(a=>{ if(a.type==="credit"){ owed+=-bal[a.id]; limit+=(+a.limit||0); } else { liquid+=bal[a.id]; if(a.type==="savings") personal+=bal[a.id]; else daily+=bal[a.id]; } });
   Object.values(proj).forEach(v=>aside+=v);
-  return {bal,proj,loan,liquid,owed,aside,loansOwe,loansLent,net:liquid-owed-loansOwe+loansLent,free:liquid-owed-aside};
+  // project money sitting in checking/cash (money already in a savings account is counted there)
+  S.projects.forEach(p=>projWhere(p.id).forEach(x=>{ const ac=acctById(x.id); if(!ac||ac.type!=="savings") asideDaily+=x.amt; }));
+  const available=daily-asideDaily, savingsTotal=personal+asideDaily;
+  return {bal,proj,loan,liquid,owed,aside,loansOwe,loansLent,daily,personal,limit,available,savingsTotal,net:liquid-owed-loansOwe+loansLent,free:available-owed};
 }
 function monthStats(ym){
   let spent=0,income=0,saved=0,cards=0,loans=0,cashback=0;
@@ -480,7 +492,18 @@ async function openDir(h,picked){
   if(migrated) toast("Brought in your data from the old Pocketbook");
   return true;
 }
-async function runSetup(){ await seedSofiV2(); await seedJpmV3(); await seedJpmOpening(); await fixZelleV1(); }
+async function runSetup(){ await seedSofiV2(); await seedJpmV3(); await seedJpmOpening(); await fixZelleV1(); await setLimitsV1(); }
+// One-time update you asked for: credit limits, and "Cash savings" becomes Personal savings.
+async function setLimitsV1(){
+  if(STORE["meta-limits-v1"]) return;
+  const cards=Object.keys(STORE).filter(k=>STORE[k]&&STORE[k].kind==="account"&&STORE[k].type==="credit");
+  if(!cards.length) return;
+  const L=[[/wells|\bwf\b/i,16500],[/sapphire/i,14600],[/unlimited/i,6600],[/discover/i,5500],[/capital/i,1800]];
+  cards.forEach(k=>{ const hit=L.find(x=>x[0].test(STORE[k].name||"")); if(hit) STORE[k]=Object.assign({},STORE[k],{limit:hit[1]}); });
+  Object.keys(STORE).forEach(k=>{ const a=STORE[k]; if(a&&a.kind==="account"&&a.type==="cash"&&/saving/i.test(a.name||"")) STORE[k]=Object.assign({},a,{type:"savings"}); });
+  STORE["meta-limits-v1"]={kind:"meta",done:true};
+  await persist();
+}
 // One-time correction you asked for: the $600 went JPM Chase -> SoFi Checking by Zelle on Oct 2,
 // and the loan was paid from SoFi Checking on Oct 5 (as SoFi shows it).
 async function fixZelleV1(){
@@ -707,13 +730,16 @@ function viewHome(){
   if(!S.accounts.length) return setupEmpty();
   const c=compute(), m=monthStats(S.month);
   let h=backupNudge()+'<section class="hero"><div class="eyebrow">Free to spend</div><div class="big '+(c.free<0?"neg":"")+'">'+money(c.free)+'</div>'+
-    '<div class="split"><div><div class="eyebrow">Cash + checking</div><div class="v">'+money(c.liquid)+'</div></div>'+
-    '<div><div class="eyebrow">Cards owed</div><div class="v '+(c.owed>0?"neg":"")+'">'+money(c.owed)+'</div></div>'+
-    '<div><div class="eyebrow">Set aside, projects</div><div class="v">'+money(c.aside)+'</div></div>'+
-    '<div><div class="eyebrow">Net balance</div><div class="v">'+money(c.net)+'</div></div>'+
-    (S.loans.length?'<div><div class="eyebrow">Loans I owe</div><div class="v '+(c.loansOwe>0?"neg":"")+'">'+money(c.loansOwe)+'</div></div><div><div class="eyebrow">Owed to me</div><div class="v">'+money(c.loansLent)+'</div></div>':'')+
+    '<p class="hint" style="margin:2px 0 12px">Available in checking and cash, after paying your cards.</p>'+
+    '<div class="tiles">'+
+    '<div class="tile"><div class="eyebrow">Available</div><div class="v '+(c.available<0?"neg":"")+'">'+money(c.available)+'</div></div>'+
+    '<div class="tile"><div class="eyebrow">Savings</div><div class="v pos">'+money(c.savingsTotal)+'</div></div>'+
+    '<div class="tile"><div class="eyebrow">Cards owe</div><div class="v '+(c.owed>0?"neg":"")+'">'+money(c.owed)+'</div></div>'+
+    '</div>'+
+    '<div class="split" style="margin-top:10px"><div><div class="eyebrow">Net balance</div><div class="v">'+money(c.net)+'</div></div>'+
+    (S.loans.length?'<div><div class="eyebrow">Loans I owe</div><div class="v '+(c.loansOwe>0?"neg":"")+'">'+money(c.loansOwe)+'</div></div>':'')+
     '</div></section>';
-  h+=fundsBlock();
+  h+=acctGroups(c,true);
   h+='<h2>'+esc(monthName(S.month,true))+'</h2><div class="split">'+
     '<div><div class="eyebrow">Spent</div><div class="v neg">'+money(m.spent)+'</div></div>'+
     '<div><div class="eyebrow">Income</div><div class="v pos">'+money(m.income)+'</div></div>'+
@@ -721,7 +747,49 @@ function viewHome(){
     '<div><div class="eyebrow">Net this month</div><div class="v">'+money(m.income-m.cards-m.loans)+'</div></div>'+
     '<div><div class="eyebrow">Loan payments</div><div class="v">'+money(m.loans)+'</div></div>'+
     (m.cashback?'<div><div class="eyebrow">Paid with cash back</div><div class="v pos">'+money(m.cashback)+'</div></div>':'')+'</div>';
-  h+='<h2>Accounts <button data-tab-go="accounts">Manage</button></h2>'+acctRows(c);
+  return h;
+}
+
+// Accounts grouped: credit cards (with utilization), savings (personal savings + projects), checking and cash.
+function utilRow(a,c,totalOwed){
+  const owed=Math.max(0,-c.bal[a.id]), lim=+a.limit||0;
+  const pct=lim?owed/lim*100:(totalOwed?owed/totalOwed*100:0);
+  const lvl=lim?(pct>=50?"hi":pct>=30?"mid":"lo"):"share";
+  const note=lim?Math.round(pct)+'% used of '+money(lim)+' limit':(owed?Math.round(pct)+'% of card debt · add a limit':'No limit set');
+  return '<button class="row" data-openacct="'+esc(a.id)+'">'+acctBadge(a)+'<span class="main"><span class="t">'+esc(a.name)+'</span>'+
+    '<span class="ubar '+lvl+'"><i style="width:'+Math.min(100,pct).toFixed(1)+'%"></i></span><span class="m">'+note+'</span></span>'+
+    '<span class="amt '+(owed>0?"neg":"mut")+'">'+money(owed)+'<span class="owed">owed</span></span></button>';
+}
+function plainRow(a,c,sub){
+  const b=c.bal[a.id];
+  return '<button class="row" data-openacct="'+esc(a.id)+'">'+acctBadge(a)+'<span class="main"><span class="t">'+esc(a.name)+'</span><span class="m">'+esc(sub||ACCT_TYPES[a.type]||"")+'</span></span><span class="amt '+(b<0?"neg":"")+'">'+money(b)+'</span></button>';
+}
+function projRow(p,c){
+  const v=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,v/goal*100)):0;
+  return '<button class="row" data-viewproj="'+esc(p.id)+'"><span class="badge fundb">'+esc(initials(p.name))+'</span><span class="main"><span class="t">'+esc(p.name)+'</span>'+
+    (goal?'<span class="ubar goal"><i style="width:'+pct.toFixed(1)+'%"></i></span><span class="m">'+Math.round(pct)+'% of '+money(goal)+'</span>':'<span class="m">Project · no goal set</span>')+
+    '</span><span class="amt '+(v<0?"neg":"")+'">'+money(v)+'</span></button>';
+}
+function acctGroups(c,withProjects){
+  const by=t=>S.accounts.filter(a=>a.type===t);
+  const cards=by("credit").sort((a,b)=>(-c.bal[b.id])-(-c.bal[a.id])||a.name.localeCompare(b.name));
+  const sav=by("savings").sort((a,b)=>c.bal[b.id]-c.bal[a.id]);
+  const day=S.accounts.filter(a=>a.type==="checking"||a.type==="cash").sort((a,b)=>c.bal[b.id]-c.bal[a.id]);
+  let h='';
+  if(cards.length){
+    const u=c.limit?Math.round(c.owed/c.limit*100):null;
+    h+='<h2>Credit cards <span class="gsum neg">'+money(c.owed)+(u!==null?' · '+u+'% used':'')+'</span></h2><div class="list">'+cards.map(a=>utilRow(a,c,c.owed)).join("")+'</div>';
+  }
+  const projs=withProjects?S.projects.slice().sort((a,b)=>(a.created||0)-(b.created||0)):[];
+  if(sav.length||projs.length){
+    h+='<h2>Savings <span class="gsum pos">'+money(withProjects?c.savingsTotal:c.personal)+'</span></h2><div class="list">'+sav.map(a=>plainRow(a,c)).join("")+projs.map(p=>projRow(p,c)).join("")+'</div>';
+  }
+  if(day.length){
+    h+='<h2>Checking and cash <span class="gsum">'+money(c.daily)+'</span></h2><div class="list">'+day.map(a=>{
+      const inProj=S.projects.reduce((s,p)=>s+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0);
+      return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(inProj)>=0.005?' · '+money(inProj)+' for projects':''));
+    }).join("")+'</div>';
+  }
   return h;
 }
 
@@ -832,7 +900,7 @@ function viewProjects(){
 function viewAccounts(){
   if(!S.accounts.length) return setupEmpty();
   const miss=["credit","cash"].filter(k=>!S.accounts.some(x=>x.type===k));
-  return '<p class="hint" style="margin:4px 0 14px">Open an account to see its transactions and add new ones.</p>'+acctRows(compute(),true)+
+  return '<p class="hint" style="margin:4px 0 14px">Open an account to see its transactions and add new ones.</p>'+acctGroups(compute(),false)+
     (miss.length?'<div style="margin-top:10px"><button class="btn wide" data-act="quicksetup">Add '+miss.map(k=>k==="credit"?"a Credit card":"Cash").join(" and ")+'</button></div>':'')+
     '<div style="margin-top:14px"><button class="btn wide" data-act="newacct">Add account</button></div>'+backupBlock();
 }
@@ -1241,6 +1309,7 @@ function openAcct(a){
     '<div class="field"><label>Picture</label><div class="iconpick"><span id="a_iconPrev">'+acctBadge(a)+'</span><button type="button" class="btn" id="a_iconBtn">Choose picture</button><button type="button" class="btn" id="a_iconDel"'+(a.icon?'':' hidden')+'>Remove</button><input type="file" id="a_iconFile" accept="image/*" hidden></div></div>'+
     '<div class="field"><label for="a_type">Type</label><select id="a_type">'+opts(Object.keys(ACCT_TYPES).map(k=>({v:k,l:ACCT_TYPES[k]})),a.type)+'</select></div>'+
     '<div class="field"><label for="a_open" id="a_openL">'+(a.type==="credit"?"Amount owed right now":"Current balance")+'</label><input id="a_open" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(a.opening)+'"></div>'+
+    '<div class="field" id="a_limitF"'+(a.type==="credit"?'':' hidden')+'><label for="a_limit">Credit limit</label><input id="a_limit" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(a.limit||"")+'"></div>'+
     '<div class="field"><label for="a_asof">Balance as of</label>'+dateField("a_asof",a.asOf||(a.created?dIso(new Date(a.created)):todayStr()))+'</div>'+
     '<p class="hint">Use the balance your bank shows for this day. Transactions dated on or before it are already included, so they won\'t change it again. Everything after adjusts it.</p><div id="aErr"></div>'+
     '<div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Add account")+'</button></div><div id="delBox"></div></form>';
@@ -1251,12 +1320,13 @@ function openAcct(a){
   $("a_iconBtn").addEventListener("click",()=>$("a_iconFile").click());
   $("a_iconFile").addEventListener("change",async e=>{ const f=e.target.files[0]; if(!f) return; try{ icon=await makeIcon(f); prev(); }catch(_){ $("aErr").innerHTML='<p class="err" role="alert">That picture could not be opened. Try a PNG or JPG.</p>'; } });
   $("a_iconDel").addEventListener("click",()=>{ icon=""; prev(); });
+  $("a_type").addEventListener("change",e=>{$("a_limitF").hidden=e.target.value!=="credit";});
   $("a_type").addEventListener("change",e=>{$("a_openL").textContent=e.target.value==="credit"?"Amount owed right now":"Current balance";});
   $("acctForm").addEventListener("submit",async e=>{
     e.preventDefault(); const name=$("a_name").value.trim(); const op=parseFloat(($("a_open").value||"0").replace(/[$,\s]/g,""));
     if(!name){$("aErr").innerHTML='<p class="err" role="alert">Give the account a name.</p>';return;}
     if(isNaN(op)){$("aErr").innerHTML='<p class="err" role="alert">Enter the balance as a number, like 1250.00.</p>';return;}
-    if(await save(a.id,{kind:"account",name,type:$("a_type").value,icon,opening:Math.round(op*100)/100,asOf:$("a_asof").value||todayStr(),
+    if(await save(a.id,{kind:"account",name,type:$("a_type").value,icon,limit:($("a_type").value==="credit"?(Math.round((parseFloat(($("a_limit").value||"0").replace(/[$,\s]/g,""))||0)*100)/100):0),opening:Math.round(op*100)/100,asOf:$("a_asof").value||todayStr(),
       asOfAt:((a.asOf||(a.created?dIso(new Date(a.created)):""))===$("a_asof").value&&+a.opening===Math.round(op*100)/100&&(a.asOfAt||a.created))?(a.asOfAt||a.created):Date.now(),created:a.created||Date.now()})){closeSheet();toast(edit?"Account updated":"Account added");}
   });
 }
