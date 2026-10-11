@@ -183,6 +183,15 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .plus{width:32px;height:32px;border-radius:999px;border:1px solid var(--line);background:var(--sunk);color:var(--accent);font-size:20px;line-height:1;display:grid;place-items:center;padding:0;cursor:pointer}
 .plus:hover{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .chev2{color:var(--muted);font-size:20px}
+.pswitch{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 10px;margin:0 -2px 6px;scrollbar-width:none}
+.pswitch::-webkit-scrollbar{display:none}
+.ptile{flex:0 0 auto;min-width:170px;max-width:240px;scroll-snap-align:start;display:grid;gap:3px;text-align:left;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s}
+.ptile:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 60%,var(--line))}
+.ptile.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.ptile .pn{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptile .pb{font-family:var(--f-num);font-size:20px;font-variant-numeric:tabular-nums}
+.ptile .ubar{margin:4px 0 2px}.ptile .pg{font-size:12px;color:var(--muted)}
+@media (min-width:1000px){.pswitch{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));overflow:visible}.ptile{max-width:none}}
 .projchips{margin:2px 0 10px}.projchips .cmon{font-family:var(--f-num);font-size:12px;color:var(--muted);margin-left:4px}
 .projchips .chip[aria-pressed="true"] .cmon{color:inherit;opacity:.75}
 .proj .head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
@@ -376,7 +385,8 @@ const INC_CATS = ["Salary","Freelance","Refund","Gift","Loan repayment","Other"]
 
 const S = {db:null,col:null,uid:null,status:"loading",accounts:[],projects:[],loans:[],txns:[],openLoan:null,
   tab:"home",open:null,month:ymOf(todayStr()),acct:"all",actView:"list"};
-try{ const t=localStorage.getItem("pb_tab"); if(t) S.tab=t; }catch(e){}
+try{ const t=localStorage.getItem("pb_tab"); if(t) S.tab=t;
+  const v=JSON.parse(localStorage.getItem("pb_view")||"null"); if(v&&typeof v==="object"){ if(v.tab) S.tab=v.tab; S.open=v.open||null; S.openLoan=v.openLoan||null; S.openProj=v.openProj||null; if(v.actView) S.actView=v.actView; } }catch(e){}
 
 /* ---------- helpers ---------- */
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
@@ -798,6 +808,7 @@ async function pickRestore(name){
 /* ---------- render ---------- */
 function render(){
   S.funds=computeFunds();
+  if(S.status==="ready"){ try{ localStorage.setItem("pb_view",JSON.stringify({tab:S.tab,open:S.open||null,openLoan:S.openLoan||null,openProj:S.openProj||null,actView:S.actView||"list"})); localStorage.setItem("pb_tab",S.tab); }catch(_){} }
   document.querySelectorAll("nav.tabs [data-tab]").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===S.tab?"page":"false"));
   if(S.status==="ready"){ if(S.open&&!acctById(S.open)) S.open=null; if(S.openLoan&&!loanById(S.openLoan)) S.openLoan=null; if(S.openProj&&!projById(S.openProj)) S.openProj=null; }
   const openA=S.open&&acctById(S.open), openL=!openA&&S.openLoan&&loanById(S.openLoan), openP=!openA&&!openL&&S.openProj&&projById(S.openProj);
@@ -826,6 +837,7 @@ function render(){
     (S.savedName?'<button class="btn" data-act="pickfolder">Choose a different folder</button>':'')+
     '<span class="hint" style="margin:0">In the window that opens, select the <b>Pocketbook</b> folder, click <b>Open</b>, then allow Chrome to edit files there.</span></div>';return;}
   v.innerHTML = openA ? viewAccount(openA) : openL ? viewLoan(openL) : openP ? viewProject(openP) : ({home:viewHome,activity:viewActivity,projects:viewProjects,accounts:viewAccounts,loans:viewLoans}[S.tab])();
+  if(openP){ const ps=document.querySelector(".pswitch"), on=ps&&ps.querySelector(".ptile.on"); if(ps&&on&&ps.scrollWidth>ps.clientWidth){ const l=on.offsetLeft-ps.offsetLeft, r=l+on.offsetWidth; if(l<ps.scrollLeft||r>ps.scrollLeft+ps.clientWidth) ps.scrollLeft=Math.max(0,l-8); } }
 }
 
 function viewAccount(a){
@@ -1170,7 +1182,9 @@ function viewProject(p){
   const sum=l=>l.reduce((s,t)=>s+(+t.amount||0),0);
   const wish=p.wish||[], wTotal=wish.reduce((s,w)=>s+(+w.price||0),0), wLeft=wish.filter(w=>!w.done).reduce((s,w)=>s+(+w.price||0),0);
   const all=S.projects.slice().sort((x,y)=>(x.created||0)-(y.created||0));
-  let h=(all.length>1?'<div class="chips projchips" role="tablist" aria-label="Projects">'+all.map(q=>'<button class="chip" role="tab" data-viewproj="'+esc(q.id)+'" aria-pressed="'+(q.id===p.id)+'" aria-selected="'+(q.id===p.id)+'">'+esc(q.name)+' <span class="cmon">'+money(c.proj[q.id]||0)+'</span></button>').join("")+'</div>':'')+
+  let h=(all.length>1?'<div class="pswitch" role="tablist" aria-label="Projects">'+all.map(q=>{ const qb=c.proj[q.id]||0, qg=+q.goal||0, qp=qg?Math.max(0,Math.min(100,qb/qg*100)):0, on=q.id===p.id;
+      return '<button class="ptile'+(on?' on':'')+'" role="tab" data-viewproj="'+esc(q.id)+'" aria-selected="'+on+'"><span class="pn">'+esc(q.name)+'</span><span class="pb">'+money(qb)+'</span>'+
+        '<span class="ubar goal"><i style="width:'+(qg?qp.toFixed(1):0)+'%"></i></span><span class="pg">'+(qg?Math.round(qp)+'% of '+money(qg):'No goal')+'</span></button>'; }).join("")+'</div>':'')+
     '<section class="hero"><div class="eyebrow">Available for this project</div><div class="big '+(bal<0?"neg":"")+'">'+money(bal)+'</div>'+
     (goal?'<div class="ubar goal" style="height:8px;margin:8px 0 4px"><i style="width:'+pct.toFixed(1)+'%"></i></div><p class="hint" style="margin:0">'+Math.round(pct)+'% of your '+money(goal)+' goal'+(bal<goal?' · '+money(goal-bal)+' to go':' · goal reached')+'</p>':'<p class="hint" style="margin:0">No goal set. Add one with Edit project.</p>')+
     '<div class="actions" style="margin-top:14px"><button class="btn" data-editproj="'+esc(p.id)+'">Edit project</button><button class="btn primary" data-saveto="'+esc(p.id)+'">+ Add money</button></div></section>';
@@ -1787,7 +1801,8 @@ document.addEventListener("click",async e=>{
   if(ds.editacct){openAcct(acctById(ds.editacct));return;}
   if(ds.edittx){const t=S.txns.find(x=>x.id===ds.edittx); if(t) openTx(t); return;}
   if(ds.saveto){openTx(null,{type:"save",project:ds.saveto});return;}
-  if(ds.viewproj){S.openProj=ds.viewproj;S.open=null;S.openLoan=null;render();window.scrollTo(0,0);return;}
+  if(ds.viewproj){ const keep=b.classList.contains("ptile"); const sx=keep&&b.parentElement?b.parentElement.scrollLeft:0; S.openProj=ds.viewproj;S.open=null;S.openLoan=null;render();
+    if(keep){ const ps=document.querySelector(".pswitch"); if(ps){ ps.scrollLeft=sx; const on=ps.querySelector(".ptile.on"); if(on) on.scrollIntoView({behavior:"smooth",inline:"nearest",block:"nearest"}); } } else window.scrollTo(0,0); return;}
   if(ds.wishtoggle){await wishUpdate(ds.wishproj,w=>w.map(x=>x.id===ds.wishtoggle?Object.assign({},x,{done:!x.done}):x));return;}
   if(ds.wishdel){await wishUpdate(ds.wishproj,w=>w.filter(x=>x.id!==ds.wishdel));return;}
   if(ds.editproj){openProj(projById(ds.editproj));return;}
