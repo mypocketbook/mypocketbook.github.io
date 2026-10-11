@@ -123,6 +123,9 @@ button.row:hover{background:var(--sunk)}
 .ri:hover{background:var(--sunk)}
 .ri .sw{width:10px;height:10px;border-radius:3px}.ri .rn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ri .rp{font-family:var(--f-num);font-size:13px;white-space:nowrap}.ri .rp em{font-style:normal;color:var(--muted);display:inline-block;min-width:42px;text-align:right;margin-left:8px}
+.pill.st-pos{background:color-mix(in srgb,var(--pos) 16%,var(--surface));color:var(--pos)}
+.pill.st-mid{background:color-mix(in srgb,#D9A400 18%,var(--surface));color:#C08F00}
+.pill.st-neg{background:color-mix(in srgb,var(--neg) 14%,var(--surface));color:var(--neg)}
 .h2r{display:flex;align-items:baseline;gap:12px;min-width:0}
 .subh .h2r span{font-family:var(--f-num);letter-spacing:0;color:var(--pos)}
 .sadd{border:0;background:none;color:var(--accent);font:inherit;font-family:var(--f-body);font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 0;cursor:pointer}
@@ -355,13 +358,14 @@ const TYPES = {
   cardpay:{label:"Card payment"}, loanpay:{label:"Loan payment"}, save:{label:"Save to project"}
 };
 const ACCT_TYPES = {checking:"Checking", cash:"Cash", savings:"Personal savings", credit:"Credit card"};
-const EXP_CATS = ["Food & dining","Groceries","Transport & gas","Bills & utilities","Rent / housing","Shopping","Health & personal care","Entertainment","Subscriptions","Travel","Loans"];
+const EXP_CATS = ["Food & dining","Groceries","Transport & gas","Bills & utilities","Rent / housing","Shopping","Health & personal care","Entertainment","Subscriptions","Travel","Lent to others"];
 // Older entries keep their original category; these merge them into the current list.
-const CAT_MERGE = {"Gas":"Transport & gas","Transport":"Transport & gas","Health":"Health & personal care","Fitness":"Health & personal care","Personal care":"Health & personal care",};
+const LENT="Lent to others", REPAY="Loan repayment";
+const CAT_MERGE = {"Loans":"Lent to others","Gas":"Transport & gas","Transport":"Transport & gas","Health":"Health & personal care","Fitness":"Health & personal care","Personal care":"Health & personal care",};
 // "Other" (and the old "Gifts" / "Gifts & other") was removed: those entries show as "Needs a category" until you pick one.
 const CAT_GONE = {"Other":1,"Gifts":1,"Gifts & other":1};
 function catOf(t){ const c=t&&t.category; if(!c||CAT_GONE[c]) return ""; return CAT_MERGE[c]||c; }
-const INC_CATS = ["Salary","Freelance","Refund","Gift","Other"];
+const INC_CATS = ["Salary","Freelance","Refund","Gift","Loan repayment","Other"];
 
 const S = {db:null,col:null,uid:null,status:"loading",accounts:[],projects:[],loans:[],txns:[],openLoan:null,
   tab:"home",open:null,month:ymOf(todayStr()),acct:"all",actView:"list"};
@@ -421,13 +425,13 @@ function compute(upTo){
   // project money sitting in checking/cash (money already in a savings account is counted there)
   S.projects.forEach(p=>projWhere(p.id).forEach(x=>{ const ac=acctById(x.id); if(!ac||ac.type!=="savings") asideDaily+=x.amt; }));
   const available=daily-asideDaily, savingsTotal=personal+asideDaily;
-  return {bal,proj,loan,liquid,owed,aside,loansOwe,loansLent,daily,personal,limit,available,savingsTotal,net:liquid-owed-loansOwe+loansLent,free:available-owed};
+  return {bal,proj,loan,liquid,owed,aside,loansOwe,loansLent,daily,personal,limit,available,savingsTotal,lentOut:lentPeople().reduce((s,r)=>s+r.left,0),net:liquid-owed-loansOwe+loansLent+lentPeople().reduce((s,r)=>s+r.left,0),free:available-owed};
 }
 function monthStats(ym,acct){
-  let spent=0,income=0,saved=0,cards=0,loans=0,cashback=0;
+  let spent=0,income=0,saved=0,cards=0,loans=0,cashback=0,lent=0,repaid=0;
   for(const t of S.txns){ if(!t.date||ymOf(t.date)!==ym) continue; if(acct&&t.from!==acct&&t.to!==acct) continue; const a=+t.amount||0;
-    if(t.type==="expense") spent+=a; else if(t.type==="income") income+=a; else if(t.type==="save") saved+=a; else if(t.type==="cardpay"){ if(t.from===CASHBACK) cashback+=a; else cards+=a; } else if(t.type==="loanpay") loans+=a; }
-  return {spent,income,saved,cards,loans,cashback};
+    if(t.type==="expense"){ if(catOf(t)===LENT) lent+=a; else spent+=a; } else if(t.type==="income"){ if(t.category===REPAY) repaid+=a; else income+=a; } else if(t.type==="save") saved+=a; else if(t.type==="cardpay"){ if(t.from===CASHBACK) cashback+=a; else cards+=a; } else if(t.type==="loanpay") loans+=a; }
+  return {spent,income,saved,cards,loans,cashback,lent,repaid};
 }
 function sortTx(list){return list.slice().sort((x,y)=> (y.date||"").localeCompare(x.date||"") || (y.created||0)-(x.created||0));}
 
@@ -859,12 +863,13 @@ function viewHome(){
   if(!S.accounts.length) return setupEmpty();
   const c=compute(), m=monthStats(S.month);
   let h=backupNudge()+'<div class="homegrid"><div class="ga"><section class="hero"><div class="eyebrow">Net balance</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
-    '<p class="hint" style="margin:2px 0 12px">Everything you have, minus what you owe on cards and loans.</p>'+
+    '<p class="hint" style="margin:2px 0 12px">Everything you have plus what people owe you, minus what you owe on cards and loans.</p>'+
     '<div class="tiles">'+
     '<button class="tile" data-scrollto="g-day"><div class="eyebrow">Available</div><div class="v '+(c.available<0?"neg":"")+'">'+money(c.available)+'</div></button>'+
     '<button class="tile" data-scrollto="g-cards"><div class="eyebrow">Cards owe</div><div class="v '+(c.owed>0?"neg":"")+'">'+money(c.owed)+'</div></button>'+
     (()=>{ const sv=S.accounts.filter(a=>a.type==="savings"); return '<button class="tile" '+(sv.length===1?'data-openacct="'+esc(sv[0].id)+'"':'data-scrollto="g-sav"')+'><div class="eyebrow">Personal savings</div><div class="v pos">'+money(c.personal)+'</div></button>'; })()+
     '<button class="tile" data-tab-go="projects"><div class="eyebrow">Projects</div><div class="v pos">'+money(c.aside)+'</div></button>'+
+    (c.lentOut>0?'<button class="tile" data-tab-go="loans"><div class="eyebrow">Owed to me</div><div class="v pos">'+money(c.lentOut)+'</div></button>':'')+
     (S.loans.length?'<button class="tile" data-tab-go="loans" style="grid-column:1/-1"><div class="eyebrow">Loans I owe</div><div class="v '+(c.loansOwe>0?"neg":"")+'">'+money(c.loansOwe)+'</div></button>':'')+
     '</div></section>';
   h+='</div><div class="gb">'+acctGroups(c,true)+'</div>';
@@ -1048,9 +1053,50 @@ function chLine(r){
   const pc=pctOf(r.change,r.open);
   return '<span class="'+(r.good>0?"pos":"neg")+'">'+word+money(Math.abs(r.change))+(pc?' <em class="chp">'+pc+'</em>':'')+'</span>';
 }
+/* ---------- lent to others: who owes you, what they paid back, what is left ---------- */
+// Who it is for: the name you wrote, or a name after "for/to/para/de" in the description ("Loan for Raul's rent" -> Raul).
+function nameInDesc(d){ const m=String(d||"").match(/\b(?:for|to|para|de|a)\s+([A-ZÁÉÍÓÚÑ][\wáéíóúñ]+)(?:[’']s)?\b/); return m?m[1]:""; }
+function borrowerOf(t){
+  if(t.borrower) return String(t.borrower).trim();
+  const n = t.type==="expense" ? (nameInDesc(t.desc)||t.payee) : (t.payer||nameInDesc(t.desc));
+  return String(n||"Someone").trim()||"Someone";
+}
+// A known borrower whose name appears in some text (used to recognize repayments automatically).
+function detectBorrower(text){
+  const d=normWords(text); if(!d.trim()) return null;
+  return lentPeople().filter(r=>r.lent>0).find(r=>{ const k=normWords(r.name).trim().split(" ")[0]; return k.length>=3&&d.includes(" "+k+" "); })||null;
+}
+function lentPeople(){
+  const m={};
+  S.txns.forEach(t=>{ const isLend=t.type==="expense"&&catOf(t)===LENT, isPay=t.type==="income"&&t.category===REPAY; if(!isLend&&!isPay) return;
+    const name=borrowerOf(t), k=name.toLowerCase(); const r=m[k]||(m[k]={name,lent:0,repaid:0,txns:[]});
+    if(isLend) r.lent+=(+t.amount||0); else r.repaid+=(+t.amount||0); r.txns.push(t); });
+  return Object.values(m).map(r=>Object.assign(r,{lent:Math.round(r.lent*100)/100,repaid:Math.round(r.repaid*100)/100,left:Math.round(Math.max(0,r.lent-r.repaid)*100)/100,extra:Math.round(Math.max(0,r.repaid-r.lent)*100)/100}))
+    .sort((a,b)=>b.left-a.left||a.name.localeCompare(b.name));
+}
+function lentStatus(r){ if(r.lent<=0) return {t:"Paid you",c:"pos"}; if(r.left<=0) return {t:"Paid in full",c:"pos"}; if(r.repaid>0) return {t:"Partially repaid",c:"mid"}; return {t:"Not repaid yet",c:"neg"}; }
+function lentSection(){
+  const P=lentPeople(); const out=P.reduce((s,r)=>s+r.left,0);
+  let h='<section class="grp"><h2 id="g-lent"><span>Lent to others</span><span class="h2r"><span class="gsum pos">'+money(out)+' owed to you</span></span></h2>';
+  if(!P.length) return h+'<div class="empty">When you lend money, log it as an expense with the category <b>Lent to others</b> and write who it is for. It shows up here so you can track repayments.</div></section>';
+  h+='<div class="list">'+P.map(r=>{ const st=lentStatus(r), pct=r.lent?Math.min(100,r.repaid/r.lent*100):100;
+    return '<button class="row" data-lentperson="'+esc(r.name)+'"><span class="badge lent">'+esc(initials(r.name))+'</span><span class="main"><span class="t">'+esc(r.name)+' <span class="pill st-'+st.c+'">'+st.t+'</span></span>'+
+      '<span class="ubar goal"><i style="width:'+pct.toFixed(1)+'%"></i></span><span class="m">Lent '+money(r.lent)+' · repaid '+money(r.repaid)+'</span></span>'+
+      '<span class="amt '+(r.left>0?"":"mut")+'">'+money(r.left)+'<span class="owed">still owed</span></span></button>'; }).join("")+'</div></section>';
+  return h;
+}
+function openLentPerson(name){
+  const r=lentPeople().find(x=>x.name.toLowerCase()===String(name).toLowerCase()); if(!r) return;
+  const st=lentStatus(r);
+  let h=sheetHead(r.name)+'<div class="split" style="margin-bottom:12px"><div><div class="eyebrow">Lent</div><div class="v">'+money(r.lent)+'</div></div><div><div class="eyebrow">Repaid</div><div class="v pos">'+money(r.repaid)+'</div></div>'+
+    '<div><div class="eyebrow">Still owed</div><div class="v '+(r.left>0?"neg":"")+'">'+money(r.left)+'</div></div><div><div class="eyebrow">Status</div><div class="v" style="font-size:14px">'+st.t+'</div></div></div>';
+  h+='<div class="list">'+sortTx(r.txns).map(t=>{const lend=t.type==="expense"; return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+(lend?"↗":"↙")+'</span><span class="main"><span class="t">'+(lend?"Lent":"Paid back")+' · '+esc(t.desc||"")+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(lend?"from "+acctName(t.from):"into "+acctName(t.to))+'</span></span><span class="amt '+(lend?"neg":"pos")+'">'+(lend?"−":"+")+money(t.amount)+'</span></button>';}).join("")+'</div>';
+  h+='<div class="actions" style="margin-top:14px">'+(r.left>0?'<button class="btn primary" data-repay="'+esc(r.name)+'">+ Log repayment</button>':'<span class="hint">All paid back.</span>')+'</div>';
+  openSheet(h);
+}
 function catBreakdown(ym){
   const m={}; let total=0;
-  S.txns.forEach(t=>{ if(t.type!=="expense"||!t.date||ymOf(t.date)!==ym) return; const a=+t.amount||0; const c=catOf(t)||"__none"; m[c]=(m[c]||0)+a; total+=a; });
+  S.txns.forEach(t=>{ if(t.type!=="expense"||!t.date||ymOf(t.date)!==ym||catOf(t)===LENT) return; const a=+t.amount||0; const c=catOf(t)||"__none"; m[c]=(m[c]||0)+a; total+=a; });
   const rows=Object.keys(m).map(k=>({cat:k,amt:m[k],pct:total?m[k]/total*100:0})).sort((a,b)=>(a.cat==="__none")-(b.cat==="__none")||b.amt-a.amt);
   return {rows,total};
 }
@@ -1084,7 +1130,7 @@ function monthCard(R,compact){
   const st=R.stats;
   let h='<div class="mcard"><div class="mtop"><div><div class="eyebrow">'+(R.live?"Net balance change so far":"Net balance change")+'</div><div class="v '+(R.netChange<0?"neg":"pos")+'">'+(R.netChange>0?"+":R.netChange<0?"−":"")+money(Math.abs(R.netChange))+(pctOf(R.netChange,R.openNet)?'<span class="chp" style="font-size:13px;margin-left:8px">'+pctOf(R.netChange,R.openNet)+'</span>':'')+'</div></div>'+
     '<div style="text-align:right"><div class="eyebrow">'+(R.live?"Now":"Closed at")+'</div><div class="v">'+money(R.closeNet)+'</div></div></div>'+
-    '<div class="mstats"><span>Spent <b class="neg">'+money(st.spent)+'</b>'+(st.income>0?' <em class="chp">'+Math.round(st.spent/st.income*100)+'% of income</em>':'')+'</span><span>Income <b class="pos">'+money(st.income)+'</b></span><span>Card payments <b>'+money(st.cards)+'</b></span>'+(st.cashback?'<span>Cash back <b class="pos">'+money(st.cashback)+'</b></span>':'')+(st.loans?'<span>Loan payments <b>'+money(st.loans)+'</b></span>':'')+'</div>'+catChart(R.ym);
+    '<div class="mstats"><span>Spent <b class="neg">'+money(st.spent)+'</b>'+(st.income>0?' <em class="chp">'+Math.round(st.spent/st.income*100)+'% of income</em>':'')+'</span><span>Income <b class="pos">'+money(st.income)+'</b></span><span>Card payments <b>'+money(st.cards)+'</b></span>'+(st.cashback?'<span>Cash back <b class="pos">'+money(st.cashback)+'</b></span>':'')+(st.loans?'<span>Loan payments <b>'+money(st.loans)+'</b></span>':'')+(st.lent?'<span>Lent <b>'+money(st.lent)+'</b></span>':'')+(st.repaid?'<span>Paid back to you <b class="pos">'+money(st.repaid)+'</b></span>':'')+'</div>'+catChart(R.ym);
   if(R.top.length){
     h+='<div class="subh" style="margin-top:12px"><span>Top '+R.top.length+' changes</span><span></span></div><ol class="top3">'+R.top.map(r=>
       '<li><div class="tl"><span class="tn">'+esc(r.name)+'</span>'+chLine(r)+'</div>'+(r.driver?'<div class="m">Biggest: '+esc(txDisplay(r.driver).title)+' · '+money(r.driver.amount)+'</div>':'')+'</li>').join("")+'</ol>';
@@ -1190,7 +1236,7 @@ function dueText(n){ if(!n) return ""; const ds=n.date.toLocaleDateString("en-US
   if(n.days<0) return "Overdue since "+ds; if(n.days===0) return "Due today"; if(n.days===1) return "Due tomorrow"; return "Due "+ds; }
 function viewLoans(){
   const c=compute();
-  let h='<p class="hint" style="margin:4px 0 14px">Track loans you are paying off and money you lent to someone. Payments come out of checking or cash.</p>';
+  let h='<p class="hint" style="margin:4px 0 14px">Money you lent to someone, and loans you are paying off.</p>'+lentSection()+'<h2>Loans I\'m paying</h2>';
   if(!S.loans.length) return h+'<div class="empty"><strong>No active loans</strong><span>Add a car loan, personal loan, or money someone owes you. Enter what is left today and log each payment as you make it.</span><button class="btn primary" data-act="newloan">Add a loan</button></div>';
   const monthly=S.loans.filter(l=>l.dir!=="lent").reduce((s,l)=>s+(+l.payment||0),0);
   h+='<div class="split" style="margin-bottom:16px"><div><div class="eyebrow">I still owe</div><div class="v neg">'+money(c.loansOwe)+'</div></div><div><div class="eyebrow">Monthly payments</div><div class="v">'+money(monthly)+'</div></div>'+
@@ -1468,6 +1514,20 @@ function opts(list,sel,placeholder){return (placeholder?'<option value="">'+esc(
 function acctOpts(filter){return S.accounts.filter(filter||(()=>true)).map(a=>({v:a.id,l:a.name+" · "+ACCT_TYPES[a.type]}));}
 
 let draft=null;
+function borrowerField(t,label,hide){
+  const names=lentPeople().map(r=>r.name);
+  return '<div class="field" id="f_borrowerF"'+(hide?' hidden':'')+'><label for="f_borrower">'+label+'</label><input id="f_borrower" list="borrowers" maxlength="60" placeholder="e.g. Raul" value="'+esc(t.borrower||"")+'"><datalist id="borrowers">'+names.map(n=>'<option value="'+esc(n)+'"></option>').join("")+'</datalist><p class="hint" id="repayHint" style="margin:6px 0 0"></p></div>';
+}
+function updRepayHint(){
+  const hn=$("repayHint"), cat=$("f_cat"); if(!hn||!cat) return; hn.textContent="";
+  if(draft.type!=="income"||cat.value!==REPAY) return;
+  const who=($("f_borrower")||{}).value||""; const r=lentPeople().find(x=>x.name.toLowerCase()===who.trim().toLowerCase()); if(!r) { if(who) hn.textContent=who+" has no money lent to them yet."; return; }
+  const amt=parseFloat(String(($("f_amount")||{}).value||"").replace(/[$,\s]/g,""))||0;
+  const owed=draft.id&&draft.category===REPAY&&borrowerOf(draft).toLowerCase()===r.name.toLowerCase()?Math.round((r.left+(+draft.amount||0))*100)/100:r.left;
+  if(!amt){ hn.textContent=r.name+" owes you "+money(owed)+"."; return; }
+  const left=Math.round((owed-amt)*100)/100;
+  hn.textContent= left>0.004 ? "Partial repayment: "+r.name+" will still owe "+money(left)+"." : left<-0.004 ? "That's "+money(-left)+" more than "+r.name+" owes ("+money(owed)+")." : "Full repayment: "+r.name+" will be paid in full.";
+}
 function openTx(tx,preset){
   if(!S.accounts.length){toast("Add an account first.");S.tab="accounts";S.open=null;render();return;}
   draft = tx? Object.assign({},tx,{desc:tx.desc||tx.note||""}) : Object.assign({type:"expense",date:todayStr(),amount:"",from:"",to:"",category:"",project:"",desc:"",payee:"",payer:""},preset||{});
@@ -1505,11 +1565,13 @@ function renderTx(errMsg){
     h+='<div class="field"><label for="f_from">Paid with</label><select id="f_from">'+opts(acctOpts(credit).concat(acctOpts(liquid)),t.from,"Choose card or account")+'</select></div>';
     h+='<div class="field"><label for="f_payee">Destination: who you paid</label><input id="f_payee" list="payees" maxlength="60" placeholder="e.g. Publix, Shell, Netflix" value="'+esc(t.payee)+'"><datalist id="payees">'+payeeList().map(p=>'<option value="'+esc(p)+'"></option>').join("")+'</datalist></div>';
     h+='<div class="field"><label for="f_cat">Category</label><select id="f_cat">'+opts(EXP_CATS.map(c=>({v:c,l:c})),t.type==="expense"?catOf(t):"","Choose a category")+'</select></div>';
+    h+=borrowerField(t,"Lent to (who owes you)",catOf(t)!==LENT);
     h+=projField(t,"For a project? (optional)","No project");
   } else if(t.type==="income"){
     h+='<div class="field"><label for="f_payer">Received from (optional)</label><input id="f_payer" maxlength="60" placeholder="e.g. Employer name" value="'+esc(t.payer)+'"></div>';
     h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(),t.to,"Choose account")+'</select></div>';
     h+='<div class="field"><label for="f_cat">Category</label><select id="f_cat">'+opts(INC_CATS.map(c=>({v:c,l:c})),t.category,"Choose a category")+'</select></div>';
+    h+=borrowerField(t,"Paid back by",t.category!==REPAY);
     h+=projField(t,"Save it for a project (optional)","No project");
   } else if(t.type==="transfer"){
     h+='<div class="two"><div class="field"><label for="f_from">From</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose")+'</select></div>'+
@@ -1551,6 +1613,17 @@ function renderTx(errMsg){
   const fdesc=$("f_desc"), fp=$("f_proj");
   if(fdesc&&fp) fdesc.addEventListener("input",()=>{ const p=projectFor(fdesc.value); if(p&&fp.value!==p.id){ fp.value=p.id; fp.classList.add("flash"); setTimeout(()=>fp.classList.remove("flash"),700); } updProjHint(); });
   ["f_proj","f_from","f_amount"].forEach(id=>{ const el=$(id); if(el) el.addEventListener(el.tagName==="SELECT"?"change":"input",updProjHint); });
+  const fcat=$("f_cat"), bf=$("f_borrowerF");
+  if(fcat&&bf){ const sync=()=>{ const on=(draft.type==="expense"&&fcat.value===LENT)||(draft.type==="income"&&fcat.value===REPAY); bf.hidden=!on;
+      const b=$("f_borrower"); if(on&&b&&!b.value){ const d=($("f_desc")||{}).value||"", kb=detectBorrower(d); const cand=draft.type==="expense"?((kb&&kb.name)||nameInDesc(d)||(($("f_payee")||{}).value||"")):((($("f_payer")||{}).value)||(kb&&kb.name)||nameInDesc(d)); if(cand) b.value=cand; } updRepayHint(); };
+    fcat.addEventListener("change",sync); ["f_borrower","f_amount"].forEach(id=>{const el=$(id); if(el) el.addEventListener("input",updRepayHint);}); updRepayHint();
+    const auto=()=>{ const b=$("f_borrower"); if(!b) return;
+      if(draft.type==="income"){ const txt=(($("f_desc")||{}).value||"")+" "+(($("f_payer")||{}).value||""); const r=detectBorrower(txt);
+        if(r&&(!fcat.value||fcat.value===REPAY)){ if(fcat.value!==REPAY){ fcat.value=REPAY; fcat.classList.add("flash"); setTimeout(()=>fcat.classList.remove("flash"),700); } if(!b.dataset.typed) b.value=r.name; sync(); } }
+      else if(draft.type==="expense"&&fcat.value===LENT&&!b.dataset.typed){ const txt=($("f_desc")||{}).value||""; const r=detectBorrower(txt); const n=r?r.name:nameInDesc(txt); if(n) b.value=n; }
+    };
+    ["f_desc","f_payer"].forEach(id=>{const el=$(id); if(el) el.addEventListener("input",auto);}); fcat.addEventListener("change",auto);
+    const bi=$("f_borrower"); if(bi) bi.addEventListener("input",()=>{bi.dataset.typed="1";}); }
   updProjHint();
   const fi=$("f_int"), fa=$("f_amount");
   if(fi) fi.addEventListener("input",()=>{draft.intAuto=false;});
@@ -1573,7 +1646,7 @@ function loanDefaults(){
 }
 function readTxForm(){
   const g=id=>{const el=$(id);return el?el.value.trim():undefined;};
-  const map={amount:"f_amount",date:"f_date",desc:"f_desc",from:"f_from",to:"f_to",category:"f_cat",project:"f_proj",payee:"f_payee",payer:"f_payer",loan:"f_loan",interest:"f_int"};
+  const map={amount:"f_amount",date:"f_date",desc:"f_desc",from:"f_from",to:"f_to",category:"f_cat",project:"f_proj",payee:"f_payee",payer:"f_payer",loan:"f_loan",interest:"f_int",borrower:"f_borrower"};
   for(const k in map){const v=g(map[k]); if(v!==undefined) draft[k]=v;}
 }
 async function submitTx(e){
@@ -1583,6 +1656,7 @@ async function submitTx(e){
   if(!(amt>0)) return renderTx("Enter an amount greater than zero.");
   if(!t.desc) return renderTx("Add a short description.");
   if((t.type==="expense"||t.type==="income")&&!t.category) return renderTx("Choose a category so you can see where your money goes.");
+  if(((t.type==="expense"&&t.category===LENT)||(t.type==="income"&&t.category===REPAY))&&!String(t.borrower||"").trim()) return renderTx(t.type==="expense"?"Write who you lent the money to.":"Write who paid you back.");
   const lentLoan = t.type==="loanpay" && loanById(t.loan) && loanById(t.loan).dir==="lent";
   const need={expense:["from","payee"],income:["to"],transfer:["from","to"],cardpay:["from","to"],save:["from","project"],loanpay:["loan",lentLoan?"to":"from"]}[t.type];
   const intr=t.type==="loanpay"&&!lentLoan&&t.interest?parseFloat(String(t.interest).replace(/[$,\s]/g,"")):0;
@@ -1594,7 +1668,8 @@ async function submitTx(e){
     to:["income","transfer","cardpay"].includes(t.type)?t.to:"",
     payee:t.type==="expense"?t.payee:"", payer:t.type==="income"?(t.payer||""):"",
     category:["expense","income"].includes(t.type)?(t.category||""):"",
-    project:["save","expense","transfer","income","cardpay"].includes(t.type)?(t.project||""):""};
+    project:["save","expense","transfer","income","cardpay"].includes(t.type)?(t.project||""):"",
+    borrower:((t.type==="expense"&&t.category===LENT)||(t.type==="income"&&t.category===REPAY))?String(t.borrower||"").trim():""};
   if(t.type==="loanpay"){ doc.loan=t.loan; doc.from=lentLoan?"":t.from; doc.to=lentLoan?t.to:""; doc.interest=Math.round(intr*100)/100; }
   if(await save(t.id,doc)){closeSheet();toast(t.id?"Transaction updated":"Transaction added"); if(!S.open) S.month=ymOf(doc.date); render();}
 }
@@ -1680,6 +1755,8 @@ document.addEventListener("click",async e=>{
   if(ds.tab){S.open=null;S.openLoan=null;S.openProj=null;S.tab=ds.tab;try{localStorage.setItem("pb_tab",S.tab);}catch(_){} render();window.scrollTo(0,0);return;}
   if(ds.actview){S.actView=ds.actview;render();window.scrollTo(0,0);return;}
   if(ds.closing){S.open=null;S.openLoan=null;S.openProj=null;S.tab="activity";S.actView="closing";render();window.scrollTo(0,0);return;}
+  if(ds.lentperson){ openLentPerson(ds.lentperson); return; }
+  if(ds.repay){ const r=lentPeople().find(x=>x.name===ds.repay); const ck=S.accounts.find(a=>a.type==="checking"); openTx(null,{type:"income",category:REPAY,borrower:ds.repay,payer:ds.repay,amount:r?r.left.toFixed(2):"",desc:"Repayment from "+ds.repay,to:ck?ck.id:""}); return; }
   if(ds.catlist){ openCatList(ds.catlist,ds.catym); return; }
   if(ds.addfor){ const k=ds.addfor, first=t=>S.accounts.find(a=>a.type===t);
     if(k==="credit") openTx(null,{type:"expense"});
