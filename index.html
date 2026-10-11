@@ -104,6 +104,12 @@ button.row:hover{background:var(--sunk)}
 .ck.op{color:var(--accent);font-size:20px} .ck.fn{color:var(--muted);font-size:15px}
 .ck.eq{grid-column:span 2;background:color-mix(in srgb,var(--accent) 18%,var(--sunk));color:var(--accent)}
 .cuse{height:44px}
+.txprev{margin:2px 0 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:6px}
+.txprev:empty{display:none}
+.tph{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tpr{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:14px;flex-wrap:wrap}
+.tpn{font-weight:600}.tpv{font-family:var(--f-num);font-size:13.5px;text-align:right}.tpv .arr{color:var(--muted);margin:0 2px}
+.tpv b{font-weight:600}.tpv em{font-style:normal;color:var(--muted);font-size:12px}
 .settings{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 .settings summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:14px;font-weight:600;cursor:pointer}
 .settings summary::-webkit-details-marker{display:none}
@@ -1598,6 +1604,33 @@ function opts(list,sel,placeholder){return (placeholder?'<option value="">'+esc(
 function acctOpts(filter){return S.accounts.filter(filter||(()=>true)).map(a=>({v:a.id,l:a.name+" · "+ACCT_TYPES[a.type]}));}
 
 let draft=null;
+/* ---------- live preview: each account's balance now and after this transaction ---------- */
+function updTxPrev(){
+  const box=$("txPrev"); if(!box) return;
+  const g=id=>{const el=$(id);return el?el.value:undefined;};
+  const amt=parseFloat(String(g("f_amount")||"").replace(/[$,\s]/g,""))||0;
+  const t={type:draft.type,amount:amt,date:g("f_date")||draft.date||todayStr(),created:draft.created||Date.now()+1,
+    from:g("f_from")!==undefined?g("f_from"):draft.from, to:g("f_to")!==undefined?g("f_to"):draft.to, loan:g("f_loan")!==undefined?g("f_loan"):draft.loan};
+  if(t.type==="transfer"&&String(t.to||"").startsWith("loan:")){ t.type="loanpay"; t.loan=t.to.slice(5); t.to=""; }
+  const ln=t.type==="loanpay"&&loanById(t.loan), lent=ln&&ln.dir==="lent";
+  if(t.type==="loanpay"){ if(lent) t.from=""; else t.to=""; }
+  if(t.type==="income") t.from=""; if(t.type==="expense") t.to="";
+  const c=compute(), orig=draft.id?S.txns.find(x=>x.id===draft.id):null;
+  const ids=[t.from,t.to].filter((v,i,a)=>v&&acctById(v)&&a.indexOf(v)===i);
+  const rows=ids.map(id=>{ const a=acctById(id), credit=a.type==="credit";
+    const before=c.bal[id]-(orig?deltaFor(orig,id):0), after=before+deltaFor(t,id);
+    const show=v=>credit?money(Math.max(0,-v)):money(v), lim=+a.limit||0;
+    const tag=credit?' <span class="mut">owed</span>':'';
+    const util=credit&&lim?' · '+Math.round(Math.max(0,-after)/lim*100)+'% of limit':'';
+    const worse=credit?(-after>-before):(after<before);
+    if(!amt) return '<div class="tpr"><span class="tpn">'+esc(a.name)+'</span><span class="tpv">'+show(before)+tag+(credit&&lim?'<em> · '+Math.round(Math.max(0,-before)/lim*100)+'% of limit</em>':'')+'</span></div>';
+    return '<div class="tpr"><span class="tpn">'+esc(a.name)+'</span><span class="tpv">'+show(before)+tag+' <span class="arr">→</span> <b class="'+(Math.abs(after-before)<0.005?"":(worse?"neg":"pos"))+'">'+show(after)+'</b>'+(util?'<em>'+util+'</em>':'')+'</span></div>'; });
+  if(ln){ const intr=parseFloat(String(g("f_int")||"").replace(/[$,\s]/g,""))||0;
+    const left=(c.loan[ln.id]||0)+(orig&&orig.loan===ln.id?Math.max(0,(+orig.amount||0)-(+orig.interest||0)):0), afterL=Math.max(0,left-Math.max(0,amt-(lent?0:intr)));
+    rows.push('<div class="tpr"><span class="tpn">'+esc(ln.name)+'</span><span class="tpv">'+money(left)+' <span class="mut">left</span> <span class="arr">→</span> <b class="pos">'+money(afterL)+'</b></span></div>'); }
+  const late=ids.some(id=>!counts(t,id));
+  box.innerHTML=rows.length?'<div class="tph">Balances '+(amt?'after this':'now')+'</div>'+rows.join("")+(late?'<p class="hint" style="margin:6px 0 0">This date is before an account\'s starting balance, so that account won\'t change.</p>':''):'';
+}
 function borrowerField(t,label,hide){
   const names=lentPeople().map(r=>r.name);
   return '<div class="field" id="f_borrowerF"'+(hide?' hidden':'')+'><label for="f_borrower">'+label+'</label><input id="f_borrower" list="borrowers" maxlength="60" placeholder="e.g. Raul" value="'+esc(t.borrower||"")+'"><datalist id="borrowers">'+names.map(n=>'<option value="'+esc(n)+'"></option>').join("")+'</datalist><p class="hint" id="repayHint" style="margin:6px 0 0"></p></div>';
@@ -1687,6 +1720,7 @@ function renderTx(errMsg){
     h+='<div class="field"><label for="f_proj">Destination project</label><select id="f_proj">'+opts(S.projects.map(p=>({v:p.id,l:p.name})),t.project,"Choose project")+'</select></div>';
     h+='<p class="hint">The money stays in that account but counts as reserved for this project.</p>';
   }
+  h+='<div class="txprev" id="txPrev" aria-live="polite"></div>';
   if(errMsg) h+='<p class="err" role="alert">'+esc(errMsg)+'</p>';
   h+='<div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Add transaction")+'</button></div>';
   h+='<div id="delBox"></div></form>';
@@ -1697,6 +1731,7 @@ function renderTx(errMsg){
   const fdesc=$("f_desc"), fp=$("f_proj");
   if(fdesc&&fp) fdesc.addEventListener("input",()=>{ const p=projectFor(fdesc.value); if(p&&fp.value!==p.id){ fp.value=p.id; fp.classList.add("flash"); setTimeout(()=>fp.classList.remove("flash"),700); } updProjHint(); });
   ["f_proj","f_from","f_amount"].forEach(id=>{ const el=$(id); if(el) el.addEventListener(el.tagName==="SELECT"?"change":"input",updProjHint); });
+  ["f_amount","f_from","f_to","f_loan","f_int","f_date"].forEach(id=>{ const el=$(id); if(el){ el.addEventListener("input",updTxPrev); el.addEventListener("change",updTxPrev); } }); updTxPrev();
   const fcat=$("f_cat"), bf=$("f_borrowerF");
   if(fcat&&bf){ const sync=()=>{ const on=(draft.type==="expense"&&fcat.value===LENT)||(draft.type==="income"&&fcat.value===REPAY); bf.hidden=!on;
       const b=$("f_borrower"); if(on&&b&&!b.value){ const d=($("f_desc")||{}).value||"", kb=detectBorrower(d); const cand=draft.type==="expense"?((kb&&kb.name)||nameInDesc(d)||(($("f_payee")||{}).value||"")):((($("f_payer")||{}).value)||(kb&&kb.name)||nameInDesc(d)); if(cand) b.value=cand; } updRepayHint(); };
