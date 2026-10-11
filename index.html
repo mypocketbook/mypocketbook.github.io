@@ -275,9 +275,9 @@ const TYPES = {
   cardpay:{label:"Card payment"}, loanpay:{label:"Loan payment"}, save:{label:"Save to project"}
 };
 const ACCT_TYPES = {checking:"Checking", cash:"Cash", savings:"Personal savings", credit:"Credit card"};
-const EXP_CATS = ["Food & dining","Groceries","Transport & gas","Bills & utilities","Rent / housing","Shopping","Health & personal care","Entertainment","Subscriptions","Travel","Gifts & other"];
+const EXP_CATS = ["Food & dining","Groceries","Transport & gas","Bills & utilities","Rent / housing","Shopping","Health & personal care","Entertainment","Subscriptions","Travel","Other"];
 // Older entries keep their original category; these merge them into the current list.
-const CAT_MERGE = {"Gas":"Transport & gas","Transport":"Transport & gas","Health":"Health & personal care","Fitness":"Health & personal care","Personal care":"Health & personal care","Gifts":"Gifts & other","Other":"Gifts & other"};
+const CAT_MERGE = {"Gas":"Transport & gas","Transport":"Transport & gas","Health":"Health & personal care","Fitness":"Health & personal care","Personal care":"Health & personal care","Gifts":"Other","Gifts & other":"Other"};
 function catOf(t){ const c=t&&t.category; return c?(CAT_MERGE[c]||c):""; }
 const INC_CATS = ["Salary","Freelance","Refund","Gift","Other"];
 
@@ -970,10 +970,10 @@ function catBreakdown(ym){
 // Ring chart: the 4 biggest categories get their own color, the rest fold into "Other".
 function catChart(ym){
   const B=catBreakdown(ym); if(!B.total) return '';
-  const named=B.rows.filter(r=>r.cat!=="__none"), none=B.rows.find(r=>r.cat==="__none");
+  const named=B.rows.filter(r=>r.cat!=="__none"&&r.cat!=="Other"), none=B.rows.find(r=>r.cat==="__none"), oth=B.rows.find(r=>r.cat==="Other");
   let parts=named.slice(0,4).map((r,i)=>({label:r.cat,amt:r.amt,col:"var(--s"+(i+1)+")"}));
-  const rest=named.slice(4).reduce((s,r)=>s+r.amt,0);
-  if(rest>0) parts.push({label:"Other",amt:rest,col:"var(--s5)",sub:named.slice(4).map(r=>r.cat).join(", ")});
+  const folded=named.slice(4).concat(oth?[oth]:[]), rest=folded.reduce((s,r)=>s+r.amt,0);
+  if(rest>0) parts.push({label:"Other",amt:rest,col:"var(--s5)",sub:folded.map(r=>r.cat).join(", ")});
   if(none) parts.push({label:"Needs a category",amt:none.amt,col:"var(--sunk)",none:true});
   const T=B.total, cx=60, cy=60, R=54, r=40, gap=parts.length>1?0.035:0;
   let a0=-Math.PI/2, arcs='';
