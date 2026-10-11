@@ -183,6 +183,8 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .plus{width:32px;height:32px;border-radius:999px;border:1px solid var(--line);background:var(--sunk);color:var(--accent);font-size:20px;line-height:1;display:grid;place-items:center;padding:0;cursor:pointer}
 .plus:hover{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .chev2{color:var(--muted);font-size:20px}
+.projchips{margin:2px 0 10px}.projchips .cmon{font-family:var(--f-num);font-size:12px;color:var(--muted);margin-left:4px}
+.projchips .chip[aria-pressed="true"] .cmon{color:inherit;opacity:.75}
 .proj .head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .proj .name{font-family:var(--f-display);font-weight:500;font-size:17px;min-width:0;overflow-wrap:anywhere}
 .proj .bal{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:20px}
@@ -1167,7 +1169,9 @@ function viewProject(p){
   const ins=mine.filter(t=>projEffect(t).sign>0), buys=mine.filter(t=>t.type==="expense"), pays=mine.filter(t=>projEffect(t).sign<0&&t.type!=="expense");
   const sum=l=>l.reduce((s,t)=>s+(+t.amount||0),0);
   const wish=p.wish||[], wTotal=wish.reduce((s,w)=>s+(+w.price||0),0), wLeft=wish.filter(w=>!w.done).reduce((s,w)=>s+(+w.price||0),0);
-  let h='<section class="hero"><div class="eyebrow">Available for this project</div><div class="big '+(bal<0?"neg":"")+'">'+money(bal)+'</div>'+
+  const all=S.projects.slice().sort((x,y)=>(x.created||0)-(y.created||0));
+  let h=(all.length>1?'<div class="chips projchips" role="tablist" aria-label="Projects">'+all.map(q=>'<button class="chip" role="tab" data-viewproj="'+esc(q.id)+'" aria-pressed="'+(q.id===p.id)+'" aria-selected="'+(q.id===p.id)+'">'+esc(q.name)+' <span class="cmon">'+money(c.proj[q.id]||0)+'</span></button>').join("")+'</div>':'')+
+    '<section class="hero"><div class="eyebrow">Available for this project</div><div class="big '+(bal<0?"neg":"")+'">'+money(bal)+'</div>'+
     (goal?'<div class="ubar goal" style="height:8px;margin:8px 0 4px"><i style="width:'+pct.toFixed(1)+'%"></i></div><p class="hint" style="margin:0">'+Math.round(pct)+'% of your '+money(goal)+' goal'+(bal<goal?' · '+money(goal-bal)+' to go':' · goal reached')+'</p>':'<p class="hint" style="margin:0">No goal set. Add one with Edit project.</p>')+
     '<div class="actions" style="margin-top:14px"><button class="btn" data-editproj="'+esc(p.id)+'">Edit project</button><button class="btn primary" data-saveto="'+esc(p.id)+'">+ Add money</button></div></section>';
   h+='<div class="pcols"><div class="pcol">';
