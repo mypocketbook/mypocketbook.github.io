@@ -73,6 +73,27 @@ button.row:hover{background:var(--sunk)}
 .badge{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--sunk);color:var(--muted)}
 .badge.pic{background:#fff;padding:0;overflow:hidden}.badge.pic img{width:100%;height:100%;object-fit:cover;display:block}
 .iconpick{display:flex;align-items:center;gap:12px}.iconpick .badge{width:48px;height:48px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--sunk);border-radius:12px;padding:4px;margin:4px 0 10px}
+.seg button{border:0;background:none;border-radius:9px;padding:8px;font:inherit;font-size:14px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink,inherit);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.mhead{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:2;display:flex;justify-content:space-between;align-items:baseline;background:var(--bg,inherit);padding:14px 2px 4px;font-family:var(--f-display);font-size:17px;font-weight:500;border-bottom:1px solid var(--line)}
+.mhead span:last-child{font-family:var(--f-num);font-size:13px;color:var(--muted)}
+.mcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.mtop{display:flex;justify-content:space-between;gap:10px}
+.mtop .v{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:20px}
+.mstats{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);margin-top:10px}
+.mstats b{font-family:var(--f-num);font-weight:500;color:inherit}.mstats b.neg{color:var(--neg)}.mstats b.pos{color:var(--pos)}
+.top3{margin:0;padding-left:20px;display:grid;gap:8px;font-size:14px}
+.top3 .tl{display:flex;justify-content:space-between;gap:8px}.top3 .tn{font-weight:600}
+.top3 .tl span:last-child{font-family:var(--f-num);font-size:13px;white-space:nowrap}
+.top3 .m{font-size:12.5px;color:var(--muted)}
+.mdet{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.mdet summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--accent)}
+.crow2{padding:5px 2px;font-size:13.5px}.crow2 .tl{display:flex;justify-content:space-between;gap:8px}.crow2 .tn{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow2 .tl span:last-child{font-family:var(--f-num);font-size:13px;white-space:nowrap}.crow2 .m{font-size:12.5px;color:var(--muted);font-family:var(--f-num)}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;font-size:13px;padding:4px 2px}
+.crow span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crow span:not(:first-child){font-family:var(--f-num);white-space:nowrap;text-align:right}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .subh{display:flex;justify-content:space-between;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 2px 6px}
 .subh span:last-child{font-family:var(--f-num);letter-spacing:0;color:var(--pos)}
@@ -241,7 +262,7 @@ const EXP_CATS = ["Food & dining","Groceries","Gas","Transport","Bills & utiliti
 const INC_CATS = ["Salary","Freelance","Refund","Gift","Other"];
 
 const S = {db:null,col:null,uid:null,status:"loading",accounts:[],projects:[],loans:[],txns:[],openLoan:null,
-  tab:"home",open:null,month:ymOf(todayStr()),acct:"all"};
+  tab:"home",open:null,month:ymOf(todayStr()),acct:"all",actView:"list"};
 try{ const t=localStorage.getItem("pb_tab"); if(t) S.tab=t; }catch(e){}
 
 /* ---------- helpers ---------- */
@@ -276,13 +297,14 @@ function toast(msg){const r=$("toastRoot");r.innerHTML='<div class="toast" role=
 
 /* ---------- money math ---------- */
 // Every account keeps a signed balance. Credit cards start negative (amount owed) and go more negative with charges.
-function compute(){
+function compute(upTo){
   const bal={}, proj={};
   S.accounts.forEach(a=>{const o=+a.opening||0; bal[a.id]= a.type==="credit" ? -o : o;});
   S.projects.forEach(p=>proj[p.id]=0);
   const loan={}; S.loans.forEach(l=>loan[l.id]=+l.balance||0);
   let cur=null; const adj=(id,d)=>{ if(id in bal&&(!cur||counts(cur,id))) bal[id]+=d; };
   for(const t of S.txns){
+    if(upTo&&t.date&&t.date>upTo) continue;
     cur=t; const a=+t.amount||0;
     if(t.type==="expense"){adj(t.from,-a);}
     else if(t.type==="income"){adj(t.to,a);}
@@ -299,9 +321,9 @@ function compute(){
   const available=daily-asideDaily, savingsTotal=personal+asideDaily;
   return {bal,proj,loan,liquid,owed,aside,loansOwe,loansLent,daily,personal,limit,available,savingsTotal,net:liquid-owed-loansOwe+loansLent,free:available-owed};
 }
-function monthStats(ym){
+function monthStats(ym,acct){
   let spent=0,income=0,saved=0,cards=0,loans=0,cashback=0;
-  for(const t of S.txns){ if(!t.date||ymOf(t.date)!==ym) continue; const a=+t.amount||0;
+  for(const t of S.txns){ if(!t.date||ymOf(t.date)!==ym) continue; if(acct&&t.from!==acct&&t.to!==acct) continue; const a=+t.amount||0;
     if(t.type==="expense") spent+=a; else if(t.type==="income") income+=a; else if(t.type==="save") saved+=a; else if(t.type==="cardpay"){ if(t.from===CASHBACK) cashback+=a; else cards+=a; } else if(t.type==="loanpay") loans+=a; }
   return {spent,income,saved,cards,loans,cashback};
 }
@@ -668,7 +690,7 @@ function render(){
   const openA=S.open&&acctById(S.open), openL=!openA&&S.openLoan&&loanById(S.openLoan);
   $("title").textContent= openA? openA.name : openL? openL.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans"}[S.tab];
   $("backBtn").hidden=!(openA||openL);
-  $("monthnav").hidden = !!(openA||openL) || !(S.tab==="home"||S.tab==="activity");
+  $("monthnav").hidden = true;
   $("monthLabel").textContent=monthName(S.month);
   const v=$("view");
   if(S.status==="loading"){v.innerHTML='<div class="notice">Loading your books…</div>';return;}
@@ -733,25 +755,18 @@ function backupNudge(){
 function viewHome(){
   if(!S.accounts.length) return setupEmpty();
   const c=compute(), m=monthStats(S.month);
-  let h=backupNudge()+'<section class="hero"><div class="eyebrow">Free to spend</div><div class="big '+(c.free<0?"neg":"")+'">'+money(c.free)+'</div>'+
-    '<p class="hint" style="margin:2px 0 12px">Available in checking and cash, after paying your cards.</p>'+
+  let h=backupNudge()+'<section class="hero"><div class="eyebrow">Net balance</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
+    '<p class="hint" style="margin:2px 0 12px">Everything you have, minus what you owe on cards and loans.</p>'+
     '<div class="tiles">'+
     '<button class="tile" data-scrollto="g-day"><div class="eyebrow">Available</div><div class="v '+(c.available<0?"neg":"")+'">'+money(c.available)+'</div></button>'+
     '<button class="tile" data-scrollto="g-cards"><div class="eyebrow">Cards owe</div><div class="v '+(c.owed>0?"neg":"")+'">'+money(c.owed)+'</div></button>'+
     (()=>{ const sv=S.accounts.filter(a=>a.type==="savings"); return '<button class="tile" '+(sv.length===1?'data-openacct="'+esc(sv[0].id)+'"':'data-scrollto="g-sav"')+'><div class="eyebrow">Personal savings</div><div class="v pos">'+money(c.personal)+'</div></button>'; })()+
     '<button class="tile" data-tab-go="projects"><div class="eyebrow">Projects</div><div class="v pos">'+money(c.aside)+'</div></button>'+
-    '</div>'+
-    '<div class="split" style="margin-top:10px"><div><div class="eyebrow">Net balance</div><div class="v">'+money(c.net)+'</div></div>'+
-    (S.loans.length?'<div><div class="eyebrow">Loans I owe</div><div class="v '+(c.loansOwe>0?"neg":"")+'">'+money(c.loansOwe)+'</div></div>':'')+
+    (S.loans.length?'<button class="tile" data-tab-go="loans" style="grid-column:1/-1"><div class="eyebrow">Loans I owe</div><div class="v '+(c.loansOwe>0?"neg":"")+'">'+money(c.loansOwe)+'</div></button>':'')+
     '</div></section>';
   h+=acctGroups(c,true);
-  h+='<h2>'+esc(monthName(S.month,true))+'</h2><div class="split">'+
-    '<div><div class="eyebrow">Spent</div><div class="v neg">'+money(m.spent)+'</div></div>'+
-    '<div><div class="eyebrow">Income</div><div class="v pos">'+money(m.income)+'</div></div>'+
-    '<div><div class="eyebrow">Card payments</div><div class="v">'+money(m.cards)+'</div></div>'+
-    '<div><div class="eyebrow">Net this month</div><div class="v">'+money(m.income-m.cards-m.loans)+'</div></div>'+
-    '<div><div class="eyebrow">Loan payments</div><div class="v">'+money(m.loans)+'</div></div>'+
-    (m.cashback?'<div><div class="eyebrow">Paid with cash back</div><div class="v pos">'+money(m.cashback)+'</div></div>':'')+'</div>';
+  const ym=ymOf(todayStr());
+  h+='<h2>'+esc(monthName(ym,true))+' so far <button data-closing="1">All months</button></h2>'+monthCard(monthReport(ym),true);
   return h;
 }
 
@@ -875,18 +890,79 @@ function txRow(t){
 
 function viewActivity(){
   if(!S.accounts.length) return setupEmpty();
-  let list=S.txns.filter(t=>t.date&&ymOf(t.date)===S.month);
+  let h='<div class="seg" role="group" aria-label="View"><button data-actview="list" aria-pressed="'+(S.actView!=="closing")+'">Transactions</button><button data-actview="closing" aria-pressed="'+(S.actView==="closing")+'">Monthly closing</button></div>';
+  if(S.actView==="closing") return h+viewClosing();
+  let list=S.txns.filter(t=>t.date);
   if(S.acct!=="all") list=list.filter(t=>t.from===S.acct||t.to===S.acct);
   list=sortTx(list);
-  let h='<div class="chips" role="group" aria-label="Filter by account"><button class="chip" data-filteracct="all" aria-pressed="'+(S.acct==="all")+'">All accounts</button>'+
+  h+='<div class="chips" role="group" aria-label="Filter by account"><button class="chip" data-filteracct="all" aria-pressed="'+(S.acct==="all")+'">All accounts</button>'+
     S.accounts.map(a=>'<button class="chip" data-filteracct="'+esc(a.id)+'" aria-pressed="'+(S.acct===a.id)+'">'+esc(a.name)+'</button>').join("")+'</div>';
-  if(!list.length) return h+'<div class="empty" style="margin-top:14px"><strong>Nothing in '+esc(monthName(S.month,true))+'</strong><span>Entries you add for this month'+(S.acct!=="all"?" and account":"")+' show up here, grouped by day.</span></div>';
-  const groups={}; list.forEach(t=>(groups[t.date]=groups[t.date]||[]).push(t));
-  Object.keys(groups).sort().reverse().forEach(d=>{
-    const spent=groups[d].filter(t=>t.type==="expense").reduce((s,t)=>s+(+t.amount||0),0);
-    h+='<div class="day"><span>'+esc(dayName(d))+'</span><span class="num">'+(spent?"spent "+money(spent):"")+'</span></div><div class="list">'+groups[d].map(txRow).join("")+'</div>';
+  if(!list.length) return h+'<div class="empty" style="margin-top:14px"><strong>No entries yet</strong><span>Tap + to log an expense, transfer or card payment. Everything shows here, newest first, grouped by month.</span></div>';
+  const months={}; list.forEach(t=>{ const m=ymOf(t.date); (months[m]=months[m]||[]).push(t); });
+  Object.keys(months).sort().reverse().forEach(m=>{
+    const st=monthStats(m,S.acct!=="all"?S.acct:null);
+    h+='<div class="mhead"><span>'+esc(monthName(m,true))+'</span><span>spent '+money(st.spent)+'</span></div>';
+    const groups={}; months[m].forEach(t=>(groups[t.date]=groups[t.date]||[]).push(t));
+    Object.keys(groups).sort().reverse().forEach(d=>{
+      const spent=groups[d].filter(t=>t.type==="expense").reduce((s,t)=>s+(+t.amount||0),0);
+      h+='<div class="day"><span>'+esc(dayName(d))+'</span><span class="num">'+(spent?"spent "+money(spent):"")+'</span></div><div class="list">'+groups[d].map(txRow).join("")+'</div>';
+    });
   });
   return h;
+}
+
+/* ---------- monthly closing: balances at month end, what went up or down, and the 3 biggest changes ---------- */
+function lastDayOf(ym){ const [y,m]=ym.split("-").map(Number); return dIso(new Date(y,m,0)); }
+function firstMonth(){
+  const ds=S.accounts.map(a=>a.asOf||(a.created?dIso(new Date(a.created)):"")).concat(S.txns.map(t=>t.date)).filter(Boolean).sort();
+  const cur=ymOf(todayStr()); if(!ds.length) return cur;
+  // start at the month when tracking started (the earliest "balance as of" date)
+  const asofs=S.accounts.map(a=>a.asOf).filter(Boolean).sort();
+  const m=ymOf(asofs[0]||ds[0]); return m>cur?cur:m;
+}
+function monthReport(ym){
+  const cur=ymOf(todayStr()), live=ym===cur;
+  const o=compute(lastDayOf(shiftMonth(ym,-1))), c=compute(live?todayStr():lastDayOf(ym));
+  const rows=[];
+  S.accounts.forEach(a=>{ const credit=a.type==="credit"; const ob=credit?-o.bal[a.id]:o.bal[a.id], cb=credit?-c.bal[a.id]:c.bal[a.id];
+    const ch=Math.round((cb-ob)*100)/100; rows.push({kind:"acct",id:a.id,name:a.name,credit,open:ob,close:cb,change:ch,good:credit?-ch:ch}); });
+  S.loans.forEach(l=>{ const lent=l.dir==="lent"; const ob=o.loan[l.id], cb=c.loan[l.id]; const ch=Math.round((cb-ob)*100)/100;
+    rows.push({kind:"loan",id:l.id,name:l.name,credit:!lent,open:ob,close:cb,change:ch,good:lent?ch:-ch}); });
+  const inMonth=S.txns.filter(t=>t.date&&ymOf(t.date)===ym);
+  rows.forEach(r=>{ // biggest single entry behind each change
+    let best=null; inMonth.forEach(t=>{ const hit=r.kind==="acct"?(t.from===r.id||t.to===r.id):(t.loan===r.id); if(hit&&(!best||(+t.amount||0)>(+best.amount||0))) best=t; });
+    r.driver=best; });
+  const moved=rows.filter(r=>Math.abs(r.change)>=0.005);
+  const top=moved.slice().sort((a,b)=>Math.abs(b.change)-Math.abs(a.change)).slice(0,3);
+  return {ym,live,openNet:o.net,closeNet:c.net,netChange:Math.round((c.net-o.net)*100)/100,rows,moved,top,stats:monthStats(ym),
+    up:moved.filter(r=>r.good>0).sort((a,b)=>b.good-a.good), down:moved.filter(r=>r.good<0).sort((a,b)=>a.good-b.good)};
+}
+function chLine(r){
+  const word=r.credit?(r.change>0?"owed up ":"owed down "):(r.change>0?"up ":"down ");
+  return '<span class="'+(r.good>0?"pos":"neg")+'">'+word+money(Math.abs(r.change))+'</span>';
+}
+function monthCard(R,compact){
+  const st=R.stats;
+  let h='<div class="mcard"><div class="mtop"><div><div class="eyebrow">'+(R.live?"Net balance change so far":"Net balance change")+'</div><div class="v '+(R.netChange<0?"neg":"pos")+'">'+(R.netChange>0?"+":R.netChange<0?"−":"")+money(Math.abs(R.netChange))+'</div></div>'+
+    '<div style="text-align:right"><div class="eyebrow">'+(R.live?"Now":"Closed at")+'</div><div class="v">'+money(R.closeNet)+'</div></div></div>'+
+    '<div class="mstats"><span>Spent <b class="neg">'+money(st.spent)+'</b></span><span>Income <b class="pos">'+money(st.income)+'</b></span><span>Card payments <b>'+money(st.cards)+'</b></span>'+(st.cashback?'<span>Cash back <b class="pos">'+money(st.cashback)+'</b></span>':'')+(st.loans?'<span>Loan payments <b>'+money(st.loans)+'</b></span>':'')+'</div>';
+  if(R.top.length){
+    h+='<div class="subh" style="margin-top:12px"><span>Top '+R.top.length+' changes</span><span></span></div><ol class="top3">'+R.top.map(r=>
+      '<li><div class="tl"><span class="tn">'+esc(r.name)+'</span>'+chLine(r)+'</div>'+(r.driver?'<div class="m">Biggest: '+esc(txDisplay(r.driver).title)+' · '+money(r.driver.amount)+'</div>':'')+'</li>').join("")+'</ol>';
+  } else h+='<p class="hint" style="margin:10px 0 0">No changes yet this month.</p>';
+  if(!compact&&R.moved.length){
+    const line=r=>'<div class="crow2"><div class="tl"><span class="tn">'+esc(r.name)+'</span>'+chLine(r)+'</div><div class="m">'+money(r.open)+' → '+money(r.close)+(r.credit?' owed':'')+'</div></div>';
+    h+='<details class="mdet"><summary>All accounts: '+R.up.length+' improved, '+R.down.length+' went the other way</summary>'+
+      (R.up.length?'<div class="subh"><span>Improved</span><span></span></div>'+R.up.map(line).join(""):'')+
+      (R.down.length?'<div class="subh"><span>Went the other way</span><span></span></div>'+R.down.map(line).join(""):'')+
+      '<div class="subh"><span>Closing balances</span><span></span></div>'+R.rows.map(r=>'<div class="crow"><span>'+esc(r.name)+'</span><span>'+money(r.close)+(r.credit?' owed':'')+'</span></div>').join("")+'</details>';
+  }
+  return h+'</div>';
+}
+function viewClosing(){
+  const cur=ymOf(todayStr()); let m=cur, out=''; const start=firstMonth(); let n=0;
+  while(m>=start&&n<36){ const R=monthReport(m); out+='<h2>'+esc(monthName(m,true))+'<span class="gsum">'+(R.live?"in progress":"closed")+'</span></h2>'+monthCard(R,false); m=shiftMonth(m,-1); n++; }
+  return '<p class="hint" style="margin:10px 0 0">Each month closes on its last day. Balances are worked out from your entries, so editing an old entry updates that month\'s closing.</p>'+out;
 }
 
 function viewProjects(){
@@ -1383,6 +1459,8 @@ document.addEventListener("click",async e=>{
   if(ds.calclose){ closeCal(); return; }
   if(ds.restore){ await pickRestore(ds.restore); return; }
   if(ds.tab){S.open=null;S.openLoan=null;S.tab=ds.tab;try{localStorage.setItem("pb_tab",S.tab);}catch(_){} render();window.scrollTo(0,0);return;}
+  if(ds.actview){S.actView=ds.actview;render();window.scrollTo(0,0);return;}
+  if(ds.closing){S.open=null;S.openLoan=null;S.tab="activity";S.actView="closing";render();window.scrollTo(0,0);return;}
   if(ds.scrollto){const el=$(ds.scrollto); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); return;}
   if(ds.tabGo){S.open=null;S.openLoan=null;S.tab=ds.tabGo;render();window.scrollTo(0,0);return;}
   if(ds.filteracct){S.acct=ds.filteracct;S.tab="activity";S.open=null;render();return;}
