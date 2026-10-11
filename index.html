@@ -470,15 +470,18 @@ function compute(upTo){
     else if(t.type==="income"){adj(t.to,a);}
     else if(t.type==="transfer"||t.type==="cardpay"){adj(t.from,-a);adj(t.to,a);}
     else if(t.type==="loanpay"){adj(t.from,-a);adj(t.to,a); if(t.loan in loan) loan[t.loan]-=Math.max(0,a-(+t.interest||0));}
-    const pe=projEffect(t); if(pe&&pe.pid in proj) proj[pe.pid]+=pe.sign*a;
+
   }
+  { const L=projLedger(upTo); S.projects.forEach(p=>{ proj[p.id]=L.total[p.id]||0; }); }
   let liquid=0, owed=0, aside=0, loansOwe=0, loansLent=0, daily=0, personal=0, limit=0, asideDaily=0;
   S.loans.forEach(l=>{ if(l.dir==="lent") loansLent+=loan[l.id]; else loansOwe+=loan[l.id]; });
   S.accounts.forEach(a=>{ if(a.type==="credit"){ owed+=-bal[a.id]; limit+=(+a.limit||0); } else { liquid+=bal[a.id]; if(a.type==="savings") personal+=bal[a.id]; else daily+=bal[a.id]; } });
   Object.values(proj).forEach(v=>aside+=v);
   // project money sitting in checking/cash (money already in a savings account is counted there)
-  S.projects.forEach(p=>projWhere(p.id).forEach(x=>{ const ac=acctById(x.id); if(!ac||ac.type!=="savings") asideDaily+=x.amt; }));
-  const available=daily-asideDaily, savingsTotal=personal+asideDaily;
+  let asideSav=0; const LW=projLedger(upTo).where;
+  S.projects.forEach(p=>{ const m=LW[p.id]||{}; Object.keys(m).forEach(k=>{ const ac=acctById(k); if(ac&&ac.type==="savings") asideSav+=m[k]; else asideDaily+=m[k]; }); });
+  personal-=asideSav;
+  const available=daily-asideDaily, savingsTotal=personal+aside;
   return {bal,proj,loan,liquid,owed,aside,loansOwe,loansLent,daily,personal,limit,available,savingsTotal,lentOut:lentPeople().reduce((s,r)=>s+r.left,0),net:liquid-owed-loansOwe+loansLent+lentPeople().reduce((s,r)=>s+r.left,0),free:available-owed};
 }
 function monthStats(ym,acct){
@@ -650,7 +653,7 @@ async function persist(){
   try{ await run; return true; }
   catch(e){ toast("Couldn't save to the Pocketbook folder. Reconnect it and try again."); S.status="connect"; S.connectMsg="Pocketbook lost access to its folder."; render(); return false; }
 }
-function refresh(){
+function refresh(){ LEDGER={};
   const acc=[],pr=[],tx=[],ln=[];
   Object.keys(STORE).forEach(id=>{const v=Object.assign({id},STORE[id]); if(v.kind==="account")acc.push(v); else if(v.kind==="project")pr.push(v); else if(v.kind==="loan")ln.push(v); else if(v.kind==="txn")tx.push(v);});
   S.accounts=acc;S.projects=pr;S.loans=ln;S.txns=tx;S.status="ready";
@@ -678,7 +681,35 @@ async function openDir(h,picked){
   if(migrated) toast("Brought in your data from the old Pocketbook");
   return true;
 }
-async function runSetup(){ await seedSofiV2(); await seedJpmV3(); await seedJpmOpening(); await fixZelleV1(); await setLimitsV1(); }
+async function runSetup(){ await seedSofiV2(); await seedJpmV3(); await seedJpmOpening(); await fixZelleV1(); await setLimitsV1(); await fixSofiSavV1(); }
+// One-time update you asked for (Oct 11): project money now sits in SoFi Savings (4% APY).
+// Carmencita's $99.67 moves from SoFi Checking and is rounded to $100 with $0.33 from SoFi Checking;
+// the $100 for Tha Bachelor Pad Project also ends up in SoFi Savings.
+async function fixSofiSavV1(){
+  if(STORE["meta-fix-sofisav-v1"]) return;
+  const K=Object.keys(STORE), acc=k=>STORE[k]&&STORE[k].kind==="account", txn=k=>STORE[k]&&STORE[k].kind==="txn";
+  const chk=K.find(k=>acc(k)&&STORE[k].type==="checking"&&/sofi/i.test(STORE[k].name||""));
+  const jpm=K.find(k=>acc(k)&&STORE[k].type==="checking"&&/jpm|chase/i.test(STORE[k].name||""));
+  const proj=re=>K.find(k=>STORE[k]&&STORE[k].kind==="project"&&re.test(STORE[k].name||""));
+  const car=proj(/carmen/i), bach=proj(/bachelor/i);
+  if(!chk||!car) return; // wait until the account and project exist
+  const now=Date.now(), day="2026-10-11";
+  let sav=K.find(k=>acc(k)&&STORE[k].type==="savings"&&/sofi/i.test(STORE[k].name||""));
+  if(!sav){ sav=newId(); STORE[sav]={kind:"account",name:"SoFi Savings",type:"savings",opening:0,asOf:"2026-10-10",asOfAt:0,created:now}; }
+  STORE[newId()]={kind:"txn",type:"transfer",amount:100,date:day,desc:"Carmencita's fund to SoFi Savings (rounded up to $100)",from:chk,to:sav,project:car,created:now+1};
+  if(bach){
+    const bt=K.filter(k=>txn(k)&&STORE[k].project===bach);
+    const intoSofi=bt.find(k=>STORE[k].type==="transfer"&&STORE[k].to===chk);
+    const saves=bt.filter(k=>STORE[k].type==="save").sort((a,b)=>(STORE[b].created||0)-(STORE[a].created||0));
+    const alreadySav=bt.find(k=>STORE[k].type==="transfer"&&STORE[k].to===sav);
+    if(alreadySav){}
+    else if(intoSofi) STORE[newId()]={kind:"txn",type:"transfer",amount:+STORE[intoSofi].amount||100,date:day,desc:"Tha Bachelor Pad Project to SoFi Savings",from:chk,to:sav,project:bach,created:now+2};
+    else if(saves.length){ const k=saves[0]; STORE[k]=Object.assign({},STORE[k],{type:"transfer",from:STORE[k].from||jpm||"",to:sav,project:bach}); }
+    else if(jpm) STORE[newId()]={kind:"txn",type:"transfer",amount:100,date:day,desc:"Tha Bachelor Pad Project",from:jpm,to:sav,project:bach,created:now+2};
+  }
+  STORE["meta-fix-sofisav-v1"]={kind:"meta",done:true};
+  await persist();
+}
 // One-time update you asked for: credit limits, and "Cash savings" becomes Personal savings.
 async function setLimitsV1(){
   if(STORE["meta-limits-v1"]) return;
@@ -978,7 +1009,7 @@ function acctGroups(c,withProjects){
   const projs=withProjects?S.projects.slice().sort((a,b)=>(a.created||0)-(b.created||0)):[];
   if(sav.length||projs.length){
     h+='<section class="grp"><h2 id="g-sav">Savings</h2>';
-    if(sav.length) h+='<div class="subh"><span>Personal savings</span><span class="h2r"><span>'+money(c.personal)+'</span><button class="sadd" data-addfor="savings">+ Add</button></span></div><div class="list">'+sav.map(a=>plainRow(a,c)).join("")+'</div>';
+    if(sav.length) h+='<div class="subh"><span>Personal savings</span><span class="h2r"><span>'+money(c.personal)+'</span><button class="sadd" data-addfor="savings">+ Add</button></span></div><div class="list">'+sav.map(a=>{ const ip=S.projects.reduce((t,p)=>t+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0); return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(ip)>=0.005?' · '+money(ip)+' for projects · '+money(c.bal[a.id]-ip)+' free':'')); }).join("")+'</div>';
     if(projs.length) h+='<div class="subh"><span>Projects</span><span class="h2r"><span>'+money(c.aside)+'</span><button class="sadd" data-addfor="projects">+ Add money</button></span></div><div class="list">'+projs.map(p=>projRow(p,c)).join("")+'</div>';
     h+='</section>';
   }
@@ -1016,8 +1047,22 @@ function projEffect(t){
 // Which account holds the project money that moved: transfers/income land in the destination; Save-to-project stays in the source;
 // payments and purchases leave from the source.
 function projAcct(t,sign){ if(sign>0) return t.type==="save"?t.from:t.to; if(sign<0) return t.from; return null; }
+// Project ledger, oldest first. A transfer marked for a project first MOVES the project money already in the
+// "from" account (total unchanged, only its place changes); anything beyond that is new money for the project.
+let LEDGER={};
+function projLedger(upTo){
+  const key=upTo||"all"; if(LEDGER[key]) return LEDGER[key];
+  const asc=S.txns.filter(t=>!upTo||!t.date||t.date<=upTo).sort((x,y)=>(x.date||"").localeCompare(y.date||"")||(x.created||0)-(y.created||0));
+  const total={}, where={}, eff={}, r2=v=>Math.round(v*100)/100;
+  asc.forEach(t=>{ const e=projEffect(t); if(!e||!e.pid) return; const pid=e.pid, amt=+t.amount||0, W=where[pid]||(where[pid]={});
+    let delta=0, moved=0;
+    if(t.type==="transfer"&&e.sign>0&&t.from){ const held=Math.max(0,W[t.from]||0); moved=Math.min(amt,held); delta=amt-moved; W[t.from]=r2((W[t.from]||0)-moved); if(t.to) W[t.to]=r2((W[t.to]||0)+amt); }
+    else { delta=e.sign*amt; const ac=projAcct(t,e.sign); if(ac&&delta) W[ac]=r2((W[ac]||0)+delta); }
+    total[pid]=r2((total[pid]||0)+delta); eff[t.id]={pid,delta:r2(delta),moved:r2(moved),bal:total[pid],sign:delta>0?1:delta<0?-1:0}; });
+  return (LEDGER[key]={total,where,eff});
+}
 function projWhere(pid){
-  const m={}; S.txns.forEach(t=>{ const e=projEffect(t); if(!e||e.pid!==pid||!e.sign) return; const ac=projAcct(t,e.sign); if(!ac) return; m[ac]=Math.round(((m[ac]||0)+e.sign*(+t.amount||0))*100)/100; });
+  const m=projLedger().where[pid]||{};
   return Object.keys(m).filter(k=>Math.abs(m[k])>=0.005).map(k=>({id:k,amt:m[k]})).sort((a,b)=>b.amt-a.amt);
 }
 function whereBlock(pid){
@@ -1026,14 +1071,14 @@ function whereBlock(pid){
 }
 function projSign(t){ const e=projEffect(t); return e?e.sign:null; }
 function computeFunds(){
-  const asc=S.txns.slice().sort((x,y)=>(x.date||"").localeCompare(y.date||"")||(x.created||0)-(y.created||0));
-  const bal={}, after={};
-  asc.forEach(t=>{ const e=projEffect(t); if(!e) return; bal[e.pid]=Math.round(((bal[e.pid]||0)+e.sign*(+t.amount||0))*100)/100; after[t.id]={id:e.pid,bal:bal[e.pid],sign:e.sign}; });
-  return {bal,after};
+  const L=projLedger(), after={};
+  Object.keys(L.eff).forEach(id=>{ const f=L.eff[id]; after[id]={id:f.pid,bal:f.bal,sign:f.sign,moved:f.moved}; });
+  return {bal:L.total,after};
 }
 function fundPill(t){
   const f=S.funds&&S.funds.after[t.id]; if(!f) return "";
-  return '<span class="fundtag'+(f.bal<0?" low":"")+'">'+(f.sign>0?"+ ":f.sign<0?"− ":"")+esc(projName(f.id))+' · '+money(f.bal)+' available</span>';
+  const mv=f.moved>0?(f.sign>0?' (moved '+money(f.moved)+' + new)':' (moved)'):'';
+  return '<span class="fundtag'+(f.bal<0?" low":"")+'">'+(f.moved>0&&f.sign<=0?"⇄ ":f.sign>0?"+ ":f.sign<0?"− ":"")+esc(projName(f.id))+mv+' · '+money(f.bal)+' available</span>';
 }
 function fundsBlock(){
   if(!S.projects.length) return "";
@@ -1254,8 +1299,9 @@ async function wishUpdate(pid,fn){
 function viewProject(p){
   const c=compute(), bal=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,bal/goal*100)):0;
   const mine=sortTx(S.txns.filter(t=>{const e=projEffect(t);return e&&e.pid===p.id;}));
-  const ins=mine.filter(t=>projEffect(t).sign>0), buys=mine.filter(t=>t.type==="expense"), pays=mine.filter(t=>projEffect(t).sign<0&&t.type!=="expense");
-  const sum=l=>l.reduce((s,t)=>s+(+t.amount||0),0);
+  const LE=projLedger().eff, ef=t=>LE[t.id]||{delta:0,moved:0};
+  const ins=mine.filter(t=>ef(t).delta>0), moves=mine.filter(t=>ef(t).moved>0&&ef(t).delta<=0), buys=mine.filter(t=>t.type==="expense"), pays=mine.filter(t=>ef(t).delta<0&&t.type!=="expense");
+  const sum=l=>l.reduce((s,t)=>s+(+t.amount||0),0), sumNew=l=>l.reduce((s,t)=>s+Math.max(0,ef(t).delta),0);
   const wish=p.wish||[], wTotal=wish.reduce((s,w)=>s+(+w.price||0),0), wLeft=wish.filter(w=>!w.done).reduce((s,w)=>s+(+w.price||0),0);
   const all=S.projects.slice().sort((x,y)=>(x.created||0)-(y.created||0));
   const projTot=all.reduce((t,q)=>t+Math.max(0,c.proj[q.id]||0),0);
@@ -1271,10 +1317,13 @@ function viewProject(p){
   if(wish.length){ const short=wLeft-Math.max(0,bal);
     h+='<p class="hint" style="margin:8px 2px 0">List total '+money(wTotal)+'. '+(wLeft<=0?'Everything is bought.':(short>0?'You need '+money(short)+' more to buy what is left.':'You have enough to buy what is left.'))+'</p>'; }
   h+='</div><div class="pcol">';
-  const rows=(l,kind)=>l.length?'<div class="list">'+l.map(t=>{ const d=txDisplay(t);
+  const rows=(l,kind)=>l.length?'<div class="list">'+l.map(t=>{ const d=Object.assign({},txDisplay(t)); const f=ef(t);
+    if(kind==="in"&&f.moved>0){ d.meta+=" · moved "+money(f.moved)+", new "+money(f.delta); t=Object.assign({},t,{amount:f.delta}); }
+    if(kind==="move") t=Object.assign({},t,{amount:f.moved});
     return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(d.meta)+'</span></span><span class="amt '+(kind==="in"?"pos":kind==="out"?"neg":"mut")+'">'+(kind==="in"?"+":kind==="out"?"−":"")+money(t.amount)+'</span></button>'; }).join("")+'</div>':'';
-  h+='<h2>Where the money came from <span class="gsum pos">'+money(sum(ins))+'</span></h2>'+(rows(ins,"in")||'<div class="empty">No money added yet. Transfer between your accounts with "'+esc(projKeys(p.name)[0]||p.name)+'" in the description.</div>');
+  h+='<h2>Where the money came from <span class="gsum pos">'+money(sumNew(ins))+'</span></h2>'+(rows(ins,"in")||'<div class="empty">No money added yet. Transfer between your accounts with "'+esc(projKeys(p.name)[0]||p.name)+'" in the description.</div>');
   h+='<h2>Purchases <span class="gsum">'+money(sum(buys))+'</span></h2>'+(rows(buys,"buy")||'<div class="empty">No purchases yet. Write "'+esc(projKeys(p.name)[0]||p.name)+'" in the description of an expense to see it here.</div>');
+  if(moves.length) h+='<h2>Moved between your accounts</h2>'+rows(moves,"move");
   if(pays.length) h+='<h2>Paid from project money <span class="gsum neg">'+money(sum(pays))+'</span></h2>'+rows(pays,"out");
   const w=whereBlock(p.id); if(w) h+='<div class="mcard" style="margin-top:16px">'+w+'</div>';
   return h+'</div></div>';
