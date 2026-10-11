@@ -79,6 +79,19 @@ button.row:hover{background:var(--sunk)}
 .topact{display:flex;gap:6px;align-items:center;flex:none}
 .iconbtn{width:38px;height:38px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:grid;place-items:center;padding:0;cursor:pointer}
 .iconbtn:hover{color:var(--ink);background:var(--sunk)}
+.calcwrap{position:relative}.calcwrap input{padding-right:50px!important}
+.calcbtn{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:10px;border:0;background:var(--sunk);color:var(--muted);display:grid;place-items:center;padding:0;cursor:pointer}
+.calcbtn:hover{color:var(--accent)}
+.calcpop{position:absolute;right:0;top:calc(100% + 8px);z-index:40;width:264px;max-width:calc(100vw - 32px);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 16px 40px rgba(0,0,0,.35);display:grid;gap:10px}
+.cdisp{text-align:right;padding:4px 6px 2px;min-width:0}
+.cexpr{font-family:var(--f-num);font-size:13px;color:var(--muted);min-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cres{font-family:var(--f-num);font-size:28px;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ckeys{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ck{height:44px;border:0;border-radius:12px;background:var(--sunk);color:var(--ink);font-size:18px;font-family:var(--f-num);cursor:pointer}
+.ck:hover{filter:brightness(1.15)} .ck:active{transform:scale(.96)}
+.ck.op{color:var(--accent);font-size:20px} .ck.fn{color:var(--muted);font-size:15px}
+.ck.eq{grid-column:span 2;background:color-mix(in srgb,var(--accent) 18%,var(--sunk));color:var(--accent)}
+.cuse{height:44px}
 .settings{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 .settings summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:14px;font-weight:600;cursor:pointer}
 .settings summary::-webkit-details-marker{display:none}
@@ -1344,7 +1357,52 @@ function openSheet(html){
   $("scrim").addEventListener("click",e=>{if(e.target.id==="scrim") closeSheet();});
   const f=$("sheetRoot").querySelector("input.amount,input,select"); if(f && !("ontouchstart" in window)) f.focus();
 }
-function closeSheet(){$("sheetRoot").innerHTML="";}
+function closeSheet(){$("sheetRoot").innerHTML="";CALC=null;}
+/* ---------- calculator: a small keypad that opens inside the form and fills the Amount box ---------- */
+let CALC=null; // {for, expr}
+function calcEval(expr){
+  const toks=String(expr).replace(/×/g,"*").replace(/÷/g,"/").replace(/−/g,"-").match(/\d*\.?\d+|[-+*/]/g); if(!toks) return null;
+  // allow a leading minus
+  const nums=[], ops=[]; let i=0, sign=1;
+  const num=()=>{ sign=1; while(toks[i]==="-"||toks[i]==="+"){ if(toks[i]==="-") sign=-sign; i++; } const v=parseFloat(toks[i++]); return isNaN(v)?null:sign*v; };
+  let v=num(); if(v===null) return null; nums.push(v);
+  while(i<toks.length){ const op=toks[i++]; if(!"+-*/".includes(op)) return null; const n=num(); if(n===null) break; ops.push(op); nums.push(n); }
+  // * and / first, then + and -
+  for(let k=0;k<ops.length;){ if(ops[k]==="*"||ops[k]==="/"){ const r=ops[k]==="*"?nums[k]*nums[k+1]:(nums[k+1]===0?NaN:nums[k]/nums[k+1]); nums.splice(k,2,r); ops.splice(k,1); } else k++; }
+  let r=nums[0]; ops.forEach((o,k)=>{ r=o==="+"?r+nums[k+1]:r-nums[k+1]; });
+  return isFinite(r)?Math.round(r*100)/100:null;
+}
+function openCalc(id){
+  const inp=$(id); if(!inp) return; const wrap=inp.parentElement;
+  closeCalc();
+  const cur=String(inp.value||"").replace(/[$,\s]/g,"");
+  CALC={for:id,expr:(parseFloat(cur)>0?cur:"")};
+  const keys=[["C","clear"],["⌫","back"],["%","pct"],["÷","/"],["7"],["8"],["9"],["×","*"],["4"],["5"],["6"],["−","-"],["1"],["2"],["3"],["+","+"],["0"],["."],["=","eq"]];
+  const pop=document.createElement("div"); pop.className="calcpop"; pop.setAttribute("role","dialog"); pop.setAttribute("aria-label","Calculator");
+  pop.innerHTML='<div class="cdisp"><div class="cexpr" id="cExpr"></div><div class="cres" id="cRes">0</div></div><div class="ckeys">'+
+    keys.map(k=>'<button type="button" class="ck'+(["/","*","-","+"].includes(k[1])?" op":"")+(k[1]==="eq"?" eq":"")+(["clear","back","pct"].includes(k[1])?" fn":"")+'" data-ck="'+esc(k[1]||k[0])+'">'+k[0]+'</button>').join("")+
+    '</div><button type="button" class="btn primary wide cuse" data-ck="use">Use this amount</button>';
+  wrap.appendChild(pop); drawCalc();
+}
+function closeCalc(){ document.querySelectorAll(".calcpop").forEach(x=>x.remove()); CALC=null; }
+function drawCalc(){
+  if(!CALC) return; const e=CALC.expr, r=calcEval(e);
+  const pretty=e.replace(/\*/g," × ").replace(/\//g," ÷ ").replace(/(\d)-/g,"$1 − ").replace(/\+/g," + ");
+  $("cExpr").textContent=pretty||" "; $("cRes").textContent=r===null?(e?"…":"0"):r.toLocaleString("en-US",{minimumFractionDigits:r%1?2:0,maximumFractionDigits:2});
+}
+function calcKey(k){
+  if(!CALC) return; let e=CALC.expr; const last=e.slice(-1);
+  if(k==="clear") e="";
+  else if(k==="back") e=e.slice(0,-1);
+  else if(k==="eq"){ const r=calcEval(e); if(r!==null) e=String(r); }
+  else if(k==="pct"){ // last number becomes a percent of what came before (100+15% = 115)
+    const m=e.match(/^(.*?)([-+*/]?)(\d*\.?\d+)$/); if(m){ const base=m[1]?calcEval(m[1]):null, n=parseFloat(m[3]); e=m[1]+m[2]+String(Math.round(((base!==null&&"+-".includes(m[2])&&m[2])?base*n/100:n/100)*10000)/10000); } }
+  else if(k==="use"){ const r=calcEval(e); const inp=$(CALC.for); if(r!==null&&inp){ inp.value=Math.abs(r).toFixed(2); inp.dispatchEvent(new Event("input",{bubbles:true})); } closeCalc(); if(inp) inp.focus(); return; }
+  else if("+-*/".includes(k)){ if(!e&&k!=="-") return; if("+-*/".includes(last)) e=e.slice(0,-1); e+=k; }
+  else if(k==="."){ const seg=e.split(/[-+*/]/).pop(); if(seg.includes(".")) return; e+=(seg===""?"0.":"."); }
+  else { const seg=e.split(/[-+*/]/).pop(); if(seg.includes(".")&&seg.split(".")[1].length>=2) return; e+=k; }
+  CALC.expr=e; drawCalc();
+}
 function sheetHead(t){return '<h3><span>'+esc(t)+'</span><button type="button" data-act="close" aria-label="Close">×</button></h3>';}
 function opts(list,sel,placeholder){return (placeholder?'<option value="">'+esc(placeholder)+'</option>':'')+list.map(o=>'<option value="'+esc(o.v)+'"'+(o.v===sel?" selected":"")+'>'+esc(o.l)+'</option>').join("");}
 function acctOpts(filter){return S.accounts.filter(filter||(()=>true)).map(a=>({v:a.id,l:a.name+" · "+ACCT_TYPES[a.type]}));}
@@ -1381,7 +1439,7 @@ function renderTx(errMsg){
   h+='<div class="seg" role="group" aria-label="Transaction type">'+order.map(k=>'<button type="button" class="chip" data-txtype="'+k+'" aria-pressed="'+(t.type===k)+'">'+TYPES[k].label+'</button>').join("")+'</div>';
   h+='<form id="txForm" novalidate>';
   h+='<div class="two"><div class="field"><label for="f_date">Date made</label>'+dateField("f_date",t.date)+'</div>'+
-     '<div class="field"><label for="f_amount">Amount</label><input id="f_amount" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount)+'"></div></div>';
+     '<div class="field"><label for="f_amount">Amount</label><div class="calcwrap"><input id="f_amount" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount)+'"><button type="button" class="calcbtn" data-calcfor="f_amount" aria-label="Open calculator" title="Calculator"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7h7M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h.01M15.5 18h.01"/></svg></button></div></div></div>';
   h+='<div class="field"><label for="f_desc">Description</label><input id="f_desc" maxlength="120" placeholder="'+({expense:"e.g. Weekly groceries",income:"e.g. Paycheck Oct 1–15",transfer:"e.g. ATM withdrawal",cardpay:"e.g. October statement",loanpay:"e.g. SoFi loan payment",save:"e.g. Monthly deposit"}[t.type])+'" value="'+esc(t.desc)+'"></div>';
   if(t.type==="expense"){
     h+='<div class="field"><label for="f_from">Paid with</label><select id="f_from">'+opts(acctOpts(credit).concat(acctOpts(liquid)),t.from,"Choose card or account")+'</select></div>';
@@ -1546,6 +1604,11 @@ function askDelete(){
 }
 
 /* ---------- events ---------- */
+document.addEventListener("click",e=>{
+  const ck=e.target.closest("[data-ck]"); if(ck){ e.stopPropagation(); calcKey(ck.dataset.ck); return; }
+  const cb=e.target.closest("[data-calcfor]"); if(cb){ e.stopPropagation(); if(CALC&&CALC.for===cb.dataset.calcfor) closeCalc(); else openCalc(cb.dataset.calcfor); return; }
+  if(CALC&&!e.target.closest(".calcpop")) closeCalc();
+},true);
 document.addEventListener("click",async e=>{
   const b=e.target.closest("button"); if(!b) return;
   const ds=b.dataset;
@@ -1611,7 +1674,12 @@ $("addBtn").addEventListener("click",()=>openTx(null,S.open?{ctx:S.open}:S.openL
 $("backBtn").addEventListener("click",()=>{S.open=null;S.openLoan=null;render();window.scrollTo(0,0);});
 $("prevM").addEventListener("click",()=>{S.month=shiftMonth(S.month,-1);render();});
 $("nextM").addEventListener("click",()=>{S.month=shiftMonth(S.month,1);render();});
-document.addEventListener("keydown",e=>{if(e.key==="Escape") closeSheet();});
+document.addEventListener("keydown",e=>{
+  if(CALC){ const map={"Enter":"eq","=":"eq","Backspace":"back","Delete":"clear","*":"*","x":"*","/":"/","+":"+","-":"-",".":".",",":".","%":"pct"};
+    if(e.key==="Escape"){ closeCalc(); e.preventDefault(); return; }
+    const k=/^[0-9]$/.test(e.key)?e.key:map[e.key]; if(k){ calcKey(k); e.preventDefault(); return; } }
+  if(e.key==="Escape") closeSheet();
+});
 // Safari keeps its date picker open when you click elsewhere; close it by taking focus off the date field.
 document.addEventListener("pointerdown",e=>{ if(CAL&&!e.target.closest("#calBox")&&!e.target.closest("[data-calfor]")) closeCal(); },true);
 
