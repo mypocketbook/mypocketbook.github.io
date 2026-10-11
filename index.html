@@ -246,7 +246,8 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;",
 function $(id){return document.getElementById(id);}
 function acctById(id){return S.accounts.find(a=>a.id===id);}
 function projById(id){return S.projects.find(p=>p.id===id);}
-function acctName(id){const a=acctById(id);return a?a.name:"Deleted account";}
+const CASHBACK="cashback"; // card payment paid with the card's cash back rewards (no account money moves)
+function acctName(id){if(id===CASHBACK) return "Cash back";const a=acctById(id);return a?a.name:"Deleted account";}
 function loanById(id){return S.loans.find(l=>l.id===id);}
 function loanName(id){const l=loanById(id);return l?l.name:"Deleted loan";}
 function projName(id){const p=projById(id);return p?p.name:"Deleted project";}
@@ -283,10 +284,10 @@ function compute(){
   return {bal,proj,loan,liquid,owed,aside,loansOwe,loansLent,net:liquid-owed-loansOwe+loansLent,free:liquid-owed-aside};
 }
 function monthStats(ym){
-  let spent=0,income=0,saved=0,cards=0,loans=0;
+  let spent=0,income=0,saved=0,cards=0,loans=0,cashback=0;
   for(const t of S.txns){ if(!t.date||ymOf(t.date)!==ym) continue; const a=+t.amount||0;
-    if(t.type==="expense") spent+=a; else if(t.type==="income") income+=a; else if(t.type==="save") saved+=a; else if(t.type==="cardpay") cards+=a; else if(t.type==="loanpay") loans+=a; }
-  return {spent,income,saved,cards,loans};
+    if(t.type==="expense") spent+=a; else if(t.type==="income") income+=a; else if(t.type==="save") saved+=a; else if(t.type==="cardpay"){ if(t.from===CASHBACK) cashback+=a; else cards+=a; } else if(t.type==="loanpay") loans+=a; }
+  return {spent,income,saved,cards,loans,cashback};
 }
 function sortTx(list){return list.slice().sort((x,y)=> (y.date||"").localeCompare(x.date||"") || (y.created||0)-(x.created||0));}
 
@@ -718,7 +719,8 @@ function viewHome(){
     '<div><div class="eyebrow">Income</div><div class="v pos">'+money(m.income)+'</div></div>'+
     '<div><div class="eyebrow">Card payments</div><div class="v">'+money(m.cards)+'</div></div>'+
     '<div><div class="eyebrow">Net this month</div><div class="v">'+money(m.income-m.cards-m.loans)+'</div></div>'+
-    '<div><div class="eyebrow">Loan payments</div><div class="v">'+money(m.loans)+'</div></div>'+'</div>';
+    '<div><div class="eyebrow">Loan payments</div><div class="v">'+money(m.loans)+'</div></div>'+
+    (m.cashback?'<div><div class="eyebrow">Paid with cash back</div><div class="v pos">'+money(m.cashback)+'</div></div>':'')+'</div>';
   h+='<h2>Accounts <button data-tab-go="accounts">Manage</button></h2>'+acctRows(c);
   return h;
 }
@@ -741,7 +743,7 @@ function projEffect(t){
   const pid=(t.project&&projById(t.project))?t.project:((projectFor(t.desc)||{}).id); if(!pid) return null;
   let sign=0;
   if(t.type==="save"||t.type==="income"||t.type==="transfer") sign=1;
-  else if(t.type==="cardpay"||t.type==="loanpay") sign=-1;
+  else if(t.type==="cardpay"||t.type==="loanpay") sign=(t.from===CASHBACK)?0:-1;
   else if(t.type==="expense"){ const a=acctById(t.from); sign=(a&&a.type==="credit")?0:-1; }
   return {pid,sign};
 }
@@ -789,7 +791,7 @@ function updProjHint(){
   const t={type:draft.type,desc:d?d.value:"",project:fp?fp.value:"",from:fr?fr.value:draft.from};
   const e=projEffect(t); if(!e){ hn.textContent="Tip: write the project name in the description (e.g. \"Carmencita\") and it's detected automatically."; return; }
   const now=(compute().proj[e.pid]||0), amt=parseFloat(String(($("f_amount")||{}).value||"").replace(/[$,\s]/g,""))||0, nm=projName(e.pid);
-  hn.textContent= e.sign>0 ? ("Adds to "+nm+": "+money(now)+" → "+money(now+amt)) : e.sign<0 ? ("Subtracts from "+nm+": "+money(now)+" → "+money(now-amt)) : (nm+": doesn't change now ("+money(now)+"). It's subtracted when you pay the card.");
+  hn.textContent= e.sign>0 ? ("Adds to "+nm+": "+money(now)+" → "+money(now+amt)) : e.sign<0 ? ("Subtracts from "+nm+": "+money(now)+" → "+money(now-amt)) : (t.from===CASHBACK?(nm+": doesn't change ("+money(now)+"). Paid with cash back, not checking money."):(nm+": doesn't change now ("+money(now)+"). It's subtracted when you pay the card."));
 }
 function txRow(t){
   const d=txDisplay(t);
@@ -1155,7 +1157,7 @@ function renderTx(errMsg){
     h+=projField(t,"Saving for a project? (optional)","No project");
     h+='<p class="hint">Move money to another of your accounts, or pick a card or loan to log a payment. Choose a project to add this money to it.</p>';
   } else if(t.type==="cardpay"){
-    h+='<div class="field"><label for="f_from">Paid from</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose account")+'</select></div>';
+    h+='<div class="field"><label for="f_from">Paid from</label><select id="f_from"><option value="">Choose account</option><optgroup label="Accounts">'+opts(acctOpts(liquid),t.from)+'</optgroup><optgroup label="Rewards"><option value="cashback"'+(t.from===CASHBACK?' selected':'')+'>Cash back redemption</option></optgroup></select></div>';
     h+='<div class="field"><label for="f_to">Destination card</label><select id="f_to">'+opts(acctOpts(credit),t.to,S.accounts.some(credit)?"Choose card":"Add a credit card account first")+'</select></div>';
     h+=projField(t,"For a project? (optional)","No project");
   } else if(t.type==="loanpay"){
