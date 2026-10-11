@@ -1343,7 +1343,7 @@ function renderTx(errMsg){
   } else if(t.type==="income"){
     h+='<div class="field"><label for="f_payer">Received from (optional)</label><input id="f_payer" maxlength="60" placeholder="e.g. Employer name" value="'+esc(t.payer)+'"></div>';
     h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(),t.to,"Choose account")+'</select></div>';
-    h+='<div class="field"><label for="f_cat">Category (optional)</label><select id="f_cat">'+opts(INC_CATS.map(c=>({v:c,l:c})),t.category,"No category")+'</select></div>';
+    h+='<div class="field"><label for="f_cat">Category</label><select id="f_cat">'+opts(INC_CATS.map(c=>({v:c,l:c})),t.category,"Choose a category")+'</select></div>';
     h+=projField(t,"Save it for a project (optional)","No project");
   } else if(t.type==="transfer"){
     h+='<div class="two"><div class="field"><label for="f_from">From</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose")+'</select></div>'+
@@ -1416,7 +1416,7 @@ async function submitTx(e){
   const amt=parseFloat(String(t.amount).replace(/[$,\s]/g,""));
   if(!(amt>0)) return renderTx("Enter an amount greater than zero.");
   if(!t.desc) return renderTx("Add a short description.");
-  if(t.type==="expense"&&!t.category) return renderTx("Choose a category so you can see where your money goes.");
+  if((t.type==="expense"||t.type==="income")&&!t.category) return renderTx("Choose a category so you can see where your money goes.");
   const lentLoan = t.type==="loanpay" && loanById(t.loan) && loanById(t.loan).dir==="lent";
   const need={expense:["from","payee"],income:["to"],transfer:["from","to"],cardpay:["from","to"],save:["from","project"],loanpay:["loan",lentLoan?"to":"from"]}[t.type];
   const intr=t.type==="loanpay"&&!lentLoan&&t.interest?parseFloat(String(t.interest).replace(/[$,\s]/g,"")):0;
