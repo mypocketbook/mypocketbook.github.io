@@ -386,7 +386,16 @@ const INC_CATS = ["Salary","Freelance","Refund","Gift","Loan repayment","Other"]
 const S = {db:null,col:null,uid:null,status:"loading",accounts:[],projects:[],loans:[],txns:[],openLoan:null,
   tab:"home",open:null,month:ymOf(todayStr()),acct:"all",actView:"list"};
 try{ const t=localStorage.getItem("pb_tab"); if(t) S.tab=t;
-  const v=JSON.parse(localStorage.getItem("pb_view")||"null"); if(v&&typeof v==="object"){ if(v.tab) S.tab=v.tab; S.open=v.open||null; S.openLoan=v.openLoan||null; S.openProj=v.openProj||null; if(v.actView) S.actView=v.actView; } }catch(e){}
+  const v=JSON.parse(localStorage.getItem("pb_view")||"null"); if(v&&typeof v==="object"){ if(v.tab) S.tab=v.tab; S.open=v.open||null; S.openLoan=v.openLoan||null; S.openProj=v.openProj||null; if(v.actView) S.actView=v.actView; }
+  // the address bar wins: #project/ID, #account/ID, #loan/ID, #tab/NAME, #closing
+  const hm=(location.hash||"").replace(/^#/,"").split("/");
+  if(hm[0]){ S.open=null;S.openLoan=null;S.openProj=null;
+    if(hm[0]==="project"&&hm[1]){ S.openProj=decodeURIComponent(hm[1]); S.tab="projects"; }
+    else if(hm[0]==="account"&&hm[1]){ S.open=decodeURIComponent(hm[1]); S.tab="accounts"; }
+    else if(hm[0]==="loan"&&hm[1]){ S.openLoan=decodeURIComponent(hm[1]); S.tab="loans"; }
+    else if(hm[0]==="closing"){ S.tab="activity"; S.actView="closing"; }
+    else if(hm[0]==="tab"&&hm[1]) S.tab=hm[1]; }
+}catch(e){}
 
 /* ---------- helpers ---------- */
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
@@ -808,7 +817,9 @@ async function pickRestore(name){
 /* ---------- render ---------- */
 function render(){
   S.funds=computeFunds();
-  if(S.status==="ready"){ try{ localStorage.setItem("pb_view",JSON.stringify({tab:S.tab,open:S.open||null,openLoan:S.openLoan||null,openProj:S.openProj||null,actView:S.actView||"list"})); localStorage.setItem("pb_tab",S.tab); }catch(_){} }
+  if(S.status==="ready"){ try{ localStorage.setItem("pb_view",JSON.stringify({tab:S.tab,open:S.open||null,openLoan:S.openLoan||null,openProj:S.openProj||null,actView:S.actView||"list"})); localStorage.setItem("pb_tab",S.tab); }catch(_){}
+    const h=S.openProj?"#project/"+encodeURIComponent(S.openProj):S.open?"#account/"+encodeURIComponent(S.open):S.openLoan?"#loan/"+encodeURIComponent(S.openLoan):(S.tab==="activity"&&S.actView==="closing")?"#closing":"#tab/"+S.tab;
+    if(location.hash!==h){ try{ history.replaceState(null,"",h); }catch(_){} } }
   document.querySelectorAll("nav.tabs [data-tab]").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===S.tab?"page":"false"));
   if(S.status==="ready"){ if(S.open&&!acctById(S.open)) S.open=null; if(S.openLoan&&!loanById(S.openLoan)) S.openLoan=null; if(S.openProj&&!projById(S.openProj)) S.openProj=null; }
   const openA=S.open&&acctById(S.open), openL=!openA&&S.openLoan&&loanById(S.openLoan), openP=!openA&&!openL&&S.openProj&&projById(S.openProj);
