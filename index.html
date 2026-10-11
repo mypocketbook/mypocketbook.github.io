@@ -18,6 +18,7 @@
 <style>
 /* Layout: phone-first ledger. One column, sticky header, bottom tab bar with a central add button, bottom sheets for forms. */
 :root{
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#9AA1B2;
   --bg:#EEF1F6; --surface:#FFFFFF; --sunk:#E3E8F0; --ink:#131826; --muted:#5B6378; --line:#D5DBE6;
   --accent:#3550D4; --accent-ink:#FFFFFF; --pos:#18805A; --neg:#BF3F12; --card:#7A3FC4; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235B6378' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
@@ -26,9 +27,11 @@
   --r:14px;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#5E6578;
   --bg:#0D1017; --surface:#171B26; --sunk:#10141C; --ink:#E9ECF4; --muted:#99A1B6; --line:#272D3B;
   --accent:#8099FF; --accent-ink:#0D1017; --pos:#4CC994; --neg:#F28B62; --card:#B98BF2; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2399A1B6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); color-scheme:dark}}
 :root[data-theme="dark"]{
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#5E6578;
   --bg:#0D1017; --surface:#171B26; --sunk:#10141C; --ink:#E9ECF4; --muted:#99A1B6; --line:#272D3B;
   --accent:#8099FF; --accent-ink:#0D1017; --pos:#4CC994; --neg:#F28B62; --card:#B98BF2; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2399A1B6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); color-scheme:dark}
 
@@ -78,6 +81,20 @@ button.row:hover{background:var(--sunk)}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink,inherit);box-shadow:0 1px 2px rgba(0,0,0,.15)}
 .mhead{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:2;display:flex;justify-content:space-between;align-items:baseline;background:var(--bg,inherit);padding:14px 2px 4px;font-family:var(--f-display);font-size:17px;font-weight:500;border-bottom:1px solid var(--line)}
 .mhead span:last-child{font-family:var(--f-num);font-size:13px;color:var(--muted)}
+.ring{display:flex;align-items:center;gap:14px}.ring svg{flex:none}
+.ring .rl{font-size:10px;fill:var(--muted)} .ring .rv{font-size:14px;font-family:var(--f-num);fill:var(--ink)}
+.rlist{flex:1;min-width:0;display:grid;gap:5px}
+.ri{display:grid;grid-template-columns:10px minmax(0,1fr) auto;column-gap:8px;align-items:center;font-size:13.5px}
+.ri .sw{width:10px;height:10px;border-radius:3px}.ri .rn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ri .rp{font-family:var(--f-num);font-size:13px}.ri .ra{grid-column:2/4;font-family:var(--f-num);font-size:11.5px;color:var(--muted);margin-top:-3px}
+.ri.none .rn{color:var(--neg)} .ri.none .sw{border:1px dashed var(--muted)}
+.cats{display:grid;gap:9px}
+.crw .cl{display:flex;justify-content:space-between;gap:8px;font-size:13.5px}
+.crw .cl span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crw .cv{font-family:var(--f-num);font-size:12.5px;color:var(--muted);white-space:nowrap}
+.crw .cb{height:8px;border-radius:4px;background:var(--sunk);margin-top:4px;overflow:hidden}
+.crw .cb i{display:block;height:100%;border-radius:4px;background:var(--accent)}
+.crw.none .cb i{background:var(--muted)} .crw.none .cl span:first-child{color:var(--neg)}
 .mcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
 .mtop{display:flex;justify-content:space-between;gap:10px}
 .mtop .v{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:20px}
@@ -258,7 +275,10 @@ const TYPES = {
   cardpay:{label:"Card payment"}, loanpay:{label:"Loan payment"}, save:{label:"Save to project"}
 };
 const ACCT_TYPES = {checking:"Checking", cash:"Cash", savings:"Personal savings", credit:"Credit card"};
-const EXP_CATS = ["Food & dining","Groceries","Gas","Transport","Bills & utilities","Rent / housing","Shopping","Health","Fitness","Entertainment","Subscriptions","Personal care","Gifts","Travel","Other"];
+const EXP_CATS = ["Food & dining","Groceries","Transport & gas","Bills & utilities","Rent / housing","Shopping","Health & personal care","Entertainment","Subscriptions","Travel","Gifts & other"];
+// Older entries keep their original category; these merge them into the current list.
+const CAT_MERGE = {"Gas":"Transport & gas","Transport":"Transport & gas","Health":"Health & personal care","Fitness":"Health & personal care","Personal care":"Health & personal care","Gifts":"Gifts & other","Other":"Gifts & other"};
+function catOf(t){ const c=t&&t.category; return c?(CAT_MERGE[c]||c):""; }
 const INC_CATS = ["Salary","Freelance","Refund","Gift","Other"];
 
 const S = {db:null,col:null,uid:null,status:"loading",accounts:[],projects:[],loans:[],txns:[],openLoan:null,
@@ -339,7 +359,7 @@ function txDest(t){
 function txDisplay(t){
   const a=+t.amount||0; let title, meta, sign="", cls="";
   const desc=t.desc||t.note||"";
-  if(t.type==="expense"){title=t.payee?(t.payee+(desc&&desc.toLowerCase()!==t.payee.toLowerCase()?" – "+desc:"")):(desc||t.category||"Expense");meta="Paid with "+acctName(t.from)+(t.category?" · "+t.category:"")+(t.project?" · from "+projName(t.project):"");sign="−";cls="neg";}
+  if(t.type==="expense"){title=t.payee?(t.payee+(desc&&desc.toLowerCase()!==t.payee.toLowerCase()?" – "+desc:"")):(desc||t.category||"Expense");meta="Paid with "+acctName(t.from)+(catOf(t)?" · "+catOf(t):"")+(t.project?" · from "+projName(t.project):"");sign="−";cls="neg";}
   else if(t.type==="income"){title=desc||t.category||"Income";meta=(t.payer||"Income")+" → "+acctName(t.to);sign="+";cls="pos";}
   else if(t.type==="transfer"){title=desc||"Transfer";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
   else if(t.type==="cardpay"){title=desc||"Card payment";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
@@ -941,11 +961,38 @@ function chLine(r){
   const word=r.credit?(r.change>0?"owed up ":"owed down "):(r.change>0?"up ":"down ");
   return '<span class="'+(r.good>0?"pos":"neg")+'">'+word+money(Math.abs(r.change))+'</span>';
 }
+function catBreakdown(ym){
+  const m={}; let total=0;
+  S.txns.forEach(t=>{ if(t.type!=="expense"||!t.date||ymOf(t.date)!==ym) return; const a=+t.amount||0; const c=catOf(t)||"__none"; m[c]=(m[c]||0)+a; total+=a; });
+  const rows=Object.keys(m).map(k=>({cat:k,amt:m[k],pct:total?m[k]/total*100:0})).sort((a,b)=>(a.cat==="__none")-(b.cat==="__none")||b.amt-a.amt);
+  return {rows,total};
+}
+// Ring chart: the 4 biggest categories get their own color, the rest fold into "Other".
+function catChart(ym){
+  const B=catBreakdown(ym); if(!B.total) return '';
+  const named=B.rows.filter(r=>r.cat!=="__none"), none=B.rows.find(r=>r.cat==="__none");
+  let parts=named.slice(0,4).map((r,i)=>({label:r.cat,amt:r.amt,col:"var(--s"+(i+1)+")"}));
+  const rest=named.slice(4).reduce((s,r)=>s+r.amt,0);
+  if(rest>0) parts.push({label:"Other",amt:rest,col:"var(--s5)",sub:named.slice(4).map(r=>r.cat).join(", ")});
+  if(none) parts.push({label:"Needs a category",amt:none.amt,col:"var(--sunk)",none:true});
+  const T=B.total, cx=60, cy=60, R=54, r=40, gap=parts.length>1?0.035:0;
+  let a0=-Math.PI/2, arcs='';
+  parts.forEach(p=>{ const sweep=p.amt/T*Math.PI*2; if(sweep<=0) return;
+    if(sweep>=Math.PI*2-0.001){ arcs+='<circle cx="'+cx+'" cy="'+cy+'" r="'+((R+r)/2)+'" fill="none" stroke="'+p.col+'" stroke-width="'+(R-r)+'"/>'; a0+=sweep; return; }
+    const g=Math.min(gap,sweep/3), s0=a0+g/2, s1=a0+sweep-g/2, big=(s1-s0)>Math.PI?1:0, pt=(rad,an)=>(cx+rad*Math.cos(an)).toFixed(2)+' '+(cy+rad*Math.sin(an)).toFixed(2);
+    arcs+='<path d="M'+pt(R,s0)+' A'+R+' '+R+' 0 '+big+' 1 '+pt(R,s1)+' L'+pt(r,s1)+' A'+r+' '+r+' 0 '+big+' 0 '+pt(r,s0)+'Z" fill="'+p.col+'"><title>'+esc(p.label+": "+money(p.amt)+" ("+(p.amt/T*100).toFixed(1)+"%)")+'</title></path>';
+    a0+=sweep; });
+  const k=T>=10000?"$"+(T/1000).toFixed(1)+"k":money(T).replace(/\.\d\d$/,"");
+  return '<div class="subh" style="margin-top:12px"><span>Spending by category</span><span></span></div><div class="ring"><svg viewBox="0 0 120 120" width="124" height="124" role="img" aria-label="Spending by category, '+esc(money(T))+' total">'+arcs+
+    '<text x="60" y="56" text-anchor="middle" class="rl">spent</text><text x="60" y="72" text-anchor="middle" class="rv">'+esc(k)+'</text></svg>'+
+    '<div class="rlist">'+parts.map(p=>'<div class="ri'+(p.none?' none':'')+'" title="'+esc((p.sub?p.sub+": ":"")+money(p.amt))+'"><span class="sw" style="background:'+p.col+'"></span><span class="rn">'+esc(p.label)+'</span><span class="rp">'+Math.round(p.amt/T*100)+'%</span><span class="ra">'+money(p.amt)+'</span></div>').join("")+'</div></div>'+
+    (none?'<p class="hint" style="margin:6px 0 0">Some older expenses have no category. Open them in Activity and pick one.</p>':'');
+}
 function monthCard(R,compact){
   const st=R.stats;
   let h='<div class="mcard"><div class="mtop"><div><div class="eyebrow">'+(R.live?"Net balance change so far":"Net balance change")+'</div><div class="v '+(R.netChange<0?"neg":"pos")+'">'+(R.netChange>0?"+":R.netChange<0?"−":"")+money(Math.abs(R.netChange))+'</div></div>'+
     '<div style="text-align:right"><div class="eyebrow">'+(R.live?"Now":"Closed at")+'</div><div class="v">'+money(R.closeNet)+'</div></div></div>'+
-    '<div class="mstats"><span>Spent <b class="neg">'+money(st.spent)+'</b></span><span>Income <b class="pos">'+money(st.income)+'</b></span><span>Card payments <b>'+money(st.cards)+'</b></span>'+(st.cashback?'<span>Cash back <b class="pos">'+money(st.cashback)+'</b></span>':'')+(st.loans?'<span>Loan payments <b>'+money(st.loans)+'</b></span>':'')+'</div>';
+    '<div class="mstats"><span>Spent <b class="neg">'+money(st.spent)+'</b></span><span>Income <b class="pos">'+money(st.income)+'</b></span><span>Card payments <b>'+money(st.cards)+'</b></span>'+(st.cashback?'<span>Cash back <b class="pos">'+money(st.cashback)+'</b></span>':'')+(st.loans?'<span>Loan payments <b>'+money(st.loans)+'</b></span>':'')+'</div>'+catChart(R.ym);
   if(R.top.length){
     h+='<div class="subh" style="margin-top:12px"><span>Top '+R.top.length+' changes</span><span></span></div><ol class="top3">'+R.top.map(r=>
       '<li><div class="tl"><span class="tn">'+esc(r.name)+'</span>'+chLine(r)+'</div>'+(r.driver?'<div class="m">Biggest: '+esc(txDisplay(r.driver).title)+' · '+money(r.driver.amount)+'</div>':'')+'</li>').join("")+'</ol>';
@@ -1291,7 +1338,7 @@ function renderTx(errMsg){
   if(t.type==="expense"){
     h+='<div class="field"><label for="f_from">Paid with</label><select id="f_from">'+opts(acctOpts(credit).concat(acctOpts(liquid)),t.from,"Choose card or account")+'</select></div>';
     h+='<div class="field"><label for="f_payee">Destination: who you paid</label><input id="f_payee" list="payees" maxlength="60" placeholder="e.g. Publix, Shell, Netflix" value="'+esc(t.payee)+'"><datalist id="payees">'+payeeList().map(p=>'<option value="'+esc(p)+'"></option>').join("")+'</datalist></div>';
-    h+='<div class="field"><label for="f_cat">Category (optional)</label><select id="f_cat">'+opts(EXP_CATS.map(c=>({v:c,l:c})),t.category,"No category")+'</select></div>';
+    h+='<div class="field"><label for="f_cat">Category</label><select id="f_cat">'+opts(EXP_CATS.map(c=>({v:c,l:c})),t.type==="expense"?catOf(t):"","Choose a category")+'</select></div>';
     h+=projField(t,"For a project? (optional)","No project");
   } else if(t.type==="income"){
     h+='<div class="field"><label for="f_payer">Received from (optional)</label><input id="f_payer" maxlength="60" placeholder="e.g. Employer name" value="'+esc(t.payer)+'"></div>';
@@ -1369,6 +1416,7 @@ async function submitTx(e){
   const amt=parseFloat(String(t.amount).replace(/[$,\s]/g,""));
   if(!(amt>0)) return renderTx("Enter an amount greater than zero.");
   if(!t.desc) return renderTx("Add a short description.");
+  if(t.type==="expense"&&!t.category) return renderTx("Choose a category so you can see where your money goes.");
   const lentLoan = t.type==="loanpay" && loanById(t.loan) && loanById(t.loan).dir==="lent";
   const need={expense:["from","payee"],income:["to"],transfer:["from","to"],cardpay:["from","to"],save:["from","project"],loanpay:["loan",lentLoan?"to":"from"]}[t.type];
   const intr=t.type==="loanpay"&&!lentLoan&&t.interest?parseFloat(String(t.interest).replace(/[$,\s]/g,"")):0;
