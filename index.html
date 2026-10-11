@@ -199,8 +199,10 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .bring .bv{font-family:var(--f-num);font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap}.bring .bv.neg{color:var(--neg)}
 .bring .bp{font-size:11px;color:var(--muted);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .pswitch.rings>.bring:first-child{margin-left:auto}.pswitch.rings>.bring:last-child{margin-right:auto}
-@media (min-width:1000px){.pswitch.rings{display:flex;flex-wrap:wrap;justify-content:center;overflow:visible}}
-.pswitch.rings+.hero{text-align:center}
+@media (min-width:1000px){.pswitch.rings{display:flex;flex-wrap:wrap;justify-content:center;overflow:visible}.pswitch.rings>.bring:first-child,.pswitch.rings>.bring:last-child{margin-left:0;margin-right:0}}
+.pswitch.rings+.hero,.homehero{text-align:center}
+.homerings{margin-bottom:8px;gap:10px}
+.homerings .bring{width:140px;height:140px}.homerings .bring .bin{inset:20px}.homerings .bring .bv{font-size:16px}
 .pswitch.rings+.hero .ubar{max-width:420px;margin-left:auto!important;margin-right:auto!important}
 .pswitch.rings+.hero .goalf{justify-items:center}.pswitch.rings+.hero .goalf .gf{justify-content:center}
 .pring{flex:none}.prt{font-family:var(--f-num);font-size:11.5px;font-weight:600;fill:var(--ink)}
@@ -314,7 +316,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 
 /* ---------- responsive: fill the window and re-arrange as it is resized ---------- */
 .grps,.homegrid,.mgrid{display:grid;gap:0 24px;align-items:start}
-.homegrid{grid-template-areas:"a" "c" "b"} .homegrid .ga{grid-area:a;min-width:0} .homegrid .gb{grid-area:b;min-width:0} .homegrid .gc{grid-area:c;min-width:0}
+.homegrid{grid-template-areas:"c" "b"} .homegrid .ga{grid-area:a;min-width:0} .homegrid .gb{grid-area:b;min-width:0} .homegrid .gc{grid-area:c;min-width:0}
 .grp,.mblock{min-width:0}
 .pgrid{display:grid;gap:10px}.pgrid .proj+.proj{margin-top:0}
 @media (min-width:700px){
@@ -339,7 +341,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
   .scrim{align-items:center;padding-left:var(--side)}
   .sheet{max-width:620px;border-radius:20px;max-height:88vh;padding-bottom:20px}
   .sheet .grab{display:none}
-  .homegrid{grid-template-columns:minmax(0,5fr) minmax(0,6fr);grid-template-areas:"a b" "c b"}
+  .homegrid{grid-template-columns:minmax(0,5fr) minmax(0,6fr);grid-template-areas:"c b"}
   .homegrid .tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .homegrid .tiles .tile[style*="grid-column"]{grid-column:1/-1!important}
   .homegrid .gb .grps{grid-template-columns:1fr}
   .grps{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
@@ -912,17 +914,24 @@ function backupNudge(){
 function viewHome(){
   if(!S.accounts.length) return setupEmpty();
   const c=compute(), m=monthStats(S.month);
-  let h=backupNudge()+'<div class="homegrid"><div class="ga"><section class="hero"><div class="eyebrow">Net balance</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
-    '<p class="hint" style="margin:2px 0 12px">Everything you have plus what people owe you, minus what you owe on cards and loans.</p>'+
-    '<div class="tiles">'+
-    '<button class="tile" data-scrollto="g-day"><div class="eyebrow">Available</div><div class="v '+(c.available<0?"neg":"")+'">'+money(c.available)+'</div></button>'+
-    '<button class="tile" data-scrollto="g-cards"><div class="eyebrow">Cards owe</div><div class="v '+(c.owed>0?"neg":"")+'">'+money(c.owed)+'</div></button>'+
-    (()=>{ const sv=S.accounts.filter(a=>a.type==="savings"); return '<button class="tile" '+(sv.length===1?'data-openacct="'+esc(sv[0].id)+'"':'data-scrollto="g-sav"')+'><div class="eyebrow">Personal savings</div><div class="v pos">'+money(c.personal)+'</div></button>'; })()+
-    '<button class="tile" data-tab-go="projects"><div class="eyebrow">Projects</div><div class="v pos">'+money(c.aside)+'</div></button>'+
-    (c.lentOut>0?'<button class="tile" data-tab-go="loans"><div class="eyebrow">Owed to me</div><div class="v pos">'+money(c.lentOut)+'</div></button>':'')+
-    (S.loans.length?'<button class="tile" data-tab-go="loans" style="grid-column:1/-1"><div class="eyebrow">Loans I owe</div><div class="v '+(c.loansOwe>0?"neg":"")+'">'+money(c.loansOwe)+'</div></button>':'')+
-    '</div></section>';
-  h+='</div><div class="gb">'+acctGroups(c,true)+'</div>';
+  const sv=S.accounts.filter(a=>a.type==="savings"), money_all=Math.max(0,c.available)+Math.max(0,c.personal)+Math.max(0,c.aside);
+  const share=v=>money_all?Math.max(0,v)/money_all*100:0;
+  const goalSum=S.projects.reduce((t,p)=>t+(+p.goal||0),0), goalHave=S.projects.reduce((t,p)=>t+((+p.goal||0)?Math.min(+p.goal,Math.max(0,c.proj[p.id]||0)):0),0);
+  const LP=lentPeople(), lentTot=LP.reduce((t,r)=>t+r.lent,0), repTot=LP.reduce((t,r)=>t+Math.min(r.repaid,r.lent),0);
+  const owe=S.loans.filter(l=>l.dir!=="lent"), origTot=owe.reduce((t,l)=>t+(+l.original||+l.balance||0),0), leftTot=owe.reduce((t,l)=>t+Math.max(0,c.loan[l.id]||0),0);
+  const util=c.limit?c.owed/c.limit*100:null;
+  const items=[
+    {attr:'data-scrollto="g-day"',name:"Available",value:c.available,neg:c.available<0,pct:share(c.available),col:"var(--accent)",sub:"of total"},
+    {attr:'data-scrollto="g-cards"',name:"Cards owe",value:c.owed,neg:c.owed>0,pct:util,col:util==null?"var(--muted)":util>=50?"var(--neg)":util>=30?"#D9A400":"var(--pos)",sub:util==null?"Add card limits":"of limit"},
+    {attr:sv.length===1?'data-openacct="'+esc(sv[0].id)+'"':'data-scrollto="g-sav"',name:"Savings",value:c.personal,pct:share(c.personal),col:"var(--pos)",sub:"of total"},
+    {attr:'data-tab-go="projects"',name:"Projects",value:c.aside,pct:goalSum?goalHave/goalSum*100:share(c.aside),col:"var(--pos)",sub:goalSum?"of goals":"of total"}];
+  if(c.lentOut>0||lentTot>0) items.push({attr:'data-tab-go="loans"',name:"Owed to me",value:c.lentOut,pct:lentTot?repTot/lentTot*100:null,col:"var(--pos)",sub:"paid back"});
+  if(owe.length) items.push({attr:'data-tab-go="loans"',name:"Loans I owe",value:c.loansOwe,neg:c.loansOwe>0,pct:origTot?(origTot-leftTot)/origTot*100:null,col:"var(--pos)",sub:"paid off"});
+  let h=backupNudge()+'<section class="hero homehero"><div class="eyebrow">Net balance</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
+    '<p class="hint" style="margin:2px 0 4px">Everything you have plus what people owe you, minus what you owe on cards and loans.</p></section>'+
+    switcher(items,"Your money").replace('class="pswitch rings"','class="pswitch rings homerings"')+
+    '<div class="homegrid">';
+  h+='<div class="gb">'+acctGroups(c,true)+'</div>';
   const ym=ymOf(todayStr());
   h+='<div class="gc"><h2>'+esc(monthName(ym,true))+' so far <button data-closing="1">All months</button></h2>'+monthCard(monthReport(ym),true)+'</div></div>';
   return h;
