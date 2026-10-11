@@ -178,6 +178,11 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 
 .proj{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:10px}
 .proj+.proj{margin-top:10px}
+.proj.tap{cursor:pointer;transition:border-color .15s}.proj.tap:hover{border-color:var(--accent)}
+.proj .hr{display:flex;align-items:center;gap:10px}
+.plus{width:32px;height:32px;border-radius:999px;border:1px solid var(--line);background:var(--sunk);color:var(--accent);font-size:20px;line-height:1;display:grid;place-items:center;padding:0;cursor:pointer}
+.plus:hover{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chev2{color:var(--muted);font-size:20px}
 .proj .head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .proj .name{font-family:var(--f-display);font-weight:500;font-size:17px;min-width:0;overflow-wrap:anywhere}
 .proj .bal{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:20px}
@@ -1187,10 +1192,10 @@ function viewProjects(){
   if(!S.projects.length) return h+'<div class="empty"><strong>No projects yet</strong><span>Create one for anything you are saving toward, like a trip, a new laptop or a car upgrade.</span><button class="btn primary" data-act="newproj">New project</button></div>';
   h+='<div class="pgrid">'+S.projects.slice().sort((a,b)=>(a.created||0)-(b.created||0)).map(p=>{
     const b=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,b/goal*100)):0;
-    return '<div class="proj"><div class="head"><span class="name">'+esc(p.name)+'</span><span class="bal">'+money(b)+'</span></div>'+
+    return '<div class="proj tap" data-cardopen="'+esc(p.id)+'" role="link" tabindex="0" aria-label="Open '+esc(p.name)+'"><div class="head"><span class="name">'+esc(p.name)+'</span><span class="hr"><span class="bal">'+money(b)+'</span><button type="button" class="plus" data-saveto="'+esc(p.id)+'" aria-label="Add money to '+esc(p.name)+'" title="Add money">+</button></span></div>'+
       (goal?'<div class="bar" role="img" aria-label="'+Math.round(pct)+'% of goal"><i style="width:'+pct+'%"></i></div>':'')+whereBlock(p.id)+
       '<div class="foot"><span>'+(goal?Math.round(pct)+'% of '+money(goal)+(b<goal?' · '+money(goal-b)+' to go':' · goal reached'):'No goal set')+'</span>'+
-      '<span style="display:flex;gap:6px"><button class="btn" data-viewproj="'+esc(p.id)+'">Open</button><button class="btn primary" data-saveto="'+esc(p.id)+'">Add money</button></span></div></div>';
+      '<span class="chev2" aria-hidden="true">›</span></div></div>';
   }).join("")+'</div>';
   h+='<div style="margin-top:14px"><button class="btn wide" data-act="newproj">New project</button></div>';
   return h;
@@ -1745,7 +1750,8 @@ document.addEventListener("click",e=>{
   if(CALC&&!e.target.closest(".calcpop")) closeCalc();
 },true);
 document.addEventListener("click",async e=>{
-  const b=e.target.closest("button"); if(!b) return;
+  const b=e.target.closest("button");
+  if(!b){ const card=e.target.closest("[data-cardopen]"); if(card){ S.openProj=card.dataset.cardopen;S.open=null;S.openLoan=null;render();window.scrollTo(0,0); } return; }
   const ds=b.dataset;
   if(ds.calfor){ if(CAL&&CAL.for===ds.calfor) closeCal(); else openCal(ds.calfor); return; }
   if(ds.calnav){ const [y,m]=CAL.ym.split("-").map(Number); const d=new Date(y,m-1+(+ds.calnav),1); CAL.ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); drawCal(); return; }
@@ -1828,6 +1834,7 @@ $("backBtn").addEventListener("click",()=>{S.open=null;S.openLoan=null;S.openPro
 $("prevM").addEventListener("click",()=>{S.month=shiftMonth(S.month,-1);render();});
 $("nextM").addEventListener("click",()=>{S.month=shiftMonth(S.month,1);render();});
 document.addEventListener("keydown",e=>{
+  if((e.key==="Enter"||e.key===" ")&&e.target&&e.target.dataset&&e.target.dataset.cardopen){ e.preventDefault(); S.openProj=e.target.dataset.cardopen;S.open=null;S.openLoan=null;render();window.scrollTo(0,0); return; }
   if(CALC){ const map={"Enter":"eq","=":"eq","Backspace":"back","Delete":"clear","*":"*","x":"*","/":"/","+":"+","-":"-",".":".",",":".","%":"pct"};
     if(e.key==="Escape"){ closeCalc(); e.preventDefault(); return; }
     const k=/^[0-9]$/.test(e.key)?e.key:map[e.key]; if(k){ calcKey(k); e.preventDefault(); return; } }
