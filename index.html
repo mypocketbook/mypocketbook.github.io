@@ -1678,7 +1678,7 @@ function renderTx(errMsg){
   const t=draft, edit=!!t.id, liquid=a=>a.type!=="credit", credit=a=>a.type==="credit";
   const ctx=t.ctx&&acctById(t.ctx);
   let h=sheetHead(edit?"Edit transaction":(ctx?"New in "+ctx.name:"New transaction"));
-  const order = (ctx&&ctx.type!=="credit") ? ["cardpay","transfer","loanpay","income","save","expense"] : Object.keys(TYPES);
+  const order = ((ctx&&ctx.type!=="credit") ? ["cardpay","transfer","loanpay","income","save","expense"] : Object.keys(TYPES)).filter(k=>k!=="save"||t.type==="save"); // "Save to project" is now a Transfer with a project
   h+='<div class="seg" role="group" aria-label="Transaction type">'+order.map(k=>'<button type="button" class="chip" data-txtype="'+k+'" aria-pressed="'+(t.type===k)+'">'+TYPES[k].label+'</button>').join("")+'</div>';
   h+='<form id="txForm" novalidate>';
   h+='<div class="two"><div class="field"><label for="f_date">Date made</label>'+dateField("f_date",t.date)+'</div>'+
@@ -1703,7 +1703,7 @@ function renderTx(errMsg){
        (S.accounts.some(credit)?'<optgroup label="Credit cards (card payment)">'+opts(acctOpts(credit),t.to)+'</optgroup>':'')+
        (S.loans.some(x=>x.dir!=="lent")?'<optgroup label="Loans (loan payment)">'+opts(S.loans.filter(x=>x.dir!=="lent").map(x=>({v:"loan:"+x.id,l:x.name})),"")+'</optgroup>':'')+
        '</select></div></div>';
-    h+=projField(t,"Saving for a project? (optional)","No project");
+    h+=projField(t,"This money is for a project (optional)","Not for a project");
     h+='<p class="hint">Move money to another of your accounts, or pick a card or loan to log a payment. Choose a project to add this money to it.</p>';
   } else if(t.type==="cardpay"){
     h+='<div class="field"><label for="f_from">Paid from</label><select id="f_from"><option value="">Choose account</option><optgroup label="Accounts">'+opts(acctOpts(liquid),t.from)+'</optgroup><optgroup label="Rewards"><option value="cashback"'+(t.from===CASHBACK?' selected':'')+'>Cash back redemption</option></optgroup></select></div>';
@@ -1909,7 +1909,8 @@ document.addEventListener("click",async e=>{
   if(ds.addin){openTx(null,{ctx:ds.addin});return;}
   if(ds.editacct){openAcct(acctById(ds.editacct));return;}
   if(ds.edittx){const t=S.txns.find(x=>x.id===ds.edittx); if(t) openTx(t); return;}
-  if(ds.saveto){openTx(null,{type:"save",project:ds.saveto});return;}
+  if(ds.saveto){ const w=projWhere(ds.saveto).filter(x=>x.amt>0)[0], from=S.accounts.find(a=>a.type==="checking"&&(!w||a.id!==w.id));
+    openTx(null,{type:"transfer",project:ds.saveto,from:from?from.id:"",to:w?w.id:"",desc:projName(ds.saveto)}); return; }
   if(ds.viewproj){ const keep=b.classList.contains("ptile")||b.classList.contains("bring"); const sx=keep&&b.parentElement?b.parentElement.scrollLeft:0; S.openProj=ds.viewproj;S.open=null;S.openLoan=null;render();
     if(keep){ const ps=document.querySelector(".pswitch"); if(ps){ ps.scrollLeft=sx; const on=ps.querySelector(".bring.on,.ptile.on"); if(on) on.scrollIntoView({behavior:"smooth",inline:"nearest",block:"nearest"}); } } else window.scrollTo(0,0); return;}
   if(ds.wishtoggle){await wishUpdate(ds.wishproj,w=>w.map(x=>x.id===ds.wishtoggle?Object.assign({},x,{done:!x.done}):x));return;}
