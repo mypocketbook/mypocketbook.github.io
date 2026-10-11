@@ -117,9 +117,14 @@ button.row:hover{background:var(--sunk)}
 .ring{display:flex;align-items:center;gap:14px}.ring svg{flex:none}
 .ring .rl{font-size:10px;fill:var(--muted)} .ring .rv{font-size:14px;font-family:var(--f-num);fill:var(--ink)}
 .rlist{flex:1;min-width:0;display:grid;gap:5px}
-.ri{display:grid;grid-template-columns:10px minmax(0,1fr) auto;column-gap:8px;align-items:center;font-size:13.5px}
+.ri{display:grid;grid-template-columns:10px minmax(0,1fr) auto;column-gap:8px;align-items:center;font-size:13.5px;border:0;background:none;color:inherit;font-family:inherit;text-align:left;padding:3px 4px;margin:0 -4px;border-radius:8px;cursor:pointer;width:calc(100% + 8px)}
+.ri:hover{background:var(--sunk)}
 .ri .sw{width:10px;height:10px;border-radius:3px}.ri .rn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ri .rp{font-family:var(--f-num);font-size:13px}.ri .ra{grid-column:2/4;font-family:var(--f-num);font-size:11.5px;color:var(--muted);margin-top:-3px}
+.ri .rp{font-family:var(--f-num);font-size:13px;white-space:nowrap}.ri .rp em{font-style:normal;color:var(--muted);display:inline-block;min-width:42px;text-align:right;margin-left:8px}
+.h2r{display:flex;align-items:baseline;gap:12px;min-width:0}
+.subh .h2r span{font-family:var(--f-num);letter-spacing:0;color:var(--pos)}
+.sadd{border:0;background:none;color:var(--accent);font:inherit;font-family:var(--f-body);font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 0;cursor:pointer}
+.chp{font-style:normal;font-family:var(--f-num);font-size:12px;opacity:.8}
 .ri.none .rn{color:var(--neg)} .ri.none .sw{border:1px dashed var(--muted)}
 .cats{display:grid;gap:9px}
 .crw .cl{display:flex;justify-content:space-between;gap:8px;font-size:13.5px}
@@ -334,7 +339,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
     <button type="button" data-tab="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M7 8h7.5a3 3 0 0 1 0 6H8"/><circle cx="12" cy="12" r="9.5"/></svg>Projects</button>
   </div>
 </nav>
-<button type="button" class="fab" id="addBtn" aria-label="Add transaction">+</button>
+<button type="button" class="fab" id="addBtn" aria-label="Add transaction" hidden>+</button>
 
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 <div id="sheetRoot"></div>
@@ -348,10 +353,12 @@ const TYPES = {
   cardpay:{label:"Card payment"}, loanpay:{label:"Loan payment"}, save:{label:"Save to project"}
 };
 const ACCT_TYPES = {checking:"Checking", cash:"Cash", savings:"Personal savings", credit:"Credit card"};
-const EXP_CATS = ["Food & dining","Groceries","Transport & gas","Bills & utilities","Rent / housing","Shopping","Health & personal care","Entertainment","Subscriptions","Travel","Other"];
+const EXP_CATS = ["Food & dining","Groceries","Transport & gas","Bills & utilities","Rent / housing","Shopping","Health & personal care","Entertainment","Subscriptions","Travel"];
 // Older entries keep their original category; these merge them into the current list.
-const CAT_MERGE = {"Gas":"Transport & gas","Transport":"Transport & gas","Health":"Health & personal care","Fitness":"Health & personal care","Personal care":"Health & personal care","Gifts":"Other","Gifts & other":"Other"};
-function catOf(t){ const c=t&&t.category; return c?(CAT_MERGE[c]||c):""; }
+const CAT_MERGE = {"Gas":"Transport & gas","Transport":"Transport & gas","Health":"Health & personal care","Fitness":"Health & personal care","Personal care":"Health & personal care",};
+// "Other" (and the old "Gifts" / "Gifts & other") was removed: those entries show as "Needs a category" until you pick one.
+const CAT_GONE = {"Other":1,"Gifts":1,"Gifts & other":1};
+function catOf(t){ const c=t&&t.category; if(!c||CAT_GONE[c]) return ""; return CAT_MERGE[c]||c; }
 const INC_CATS = ["Salary","Freelance","Refund","Gift","Other"];
 
 const S = {db:null,col:null,uid:null,status:"loading",accounts:[],projects:[],loans:[],txns:[],openLoan:null,
@@ -797,7 +804,7 @@ function render(){
       '<button id="lg_btn" type="submit" class="btn primary wide">Sign in</button></form>';
     $("loginForm").addEventListener("submit",signIn); return;
   }
-  $("addBtn").hidden=false; document.querySelector("nav.tabs").hidden=false;
+  $("addBtn").hidden=true; document.querySelector("nav.tabs").hidden=false;
   if(S.status==="nostore"){v.innerHTML='<div class="empty"><strong>Safari is blocking storage for this page</strong><span>Open Pocketbook in a normal Safari window, not a Private window.</span></div>';return;}
   if(S.status==="nofs"){v.innerHTML='<div class="empty" style="text-align:left;justify-items:start"><strong>Open Pocketbook in Google Chrome</strong><span>This browser can\'t save into the Pocketbook folder. In Finder, right-click <b>Pocketbook.html</b>, choose <b>Open With</b>, then <b>Google Chrome</b>. To make it the default, choose <b>Get Info</b>, set <b>Open with</b> to Chrome and click <b>Change All</b>.</span></div>';return;}
   if(S.status==="connect"){v.innerHTML='<div class="empty"><strong>Open your Pocketbook folder</strong><span>Your data is kept in a file inside the Pocketbook folder, next to this app. Chrome asks you once each time you open the app.</span>'+
@@ -892,17 +899,17 @@ function acctGroups(c,withProjects){
   let h='';
   if(cards.length){
     const u=c.limit?Math.round(c.owed/c.limit*100):null;
-    h+='<section class="grp"><h2 id="g-cards">Credit cards <span class="gsum neg">'+money(c.owed)+(u!==null?' · '+u+'% used':'')+'</span></h2><div class="list">'+cards.map(a=>utilRow(a,c,c.owed)).join("")+'</div></section>';
+    h+='<section class="grp"><h2 id="g-cards"><span>Credit cards</span><span class="h2r"><span class="gsum neg">'+money(c.owed)+(u!==null?' · '+u+'% used':'')+'</span><button data-addfor="credit">+ Purchase</button></span></h2><div class="list">'+cards.map(a=>utilRow(a,c,c.owed)).join("")+'</div></section>';
   }
   const projs=withProjects?S.projects.slice().sort((a,b)=>(a.created||0)-(b.created||0)):[];
   if(sav.length||projs.length){
     h+='<section class="grp"><h2 id="g-sav">Savings</h2>';
-    if(sav.length) h+='<div class="subh"><span>Personal savings</span><span>'+money(c.personal)+'</span></div><div class="list">'+sav.map(a=>plainRow(a,c)).join("")+'</div>';
-    if(projs.length) h+='<div class="subh"><span>Projects</span><span>'+money(c.aside)+'</span></div><div class="list">'+projs.map(p=>projRow(p,c)).join("")+'</div>';
+    if(sav.length) h+='<div class="subh"><span>Personal savings</span><span class="h2r"><span>'+money(c.personal)+'</span><button class="sadd" data-addfor="savings">+ Add</button></span></div><div class="list">'+sav.map(a=>plainRow(a,c)).join("")+'</div>';
+    if(projs.length) h+='<div class="subh"><span>Projects</span><span class="h2r"><span>'+money(c.aside)+'</span><button class="sadd" data-addfor="projects">+ Add money</button></span></div><div class="list">'+projs.map(p=>projRow(p,c)).join("")+'</div>';
     h+='</section>';
   }
   if(day.length){
-    h+='<section class="grp"><h2 id="g-day">Checking and cash <span class="gsum">'+money(c.daily)+'</span></h2><div class="list">'+day.map(a=>{
+    h+='<section class="grp"><h2 id="g-day"><span>Checking and cash</span><span class="h2r"><span class="gsum">'+money(c.daily)+'</span><button data-addfor="day">+ Add</button></span></h2><div class="list">'+day.map(a=>{
       const inProj=S.projects.reduce((s,p)=>s+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0);
       return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(inProj)>=0.005?' · '+money(inProj)+' for projects':''));
     }).join("")+'</div></section>';
@@ -987,6 +994,7 @@ function viewActivity(){
   if(!S.accounts.length) return setupEmpty();
   let h='<div class="vseg" role="group" aria-label="View"><button data-actview="list" aria-pressed="'+(S.actView!=="closing")+'">Transactions</button><button data-actview="closing" aria-pressed="'+(S.actView==="closing")+'">Monthly closing</button></div>';
   if(S.actView==="closing") return h+viewClosing();
+  h+='<div style="display:flex;justify-content:flex-end;margin:-2px 0 6px"><button class="btn primary" data-addfor="any">+ New transaction</button></div>';
   let list=S.txns.filter(t=>t.date);
   if(S.acct!=="all") list=list.filter(t=>t.from===S.acct||t.to===S.acct);
   list=sortTx(list);
@@ -1032,9 +1040,11 @@ function monthReport(ym){
   return {ym,live,openNet:o.net,closeNet:c.net,netChange:Math.round((c.net-o.net)*100)/100,rows,moved,top,stats:monthStats(ym),
     up:moved.filter(r=>r.good>0).sort((a,b)=>b.good-a.good), down:moved.filter(r=>r.good<0).sort((a,b)=>a.good-b.good)};
 }
+function pctOf(ch,base){ if(!base||Math.abs(base)<0.005) return ""; const v=ch/Math.abs(base)*100; return (v>0?"+":"−")+(Math.abs(v)>=100?Math.round(Math.abs(v)):Math.abs(v).toFixed(1))+"%"; }
 function chLine(r){
   const word=r.credit?(r.change>0?"owed up ":"owed down "):(r.change>0?"up ":"down ");
-  return '<span class="'+(r.good>0?"pos":"neg")+'">'+word+money(Math.abs(r.change))+'</span>';
+  const pc=pctOf(r.change,r.open);
+  return '<span class="'+(r.good>0?"pos":"neg")+'">'+word+money(Math.abs(r.change))+(pc?' <em class="chp">'+pc+'</em>':'')+'</span>';
 }
 function catBreakdown(ym){
   const m={}; let total=0;
@@ -1045,11 +1055,9 @@ function catBreakdown(ym){
 // Ring chart: the 4 biggest categories get their own color, the rest fold into "Other".
 function catChart(ym){
   const B=catBreakdown(ym); if(!B.total) return '';
-  const named=B.rows.filter(r=>r.cat!=="__none"&&r.cat!=="Other"), none=B.rows.find(r=>r.cat==="__none"), oth=B.rows.find(r=>r.cat==="Other");
-  let parts=named.slice(0,4).map((r,i)=>({label:r.cat,amt:r.amt,col:"var(--s"+(i+1)+")"}));
-  const folded=named.slice(4).concat(oth?[oth]:[]), rest=folded.reduce((s,r)=>s+r.amt,0);
-  if(rest>0) parts.push({label:"Other",amt:rest,col:"var(--s5)",sub:folded.map(r=>r.cat).join(", ")});
-  if(none) parts.push({label:"Needs a category",amt:none.amt,col:"var(--sunk)",none:true});
+  const named=B.rows.filter(r=>r.cat!=="__none"), none=B.rows.find(r=>r.cat==="__none");
+  let parts=named.map((r,i)=>({label:r.cat,cat:r.cat,amt:r.amt,col:i<4?"var(--s"+(i+1)+")":"var(--s5)"}));
+  if(none) parts.push({label:"Needs a category",cat:"__none",amt:none.amt,col:"color-mix(in srgb,var(--neg) 55%,transparent)",none:true});
   const T=B.total, cx=60, cy=60, R=54, r=40, gap=parts.length>1?0.035:0;
   let a0=-Math.PI/2, arcs='';
   parts.forEach(p=>{ const sweep=p.amt/T*Math.PI*2; if(sweep<=0) return;
@@ -1060,14 +1068,21 @@ function catChart(ym){
   const k=T>=10000?"$"+(T/1000).toFixed(1)+"k":money(T).replace(/\.\d\d$/,"");
   return '<div class="subh" style="margin-top:12px"><span>Spending by category</span><span></span></div><div class="ring"><svg viewBox="0 0 120 120" width="124" height="124" role="img" aria-label="Spending by category, '+esc(money(T))+' total">'+arcs+
     '<text x="60" y="56" text-anchor="middle" class="rl">spent</text><text x="60" y="72" text-anchor="middle" class="rv">'+esc(k)+'</text></svg>'+
-    '<div class="rlist">'+parts.map(p=>'<div class="ri'+(p.none?' none':'')+'" title="'+esc((p.sub?p.sub+": ":"")+money(p.amt))+'"><span class="sw" style="background:'+p.col+'"></span><span class="rn">'+esc(p.label)+'</span><span class="rp">'+Math.round(p.amt/T*100)+'%</span><span class="ra">'+money(p.amt)+'</span></div>').join("")+'</div></div>'+
-    (none?'<p class="hint" style="margin:6px 0 0">Some older expenses have no category. Open them in Activity and pick one.</p>':'');
+    '<div class="rlist">'+parts.map(p=>'<button type="button" class="ri'+(p.none?' none':'')+'" data-catlist="'+esc(p.cat)+'" data-catym="'+esc(ym)+'" title="See these transactions"><span class="sw" style="background:'+p.col+'"></span><span class="rn">'+esc(p.label)+'</span><span class="rp">'+money(p.amt)+'<em>'+Math.round(p.amt/T*100)+'%</em></span></button>').join("")+'</div></div>'+
+    (none?'<p class="hint" style="margin:6px 0 0">Tap "Needs a category" to see those expenses and pick one for each.</p>':'<p class="hint" style="margin:6px 0 0">Tap a category to see its transactions.</p>');
+}
+function openCatList(cat,ym){
+  const list=sortTx(S.txns.filter(t=>t.type==="expense"&&t.date&&ymOf(t.date)===ym&&((catOf(t)||"__none")===cat)));
+  const total=list.reduce((s,t)=>s+(+t.amount||0),0), name=cat==="__none"?"Needs a category":cat;
+  let h=sheetHead(name+" · "+monthName(ym,true))+'<p class="hint" style="margin:0 0 10px">'+list.length+' expense'+(list.length===1?'':'s')+' · '+money(total)+'. Tap one to change its category.</p>';
+  h+=list.length?'<div class="list">'+list.map(t=>{const d=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(t.category&&!catOf(t)?'was "'+t.category+'"':(catOf(t)||"no category"))+'</span></span><span class="amt">'+money(t.amount)+'</span></button>';}).join("")+'</div>':'<div class="empty">Nothing here.</div>';
+  openSheet(h);
 }
 function monthCard(R,compact){
   const st=R.stats;
-  let h='<div class="mcard"><div class="mtop"><div><div class="eyebrow">'+(R.live?"Net balance change so far":"Net balance change")+'</div><div class="v '+(R.netChange<0?"neg":"pos")+'">'+(R.netChange>0?"+":R.netChange<0?"−":"")+money(Math.abs(R.netChange))+'</div></div>'+
+  let h='<div class="mcard"><div class="mtop"><div><div class="eyebrow">'+(R.live?"Net balance change so far":"Net balance change")+'</div><div class="v '+(R.netChange<0?"neg":"pos")+'">'+(R.netChange>0?"+":R.netChange<0?"−":"")+money(Math.abs(R.netChange))+(pctOf(R.netChange,R.openNet)?'<span class="chp" style="font-size:13px;margin-left:8px">'+pctOf(R.netChange,R.openNet)+'</span>':'')+'</div></div>'+
     '<div style="text-align:right"><div class="eyebrow">'+(R.live?"Now":"Closed at")+'</div><div class="v">'+money(R.closeNet)+'</div></div></div>'+
-    '<div class="mstats"><span>Spent <b class="neg">'+money(st.spent)+'</b></span><span>Income <b class="pos">'+money(st.income)+'</b></span><span>Card payments <b>'+money(st.cards)+'</b></span>'+(st.cashback?'<span>Cash back <b class="pos">'+money(st.cashback)+'</b></span>':'')+(st.loans?'<span>Loan payments <b>'+money(st.loans)+'</b></span>':'')+'</div>'+catChart(R.ym);
+    '<div class="mstats"><span>Spent <b class="neg">'+money(st.spent)+'</b>'+(st.income>0?' <em class="chp">'+Math.round(st.spent/st.income*100)+'% of income</em>':'')+'</span><span>Income <b class="pos">'+money(st.income)+'</b></span><span>Card payments <b>'+money(st.cards)+'</b></span>'+(st.cashback?'<span>Cash back <b class="pos">'+money(st.cashback)+'</b></span>':'')+(st.loans?'<span>Loan payments <b>'+money(st.loans)+'</b></span>':'')+'</div>'+catChart(R.ym);
   if(R.top.length){
     h+='<div class="subh" style="margin-top:12px"><span>Top '+R.top.length+' changes</span><span></span></div><ol class="top3">'+R.top.map(r=>
       '<li><div class="tl"><span class="tn">'+esc(r.name)+'</span>'+chLine(r)+'</div>'+(r.driver?'<div class="m">Biggest: '+esc(txDisplay(r.driver).title)+' · '+money(r.driver.amount)+'</div>':'')+'</li>').join("")+'</ol>';
@@ -1663,6 +1678,14 @@ document.addEventListener("click",async e=>{
   if(ds.tab){S.open=null;S.openLoan=null;S.openProj=null;S.tab=ds.tab;try{localStorage.setItem("pb_tab",S.tab);}catch(_){} render();window.scrollTo(0,0);return;}
   if(ds.actview){S.actView=ds.actview;render();window.scrollTo(0,0);return;}
   if(ds.closing){S.open=null;S.openLoan=null;S.openProj=null;S.tab="activity";S.actView="closing";render();window.scrollTo(0,0);return;}
+  if(ds.catlist){ openCatList(ds.catlist,ds.catym); return; }
+  if(ds.addfor){ const k=ds.addfor, first=t=>S.accounts.find(a=>a.type===t);
+    if(k==="credit") openTx(null,{type:"expense"});
+    else if(k==="savings"){ const sv=first("savings"); const ck=first("checking"); openTx(null,{type:"transfer",to:sv?sv.id:"",from:ck?ck.id:""}); }
+    else if(k==="projects"){ openTx(null,{type:"transfer",project:S.projects.length===1?S.projects[0].id:""}); }
+    else if(k==="day"){ const ck=first("checking"); openTx(null,ck?{ctx:ck.id}:{type:"transfer"}); }
+    else openTx(null,null);
+    return; }
   if(ds.scrollto){const el=$(ds.scrollto); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); return;}
   if(ds.tabGo){S.open=null;S.openLoan=null;S.openProj=null;S.tab=ds.tabGo;render();window.scrollTo(0,0);return;}
   if(ds.filteracct){S.acct=ds.filteracct;S.tab="activity";S.open=null;render();return;}
