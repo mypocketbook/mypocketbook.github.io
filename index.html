@@ -110,6 +110,13 @@ button.row:hover{background:var(--sunk)}
 .tpr{display:flex;justify-content:space-between;gap:10px;align-items:baseline;font-size:14px;flex-wrap:wrap}
 .tpn{font-weight:600}.tpv{font-family:var(--f-num);font-size:13.5px;text-align:right}.tpv .arr{color:var(--muted);margin:0 2px}
 .tpv b{font-weight:600}.tpv em{font-style:normal;color:var(--muted);font-size:12px}
+.authwrap{max-width:420px;margin:18px auto 0;display:grid;gap:14px}
+.authlogo{font-family:var(--f-display);font-weight:700;font-size:28px;text-align:center;letter-spacing:-.02em}
+.authtabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--sunk);border-radius:12px;padding:4px}
+.authtabs button{border:0;background:none;border-radius:9px;padding:9px;font:inherit;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
+.authtabs button[aria-selected="true"]{background:var(--surface);color:var(--ink)}
+.authcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px}
+.okmsg{color:var(--pos);font-size:13px;margin:0}
 .settings{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 .settings summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:14px;font-weight:600;cursor:pointer}
 .settings summary::-webkit-details-marker{display:none}
@@ -554,11 +561,13 @@ async function readData(){
   catch(e){ if(e&&e.name==="NotFoundError"){ diskSnapshot=null; return {}; } throw e; }
 }
 /* ---------- cloud (Supabase): data lives in your private table, shared by your Mac and iPhone ---------- */
+const UTABLE="pocketbook_usernames", LOGIN_FN="pocketbook-login";
+let RECOVERY=/type=recovery/.test(location.hash);
 const SB_URL="https://ywstydrhzrdozkatmtdq.supabase.co", SB_KEY="sb_publishable_FDBCMDIQlD2ALD1e892beQ_LHtSdBcL", TABLE="pocketbook_items";
 let SB=null, UID=null, SYNCED={}, cloudBusy=0, reloadTimer=null, rtChannel=null; S.loginMsg="";
 function cacheSave(){ try{ localStorage.setItem("pb_cloud_cache",JSON.stringify(STORE)); }catch(e){} }
 async function cloudLoad(){
-  const {data,error}=await SB.from(TABLE).select("id,doc").limit(20000);
+  const {data,error}=await SB.from(TABLE).select("id,doc").eq("user_id",UID).limit(20000);
   if(error) throw error;
   const st={}, sy={}, bk=[];
   (data||[]).forEach(r=>{ if(/^snap-/.test(r.id)){ bk.push(r.id); return; } st[r.id]=r.doc; sy[r.id]=JSON.stringify(r.doc); });
@@ -579,7 +588,7 @@ async function cloudPersist(){
       if(!r.error){ S.backups.unshift("pocketbook-"+todayStr()+".json"); pruneCloudSnaps(); }
     }
     if(ups.length){ const {error}=await SB.from(TABLE).upsert(ups); if(error) throw error; }
-    if(dels.length){ const {error}=await SB.from(TABLE).delete().in("id",dels); if(error) throw error; }
+    if(dels.length){ const {error}=await SB.from(TABLE).delete().eq("user_id",UID).in("id",dels); if(error) throw error; }
     ups.forEach(u=>SYNCED[u.id]=JSON.stringify(u.doc)); dels.forEach(k=>delete SYNCED[k]);
     cacheSave(); return true;
   }catch(e){
@@ -596,9 +605,20 @@ function scheduleReload(){ clearTimeout(reloadTimer); reloadTimer=setTimeout(asy
   if(cloudBusy||$("sheetRoot").innerHTML||S.status!=="ready") { scheduleReload(); return; }
   try{ const before=JSON.stringify(STORE); await cloudLoad(); if(JSON.stringify(STORE)!==before) refresh(); }catch(e){}
 },700); }
+async function loadMe(){
+  S.me={email:"",username:""};
+  try{ const {data}=await SB.auth.getSession(); const u=data&&data.session&&data.session.user; if(u){ S.me.email=u.email||""; } }catch(e){}
+  try{ const {data}=await SB.from(UTABLE).select("username").eq("user_id",UID).maybeSingle(); if(data&&data.username) S.me.username=data.username; }catch(e){}
+  // a username chosen at sign-up (before the email was confirmed) is claimed on the first login
+  try{ const pend=JSON.parse(localStorage.getItem("pb_pending_user")||"null");
+    if(pend&&!S.me.username&&pend.email&&S.me.email&&pend.email.toLowerCase()===S.me.email.toLowerCase()){
+      const {error}=await SB.from(UTABLE).insert({username:pend.username,user_id:UID}); if(!error) S.me.username=pend.username; localStorage.removeItem("pb_pending_user"); } }catch(e){}
+}
 async function cloudReady(){
   S.status="loading"; render();
   try{ const {data}=await SB.auth.getSession(); UID=data&&data.session?data.session.user.id:null; }catch(e){}
+  if(RECOVERY){ S.status="newpin"; render(); return; }
+  await loadMe();
   try{ await cloudLoad(); }catch(e){
     try{ STORE=JSON.parse(localStorage.getItem("pb_cloud_cache")||"{}"); }catch(_){ STORE={}; }
     refresh(); toast("Can't reach your data right now. Showing the last saved copy."); return;
@@ -612,8 +632,75 @@ async function cloudStart(){
   SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"pb-auth"}});
   const {data}=await SB.auth.getSession();
   if(data&&data.session) await cloudReady(); else { S.status="login"; render(); }
-  SB.auth.onAuthStateChange((ev)=>{ if(ev==="SIGNED_OUT"){ STORE={}; SYNCED={}; try{ localStorage.removeItem("pb_cloud_cache"); }catch(e){} S.status="login"; render(); } });
+  SB.auth.onAuthStateChange((ev)=>{ if(ev==="PASSWORD_RECOVERY"){ RECOVERY=true; S.status="newpin"; render(); return; } if(ev==="SIGNED_OUT"){ STORE={}; SYNCED={}; S.authMode="login"; S.loginMsg=""; S.me=null; S.open=null; S.openLoan=null; S.openProj=null; S.tab="home"; try{ localStorage.removeItem("pb_view"); localStorage.removeItem("pb_tab"); history.replaceState(null,"",location.pathname); }catch(e){} try{ localStorage.removeItem("pb_cloud_cache"); }catch(e){} S.status="login"; render(); } });
   document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&S.status==="ready") scheduleReload(); });
+}
+/* ---------- sign in, create account, forgot PIN ---------- */
+const PIN_RE=/^\d{6,12}$/, USER_RE=/^[a-z0-9_.]{3,20}$/;
+function authView(){
+  const m=S.status==="newpin"?"newpin":(S.authMode||"login"), msg=S.loginMsg?'<p class="'+(S.loginOk?"okmsg":"err")+'" role="alert" style="margin:0">'+esc(S.loginMsg)+'</p>':'';
+  const pinField=(id,label,ac)=>'<div class="field" style="margin:0"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="password" inputmode="numeric" autocomplete="'+ac+'" maxlength="64" placeholder="••••••"></div>';
+  let h='<div class="authwrap"><div class="authlogo">Pocketbook</div>';
+  if(m==="newpin") return h+'<form id="authForm" class="authcard" novalidate><strong>Set a new PIN</strong><span class="hint">Use 6 to 12 digits.</span>'+pinField("au_pin","New PIN","new-password")+pinField("au_pin2","Repeat the new PIN","new-password")+msg+'<button id="au_btn" class="btn primary wide" type="submit">Save new PIN</button></form></div>';
+  h+='<div class="authtabs" role="tablist"><button type="button" data-authmode="login" aria-selected="'+(m==="login")+'">Log in</button><button type="button" data-authmode="signup" aria-selected="'+(m==="signup")+'">Create account</button></div>';
+  if(m==="login") h+='<form id="authForm" class="authcard" novalidate>'+
+    '<div class="field" style="margin:0"><label for="au_login">Email or username</label><input id="au_login" autocomplete="username" autocapitalize="off" spellcheck="false"></div>'+pinField("au_pin","PIN","current-password")+msg+
+    '<button id="au_btn" class="btn primary wide" type="submit">Log in</button><button type="button" class="sadd" data-authmode="forgot" style="justify-self:center">Forgot your PIN?</button></form>';
+  else if(m==="signup") h+='<form id="authForm" class="authcard" novalidate><span class="hint">Your own private Pocketbook. Nobody else can see your accounts.</span>'+
+    '<div class="field" style="margin:0"><label for="au_email">Email</label><input id="au_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off"></div>'+
+    '<div class="field" style="margin:0"><label for="au_user">Username</label><input id="au_user" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="3 to 20 letters, numbers, . or _"></div>'+
+    pinField("au_pin","PIN (6 to 12 digits)","new-password")+pinField("au_pin2","Repeat the PIN","new-password")+msg+
+    '<button id="au_btn" class="btn primary wide" type="submit">Create account</button></form>';
+  else h+='<form id="authForm" class="authcard" novalidate><strong>Forgot your PIN?</strong><span class="hint">We\'ll email you a link to set a new one.</span>'+
+    '<div class="field" style="margin:0"><label for="au_email">Email</label><input id="au_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off"></div>'+msg+
+    '<button id="au_btn" class="btn primary wide" type="submit">Send reset link</button><button type="button" class="sadd" data-authmode="login" style="justify-self:center">Back to log in</button></form>';
+  return h+'</div>';
+}
+function authErr(m,ok){ S.loginMsg=m; S.loginOk=!!ok; render(); }
+function wireAuth(){
+  document.querySelectorAll("[data-authmode]").forEach(b=>b.addEventListener("click",()=>{ S.authMode=b.dataset.authmode; S.loginMsg=""; render(); }));
+  const f=$("authForm"); if(!f) return;
+  f.addEventListener("submit",async e=>{ e.preventDefault(); const g=id=>($(id)||{}).value||"", btn=$("au_btn"), m=S.status==="newpin"?"newpin":(S.authMode||"login");
+    const busy=t=>{ if(btn){ btn.disabled=true; btn.textContent=t; } };
+    try{
+      if(m==="login"){
+        const login=g("au_login").trim(), pin=g("au_pin"); if(!login||!pin) return authErr("Enter your email or username and your PIN.");
+        busy("Logging in…");
+        if(login.includes("@")){ const {error}=await SB.auth.signInWithPassword({email:login,password:pin}); if(error) return authErr(/confirm/i.test(error.message)?"Confirm your email first. Check your inbox for the link.":"That login and PIN don't match."); }
+        else {
+          let r; try{ r=await fetch(SB_URL+"/functions/v1/"+LOGIN_FN,{method:"POST",headers:{"Content-Type":"application/json",apikey:SB_KEY},body:JSON.stringify({login:login.toLowerCase(),pin})}); }catch(_){ return authErr("Couldn't reach the server. Try your email instead of the username."); }
+          const j=await r.json().catch(()=>({})); if(!r.ok||!j.access_token) return authErr(r.status===404?"Username login isn't set up yet. Log in with your email.":"That login and PIN don't match.");
+          const {error}=await SB.auth.setSession({access_token:j.access_token,refresh_token:j.refresh_token}); if(error) return authErr("Couldn't log in. Try again.");
+        }
+        S.loginMsg=""; await cloudReady(); return;
+      }
+      if(m==="signup"){
+        const email=g("au_email").trim(), user=g("au_user").trim().toLowerCase(), pin=g("au_pin"), pin2=g("au_pin2");
+        if(!/^\S+@\S+\.\S+$/.test(email)) return authErr("Enter a valid email.");
+        if(!USER_RE.test(user)) return authErr("Username: 3 to 20 characters, using letters, numbers, . or _");
+        if(!PIN_RE.test(pin)) return authErr("The PIN must be 6 to 12 digits.");
+        if(/^(\d)\1+$/.test(pin)||"0123456789012".includes(pin)||"9876543210987".includes(pin)) return authErr("Pick a PIN that's harder to guess (not 111111 or 123456).");
+        if(pin!==pin2) return authErr("The two PINs don't match.");
+        busy("Creating account…");
+        try{ const {data:free}=await SB.rpc("pocketbook_username_free",{u:user}); if(free===false) return authErr("That username is taken. Try another one."); }catch(_){}
+        const {data,error}=await SB.auth.signUp({email,password:pin,options:{emailRedirectTo:location.origin+location.pathname}});
+        if(error) return authErr(/registered|exists/i.test(error.message)?"There's already an account with that email. Log in instead.":"Couldn't create the account: "+error.message);
+        try{ localStorage.setItem("pb_pending_user",JSON.stringify({email,username:user})); }catch(_){}
+        if(data&&data.session){ S.loginMsg=""; await cloudReady(); return; }
+        S.authMode="login"; return authErr("Account created. Check your email to confirm it, then log in.",true);
+      }
+      if(m==="forgot"){
+        const email=g("au_email").trim(); if(!/^\S+@\S+\.\S+$/.test(email)) return authErr("Enter the email of your account.");
+        busy("Sending…"); await SB.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+        return authErr("If that email has an account, a reset link is on its way. Open it on this device.",true);
+      }
+      if(m==="newpin"){
+        const pin=g("au_pin"), pin2=g("au_pin2"); if(!PIN_RE.test(pin)) return authErr("The PIN must be 6 to 12 digits."); if(pin!==pin2) return authErr("The two PINs don't match.");
+        busy("Saving…"); const {error}=await SB.auth.updateUser({password:pin}); if(error) return authErr("Couldn't save the new PIN: "+error.message);
+        RECOVERY=false; try{ history.replaceState(null,"",location.pathname); }catch(_){} S.loginMsg=""; toast("New PIN saved"); await cloudReady(); return;
+      }
+    }catch(err){ authErr("Something went wrong. Try again."); }
+  });
 }
 async function signIn(e){
   e.preventDefault();
@@ -681,7 +768,8 @@ async function openDir(h,picked){
   if(migrated) toast("Brought in your data from the old Pocketbook");
   return true;
 }
-async function runSetup(){ await seedSofiV2(); await seedJpmV3(); await seedJpmOpening(); await fixZelleV1(); await setLimitsV1(); await fixSofiSavV1(); }
+// The one-time fixes below were written for the original owner's data only. Other people start empty.
+async function runSetup(){ if(!STORE["meta-seed-sofi-v2"]) return; await seedSofiV2(); await seedJpmV3(); await seedJpmOpening(); await fixZelleV1(); await setLimitsV1(); await fixSofiSavV1(); }
 // One-time update you asked for (Oct 11): project money now sits in SoFi Savings (4% APY).
 // Carmencita's $99.67 moves from SoFi Checking and is rounded to $100 with $0.33 from SoFi Checking;
 // the $100 for Tha Bachelor Pad Project also ends up in SoFi Savings.
@@ -889,14 +977,9 @@ function render(){
   $("monthLabel").textContent=monthName(S.month);
   const v=$("view");
   if(S.status==="loading"){v.innerHTML='<div class="notice">Loading your books…</div>';return;}
-  if(S.status==="login"){
-    $("title").textContent="Pocketbook"; $("monthnav").hidden=true; $("addBtn").hidden=true; document.querySelector("nav.tabs").hidden=true;
-    v.innerHTML='<form id="loginForm" class="empty" style="text-align:left;justify-items:stretch;margin-top:12px" novalidate><strong>Sign in</strong><span>Use the email and password of the user you created in Supabase. You stay signed in on this device.</span>'+
-      '<div class="field" style="margin:0"><label for="lg_email">Email</label><input id="lg_email" type="email" autocomplete="username" inputmode="email" autocapitalize="off"></div>'+
-      '<div class="field" style="margin:0"><label for="lg_pw">Password</label><input id="lg_pw" type="password" autocomplete="current-password"></div>'+
-      (S.loginMsg?'<p class="err" role="alert" style="margin:0">'+esc(S.loginMsg)+'</p>':'')+
-      '<button id="lg_btn" type="submit" class="btn primary wide">Sign in</button></form>';
-    $("loginForm").addEventListener("submit",signIn); return;
+  if(S.status==="login"||S.status==="newpin"){
+    $("title").textContent=""; $("monthnav").hidden=true; $("addBtn").hidden=true; document.querySelector("nav.tabs").hidden=true;
+    v.innerHTML=authView(); wireAuth(); return;
   }
   $("addBtn").hidden=true; document.querySelector("nav.tabs").hidden=false;
   if(S.status==="nostore"){v.innerHTML='<div class="empty"><strong>Safari is blocking storage for this page</strong><span>Open Pocketbook in a normal Safari window, not a Private window.</span></div>';return;}
@@ -1349,6 +1432,26 @@ function viewAccounts(){
     '<div style="margin-top:14px"><button class="btn wide" data-act="newacct">Add account</button></div>';
 }
 function daysSinceFile(){ const d=lsGet("pb_lastfile"); if(!d) return null; return Math.round((pDate(todayStr())-pDate(d))/86400000); }
+function accountBlock(){
+  if(MODE!=="cloud") return '';
+  const me=S.me||{};
+  return '<h2 style="margin-top:4px">Your account</h2><div class="list" style="margin-bottom:6px">'+
+    '<div class="row" style="cursor:default"><span class="main"><span class="t">'+esc(me.username?"@"+me.username:"No username yet")+'</span><span class="m">'+esc(me.email||"")+'</span></span></div></div>'+
+    (me.username?'':'<form id="userForm" class="goalf" novalidate><label for="su_user">Choose a username to log in with it</label><div class="gf"><input id="su_user" autocapitalize="off" spellcheck="false" placeholder="e.g. alfredo"><button class="btn primary" type="submit">Save</button></div></form>')+
+    '<form id="pinForm" class="goalf" novalidate style="margin-top:10px"><label for="sp_pin">Change PIN (6 to 12 digits)</label><div class="gf"><input id="sp_pin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="New PIN"><button class="btn" type="submit">Change</button></div></form><div id="accMsg"></div>';
+}
+function wireAccount(){
+  const msg=(t,ok)=>{ const m=$("accMsg"); if(m) m.innerHTML='<p class="'+(ok?"okmsg":"err")+'" style="margin:8px 0 0">'+esc(t)+'</p>'; };
+  const uf=$("userForm"); if(uf) uf.addEventListener("submit",async e=>{ e.preventDefault(); const u=$("su_user").value.trim().toLowerCase();
+    if(!USER_RE.test(u)) return msg("Username: 3 to 20 characters, using letters, numbers, . or _");
+    const {error}=await SB.from(UTABLE).insert({username:u,user_id:UID});
+    if(error) return msg(/duplicate|unique|23505/i.test((error.code||"")+error.message)?"That username is taken.":"Couldn't save it. Is the database set up?");
+    S.me.username=u; toast("Username saved"); closeSheet(); });
+  const pf=$("pinForm"); if(pf) pf.addEventListener("submit",async e=>{ e.preventDefault(); const pin=$("sp_pin").value;
+    if(!PIN_RE.test(pin)) return msg("The PIN must be 6 to 12 digits.");
+    const {error}=await SB.auth.updateUser({password:pin}); if(error) return msg("Couldn't change it: "+error.message);
+    toast("PIN changed"); closeSheet(); });
+}
 function backupBlock(){
   const last=S.backups[0];
   if(MODE==="cloud"){ const ds=daysSinceFile();
@@ -1971,8 +2074,8 @@ document.addEventListener("click",async e=>{
     renderTx();return;}
   switch(ds.act){
     case "close": closeSheet(); break;
-    case "settings": openSheet(sheetHead("Settings and backups")+backupBlock().replace(/^<h2>[^<]*<\/h2>/,"")); break;
-    case "asksignout": openSheet(sheetHead("Log out?")+'<p class="hint" style="margin:0 0 14px">You\'ll need your email and password to sign in again on this device. Your data stays saved online.</p><div class="actions"><button type="button" class="btn" data-act="close">Cancel</button><button type="button" class="btn primary" data-act="signout">Log out</button></div>'); break;
+    case "settings": openSheet(sheetHead("Settings and backups")+accountBlock()+backupBlock()); wireAccount(); break;
+    case "asksignout": openSheet(sheetHead("Log out?")+'<p class="hint" style="margin:0 0 14px">You\'ll need your email or username and your PIN to log in again on this device. Your data stays saved online.</p><div class="actions"><button type="button" class="btn" data-act="close">Cancel</button><button type="button" class="btn primary" data-act="signout">Log out</button></div>'); break;
     case "newacct": openAcct(); break;
     case "newproj": openProj(); break;
     case "newloan": openLoanForm(); break;
