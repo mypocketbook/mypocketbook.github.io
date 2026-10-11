@@ -188,6 +188,17 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .ptile{flex:0 0 auto;min-width:210px;max-width:270px;scroll-snap-align:start;display:flex;align-items:center;gap:12px;text-align:left;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s}
 .ptile:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--accent) 60%,var(--line))}
 .ptile.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent);background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.pswitch.rings{gap:14px;padding:6px 2px 12px}
+.bring{flex:0 0 auto;position:relative;width:150px;height:150px;border:0;background:none;padding:0;color:var(--ink);font:inherit;cursor:pointer;scroll-snap-align:start;border-radius:50%;transition:transform .15s}
+.bring svg{position:absolute;inset:0;width:100%;height:100%}
+.bring .trk{fill:var(--surface);stroke:var(--sunk);stroke-width:9}
+.bring.on .trk{fill:color-mix(in srgb,var(--accent) 12%,var(--surface))}
+.bring:hover{transform:scale(1.04)} .bring.on{filter:drop-shadow(0 0 10px color-mix(in srgb,var(--accent) 45%,transparent))}
+.bring .bin{position:absolute;inset:22px;display:grid;align-content:center;justify-items:center;text-align:center;gap:2px}
+.bring .bn{font-size:12.5px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)} .bring.on .bn{color:var(--ink)}
+.bring .bv{font-family:var(--f-num);font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap}.bring .bv.neg{color:var(--neg)}
+.bring .bp{font-size:11px;color:var(--muted);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+@media (min-width:1000px){.pswitch.rings{display:flex;flex-wrap:wrap;overflow:visible}}
 .pring{flex:none}.prt{font-family:var(--f-num);font-size:11.5px;font-weight:600;fill:var(--ink)}
 .ptile .pt{display:grid;gap:1px;min-width:0}.ptile .pb.neg{color:var(--neg)}
 .goalf{display:grid;gap:6px;margin-top:6px}.goalf label{font-size:12.5px;font-weight:600;color:var(--muted)}
@@ -412,7 +423,7 @@ function dayName(s){const [y,m,d]=s.split("-").map(Number);const dt=new Date(y,m
   if(dt.toDateString()===yd.toDateString()) return "Yesterday";
   return dt.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
 const fmt=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"});
-function money(n){return fmt.format(Math.round((n||0)*100)/100);}
+function money(n,short){const v=Math.round((n||0)*100)/100; return short&&v%1===0?fmt.format(v).replace(/\.00$/,""):fmt.format(v);}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function $(id){return document.getElementById(id);}
 function acctById(id){return S.accounts.find(a=>a.id===id);}
@@ -853,7 +864,7 @@ function render(){
     (S.savedName?'<button class="btn" data-act="pickfolder">Choose a different folder</button>':'')+
     '<span class="hint" style="margin:0">In the window that opens, select the <b>Pocketbook</b> folder, click <b>Open</b>, then allow Chrome to edit files there.</span></div>';return;}
   v.innerHTML = openA ? viewAccount(openA) : openL ? viewLoan(openL) : openP ? viewProject(openP) : ({home:viewHome,activity:viewActivity,projects:viewProjects,accounts:viewAccounts,loans:viewLoans}[S.tab])();
-  if(openP||openA){ const ps=document.querySelector(".pswitch"), on=ps&&ps.querySelector(".ptile.on"); if(ps&&on&&ps.scrollWidth>ps.clientWidth){ const l=on.offsetLeft-ps.offsetLeft, r=l+on.offsetWidth; if(l<ps.scrollLeft||r>ps.scrollLeft+ps.clientWidth) ps.scrollLeft=Math.max(0,l-8); } }
+  if(openP||openA){ const ps=document.querySelector(".pswitch"), on=ps&&ps.querySelector(".bring.on,.ptile.on"); if(ps&&on&&ps.scrollWidth>ps.clientWidth){ const l=on.offsetLeft-ps.offsetLeft, r=l+on.offsetWidth; if(l<ps.scrollLeft||r>ps.scrollLeft+ps.clientWidth) ps.scrollLeft=Math.max(0,l-8); } }
 }
 
 function viewAccount(a){
@@ -1192,14 +1203,17 @@ function ringSvg(pct,col){ const r=21, C=2*Math.PI*r, v=pct==null?0:Math.max(0,M
     '<text x="26" y="30" text-anchor="middle" class="prt">'+(pct==null?'–':Math.round(pct)+'%')+'</text></svg>'; }
 function switcher(items,label){
   if(items.length<2) return '';
-  return '<div class="pswitch" role="tablist" aria-label="'+esc(label)+'">'+items.map(it=>'<button class="ptile'+(it.on?' on':'')+'" role="tab" '+it.attr+' aria-selected="'+(!!it.on)+'">'+ringSvg(it.pct,it.on?"var(--accent)":(it.col||"var(--pos)"))+
-    '<span class="pt"><span class="pn">'+esc(it.name)+'</span><span class="pb'+(it.neg?' neg':'')+'">'+money(it.value)+'</span><span class="pg">'+esc(it.sub||"")+'</span></span></button>').join("")+'</div>';
+  const R=64, C=2*Math.PI*R;
+  return '<div class="pswitch rings" role="tablist" aria-label="'+esc(label)+'">'+items.map(it=>{ const v=it.pct==null?0:Math.max(0,Math.min(100,it.pct)), col=it.on?"var(--accent)":(it.col||"var(--pos)");
+    return '<button class="bring'+(it.on?' on':'')+'" role="tab" '+it.attr+' aria-selected="'+(!!it.on)+'" title="'+esc(it.name+" · "+money(it.value))+'">'+
+      '<svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="'+R+'" class="trk"/>'+(v>0?'<circle cx="75" cy="75" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+(C*v/100).toFixed(2)+' '+C.toFixed(2)+'" transform="rotate(-90 75 75)"/>':'')+'</svg>'+
+      '<span class="bin"><span class="bn">'+esc(it.name)+'</span><span class="bv'+(it.neg?' neg':'')+'">'+money(it.value)+'</span><span class="bp">'+(it.pct==null?esc(it.sub||""):Math.round(it.pct)+'% '+esc(it.sub||""))+'</span></span></button>'; }).join("")+'</div>';
 }
 function acctSwitcher(a,c){
   if(a.type==="credit"){
     const cards=S.accounts.filter(x=>x.type==="credit").sort((x,y)=>(-c.bal[y.id])-(-c.bal[x.id])||x.name.localeCompare(y.name));
     return switcher(cards.map(x=>{ const owed=Math.max(0,-c.bal[x.id]), lim=+x.limit||0, pc=lim?owed/lim*100:null;
-      return {attr:'data-openacct="'+esc(x.id)+'"',name:x.name,value:owed,neg:owed>0,pct:pc,col:pc==null?"var(--muted)":pc>=50?"var(--neg)":pc>=30?"#D9A400":"var(--pos)",sub:lim?"used of "+money(lim):"No limit set",on:x.id===a.id}; }),"Credit cards");
+      return {attr:'data-openacct="'+esc(x.id)+'"',name:x.name,value:owed,neg:owed>0,pct:pc,col:pc==null?"var(--muted)":pc>=50?"var(--neg)":pc>=30?"#D9A400":"var(--pos)",sub:lim?"of "+money(lim,true):"No limit set",on:x.id===a.id}; }),"Credit cards");
   }
   const list=S.accounts.filter(x=>x.type!=="credit").sort((x,y)=>c.bal[y.id]-c.bal[x.id]);
   const tot=list.reduce((s,x)=>s+Math.max(0,c.bal[x.id]),0);
@@ -1218,7 +1232,7 @@ function viewProject(p){
   const sum=l=>l.reduce((s,t)=>s+(+t.amount||0),0);
   const wish=p.wish||[], wTotal=wish.reduce((s,w)=>s+(+w.price||0),0), wLeft=wish.filter(w=>!w.done).reduce((s,w)=>s+(+w.price||0),0);
   const all=S.projects.slice().sort((x,y)=>(x.created||0)-(y.created||0));
-  let h=switcher(all.map(q=>{ const qb=c.proj[q.id]||0, qg=+q.goal||0; return {attr:'data-viewproj="'+esc(q.id)+'"',name:q.name,value:qb,neg:qb<0,pct:qg?qb/qg*100:null,sub:qg?"of "+money(qg):"No goal yet",on:q.id===p.id}; }),"Projects")+
+  let h=switcher(all.map(q=>{ const qb=c.proj[q.id]||0, qg=+q.goal||0; return {attr:'data-viewproj="'+esc(q.id)+'"',name:q.name,value:qb,neg:qb<0,pct:qg?qb/qg*100:null,sub:qg?"of "+money(qg,true):"No goal yet",on:q.id===p.id}; }),"Projects")+
     '<section class="hero"><div class="eyebrow">Available for this project</div><div class="big '+(bal<0?"neg":"")+'">'+money(bal)+'</div>'+
     (goal?'<div class="ubar goal" style="height:8px;margin:8px 0 4px"><i style="width:'+pct.toFixed(1)+'%"></i></div><p class="hint" style="margin:0">'+Math.round(pct)+'% of your '+money(goal)+' goal'+(bal<goal?' · '+money(goal-bal)+' to go':' · goal reached')+'</p>':'<form class="goalf" id="goalForm" data-pid="'+esc(p.id)+'" novalidate><label for="g_amt">Set a goal for this project</label><div class="gf"><input id="g_amt" class="amount" inputmode="decimal" placeholder="e.g. 1500"><button type="submit" class="btn primary">Save goal</button></div></form>')+
     '<div class="actions" style="margin-top:14px"><button class="btn" data-editproj="'+esc(p.id)+'">Edit project</button><button class="btn primary" data-saveto="'+esc(p.id)+'">+ Add money</button></div></section>';
@@ -1830,13 +1844,13 @@ document.addEventListener("click",async e=>{
   if(ds.editloan){openLoanForm(loanById(ds.editloan));return;}
   if(ds.loantab){S.loanTab=ds.loantab;render();return;}
   if(ds.payloan){openTx(null,{type:"loanpay",loan:ds.payloan});return;}
-  if(ds.openacct){ const keep=b.classList.contains("ptile"); S.open=ds.openacct;S.openLoan=null;S.openProj=null;render(); if(!keep) window.scrollTo(0,0); return;}
+  if(ds.openacct){ const keep=b.classList.contains("ptile")||b.classList.contains("bring"); S.open=ds.openacct;S.openLoan=null;S.openProj=null;render(); if(!keep) window.scrollTo(0,0); return;}
   if(ds.addin){openTx(null,{ctx:ds.addin});return;}
   if(ds.editacct){openAcct(acctById(ds.editacct));return;}
   if(ds.edittx){const t=S.txns.find(x=>x.id===ds.edittx); if(t) openTx(t); return;}
   if(ds.saveto){openTx(null,{type:"save",project:ds.saveto});return;}
-  if(ds.viewproj){ const keep=b.classList.contains("ptile"); const sx=keep&&b.parentElement?b.parentElement.scrollLeft:0; S.openProj=ds.viewproj;S.open=null;S.openLoan=null;render();
-    if(keep){ const ps=document.querySelector(".pswitch"); if(ps){ ps.scrollLeft=sx; const on=ps.querySelector(".ptile.on"); if(on) on.scrollIntoView({behavior:"smooth",inline:"nearest",block:"nearest"}); } } else window.scrollTo(0,0); return;}
+  if(ds.viewproj){ const keep=b.classList.contains("ptile")||b.classList.contains("bring"); const sx=keep&&b.parentElement?b.parentElement.scrollLeft:0; S.openProj=ds.viewproj;S.open=null;S.openLoan=null;render();
+    if(keep){ const ps=document.querySelector(".pswitch"); if(ps){ ps.scrollLeft=sx; const on=ps.querySelector(".bring.on,.ptile.on"); if(on) on.scrollIntoView({behavior:"smooth",inline:"nearest",block:"nearest"}); } } else window.scrollTo(0,0); return;}
   if(ds.wishtoggle){await wishUpdate(ds.wishproj,w=>w.map(x=>x.id===ds.wishtoggle?Object.assign({},x,{done:!x.done}):x));return;}
   if(ds.wishdel){await wishUpdate(ds.wishproj,w=>w.filter(x=>x.id!==ds.wishdel));return;}
   if(ds.editproj){openProj(projById(ds.editproj));return;}
