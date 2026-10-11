@@ -931,7 +931,9 @@ function viewHome(){
     {attr:'data-scrollto="g-cards"',name:"Cards owe",value:c.owed,neg:c.owed>0,pct:util,col:util==null?"var(--muted)":util>=50?"var(--neg)":util>=30?"#D9A400":"var(--pos)",sub:util==null?"Add card limits":"of limit"},
     {attr:sv.length===1?'data-openacct="'+esc(sv[0].id)+'"':'data-scrollto="g-sav"',name:"Savings",value:c.personal,pct:share(c.personal),col:"var(--pos)",sub:"of total"},
     {attr:'data-tab-go="projects"',name:"Projects",value:c.aside,pct:goalSum?goalHave/goalSum*100:share(c.aside),col:"var(--pos)",sub:goalSum?"of goals":"of total"}];
-  if(c.lentOut>0||lentTot>0) items.push({attr:'data-tab-go="loans"',name:"Owed to me",value:c.lentOut,pct:lentTot?repTot/lentTot*100:null,col:"var(--pos)",sub:"paid back"});
+  const lentLoans=S.loans.filter(l=>l.dir==="lent"), llTot=lentLoans.reduce((t,l)=>t+Math.max(+l.balance||0,+l.original||0),0), llLeft=lentLoans.reduce((t,l)=>t+Math.max(0,c.loan[l.id]||0),0);
+  const owedAll=c.lentOut+llLeft, lentAll=lentTot+llTot, repAll=repTot+Math.max(0,llTot-llLeft);
+  if(owedAll>0||lentAll>0) items.push({attr:'data-tab-go="loans"',name:"Owed to me",value:owedAll,pct:lentAll?repAll/lentAll*100:null,col:"var(--pos)",sub:"paid back"});
   if(owe.length) items.push({attr:'data-tab-go="loans"',name:"Loans I owe",value:c.loansOwe,neg:c.loansOwe>0,pct:origTot?(origTot-leftTot)/origTot*100:null,col:"var(--pos)",sub:"paid off"});
   let h=backupNudge()+'<section class="hero homehero"><div class="eyebrow">Net balance</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
     '<p class="hint" style="margin:2px 0 4px">Everything you have plus what people owe you, minus what you owe on cards and loans.</p></section>'+
@@ -960,7 +962,7 @@ function plainRow(a,c,sub){
 function projRow(p,c){
   const v=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,v/goal*100)):0;
   return '<button class="row" data-viewproj="'+esc(p.id)+'"><span class="badge fundb">'+esc(initials(p.name))+'</span><span class="main"><span class="t">'+esc(p.name)+'</span>'+
-    (goal?'<span class="ubar goal"><i style="width:'+pct.toFixed(1)+'%"></i></span><span class="m">'+Math.round(pct)+'% of '+money(goal)+'</span>':'<span class="m">Project · no goal set</span>')+
+    (goal?'<span class="ubar goal"><i style="width:'+pct.toFixed(1)+'%"></i></span><span class="m">'+Math.round(pct)+'% of '+money(goal)+'</span>':'<span class="m">'+(p.fund?'Ongoing fund':'Project · no goal set')+'</span>')+
     '</span><span class="amt '+(v<0?"neg":"")+'">'+money(v)+'</span></button>';
 }
 function acctGroups(c,withProjects){
@@ -1141,11 +1143,16 @@ function lentPeople(){
 }
 function lentStatus(r){ if(r.lent<=0) return {t:"Paid you",c:"pos"}; if(r.left<=0) return {t:"Paid in full",c:"pos"}; if(r.repaid>0) return {t:"Partially repaid",c:"mid"}; return {t:"Not repaid yet",c:"neg"}; }
 function lentSection(){
-  const P=lentPeople(); const out=P.reduce((s,r)=>s+r.left,0);
-  let h='<section class="grp"><h2 id="g-lent"><span>Lent to others</span><span class="h2r"><span class="gsum pos">'+money(out)+' owed to you</span></span></h2>';
+  const c=compute();
+  const P=lentPeople().map(r=>Object.assign({},r,{attr:'data-lentperson="'+esc(r.name)+'"'}));
+  S.loans.filter(l=>l.dir==="lent").forEach(l=>{ const lent=Math.max(+l.balance||0,+l.original||0), left=Math.max(0,c.loan[l.id]||0);
+    P.push({name:l.name,lent,repaid:Math.round(Math.max(0,lent-left)*100)/100,left,attr:'data-openloan="'+esc(l.id)+'"'}); });
+  P.sort((a,b)=>b.left-a.left||a.name.localeCompare(b.name));
+  const out=P.reduce((s,r)=>s+r.left,0);
+  let h='<section class="grp"><h2 id="g-lent"><span>Money lent to others</span><span class="h2r"><span class="gsum pos">'+money(out)+' owed to you</span><button data-addfor="lend">+ Lend</button></span></h2>';
   if(!P.length) return h+'<div class="empty">When you lend money, log it as an expense with the category <b>Lent to others</b> and write who it is for. It shows up here so you can track repayments.</div></section>';
   h+='<div class="list">'+P.map(r=>{ const st=lentStatus(r), pct=r.lent?Math.min(100,r.repaid/r.lent*100):100;
-    return '<button class="row" data-lentperson="'+esc(r.name)+'"><span class="badge lent">'+esc(initials(r.name))+'</span><span class="main"><span class="t">'+esc(r.name)+' <span class="pill st-'+st.c+'">'+st.t+'</span></span>'+
+    return '<button class="row" '+r.attr+'><span class="badge lent">'+esc(initials(r.name))+'</span><span class="main"><span class="t">'+esc(r.name)+' <span class="pill st-'+st.c+'">'+st.t+'</span></span>'+
       '<span class="ubar goal"><i style="width:'+pct.toFixed(1)+'%"></i></span><span class="m">Lent '+money(r.lent)+' · repaid '+money(r.repaid)+'</span></span>'+
       '<span class="amt '+(r.left>0?"":"mut")+'">'+money(r.left)+'<span class="owed">still owed</span></span></button>'; }).join("")+'</div></section>';
   return h;
@@ -1251,9 +1258,10 @@ function viewProject(p){
   const sum=l=>l.reduce((s,t)=>s+(+t.amount||0),0);
   const wish=p.wish||[], wTotal=wish.reduce((s,w)=>s+(+w.price||0),0), wLeft=wish.filter(w=>!w.done).reduce((s,w)=>s+(+w.price||0),0);
   const all=S.projects.slice().sort((x,y)=>(x.created||0)-(y.created||0));
-  let h=switcher(all.map(q=>{ const qb=c.proj[q.id]||0, qg=+q.goal||0; return {attr:'data-viewproj="'+esc(q.id)+'"',name:q.name,value:qb,neg:qb<0,pct:qg?qb/qg*100:null,sub:qg?"of "+money(qg,true):"No goal yet",on:q.id===p.id}; }),"Projects")+
+  const projTot=all.reduce((t,q)=>t+Math.max(0,c.proj[q.id]||0),0);
+  let h=switcher(all.map(q=>{ const qb=c.proj[q.id]||0, qg=+q.goal||0; return {attr:'data-viewproj="'+esc(q.id)+'"',name:q.name,value:qb,neg:qb<0,pct:qg?qb/qg*100:(projTot?Math.max(0,qb)/projTot*100:0),sub:qg?"of "+money(qg,true):"of projects",on:q.id===p.id}; }),"Projects")+
     '<section class="hero"><div class="eyebrow">Available for this project</div><div class="big '+(bal<0?"neg":"")+'">'+money(bal)+'</div>'+
-    (goal?'<div class="ubar goal" style="height:8px;margin:8px 0 4px"><i style="width:'+pct.toFixed(1)+'%"></i></div><p class="hint" style="margin:0">'+Math.round(pct)+'% of your '+money(goal)+' goal'+(bal<goal?' · '+money(goal-bal)+' to go':' · goal reached')+'</p>':'<form class="goalf" id="goalForm" data-pid="'+esc(p.id)+'" novalidate><label for="g_amt">Set a goal for this project</label><div class="gf"><input id="g_amt" class="amount" inputmode="decimal" placeholder="e.g. 1500"><button type="submit" class="btn primary">Save goal</button></div></form>')+
+    (goal?'<div class="ubar goal" style="height:8px;margin:8px 0 4px"><i style="width:'+pct.toFixed(1)+'%"></i></div><p class="hint" style="margin:0">'+Math.round(pct)+'% of your '+money(goal)+' goal'+(bal<goal?' · '+money(goal-bal)+' to go':' · goal reached')+'</p>':(p.fund?'<p class="hint" style="margin:0">Ongoing fund, no goal. Add one anytime with Edit project.</p>':'<form class="goalf" id="goalForm" data-pid="'+esc(p.id)+'" novalidate><label for="g_amt">Saving for something specific? Set a goal (optional)</label><div class="gf"><input id="g_amt" class="amount" inputmode="decimal" placeholder="e.g. 1500"><button type="submit" class="btn primary">Save goal</button></div><button type="button" class="sadd" data-fundonly="'+esc(p.id)+'">No goal, it\'s an ongoing fund</button></form>'))+
     '<div class="actions" style="margin-top:14px"><button class="btn" data-editproj="'+esc(p.id)+'">Edit project</button><button class="btn primary" data-saveto="'+esc(p.id)+'">+ Add money</button></div></section>';
   h+='<div class="pcols"><div class="pcol">';
   // wish list
@@ -1279,7 +1287,7 @@ function viewProjects(){
     const b=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,b/goal*100)):0;
     return '<div class="proj tap" data-cardopen="'+esc(p.id)+'" role="link" tabindex="0" aria-label="Open '+esc(p.name)+'"><div class="head"><span class="name">'+esc(p.name)+'</span><span class="hr"><span class="bal">'+money(b)+'</span><button type="button" class="plus" data-saveto="'+esc(p.id)+'" aria-label="Add money to '+esc(p.name)+'" title="Add money">+</button></span></div>'+
       (goal?'<div class="bar" role="img" aria-label="'+Math.round(pct)+'% of goal"><i style="width:'+pct+'%"></i></div>':'')+whereBlock(p.id)+
-      '<div class="foot"><span>'+(goal?Math.round(pct)+'% of '+money(goal)+(b<goal?' · '+money(goal-b)+' to go':' · goal reached'):'No goal set')+'</span>'+
+      '<div class="foot"><span>'+(goal?Math.round(pct)+'% of '+money(goal)+(b<goal?' · '+money(goal-b)+' to go':' · goal reached'):(p.fund?'Ongoing fund':'No goal set'))+'</span>'+
       '<span class="chev2" aria-hidden="true">›</span></div></div>';
   }).join("")+'</div>';
   h+='<div style="margin-top:14px"><button class="btn wide" data-act="newproj">New project</button></div>';
@@ -1325,21 +1333,19 @@ function nextDue(l){
 function dueText(n){ if(!n) return ""; const ds=n.date.toLocaleDateString("en-US",{month:"short",day:"numeric"});
   if(n.days<0) return "Overdue since "+ds; if(n.days===0) return "Due today"; if(n.days===1) return "Due tomorrow"; return "Due "+ds; }
 function viewLoans(){
-  const c=compute();
-  let h='<p class="hint" style="margin:4px 0 14px">Money you lent to someone, and loans you are paying off.</p>'+lentSection()+'<h2>Loans I\'m paying</h2>';
-  if(!S.loans.length) return h+'<div class="empty"><strong>No active loans</strong><span>Add a car loan, personal loan, or money someone owes you. Enter what is left today and log each payment as you make it.</span><button class="btn primary" data-act="newloan">Add a loan</button></div>';
-  const monthly=S.loans.filter(l=>l.dir!=="lent").reduce((s,l)=>s+(+l.payment||0),0);
-  h+='<div class="split" style="margin-bottom:16px"><div><div class="eyebrow">I still owe</div><div class="v neg">'+money(c.loansOwe)+'</div></div><div><div class="eyebrow">Monthly payments</div><div class="v">'+money(monthly)+'</div></div>'+
-    (c.loansLent?'<div><div class="eyebrow">Owed to me</div><div class="v pos">'+money(c.loansLent)+'</div></div><div><div class="eyebrow">Loans</div><div class="v">'+S.loans.length+'</div></div>':'')+'</div>';
-  const sorted=S.loans.slice().sort((a,b)=>(a.dir==="lent")-(b.dir==="lent")||(a.created||0)-(b.created||0));
-  h+='<div class="list">'+sorted.map(l=>{
-    const left=c.loan[l.id], lent=l.dir==="lent", n=lent?null:nextDue(l);
+  const c=compute(), mine=S.loans.filter(l=>l.dir!=="lent").sort((a,b)=>(a.created||0)-(b.created||0));
+  let h='<p class="hint" style="margin:4px 0 14px">Money people owe you, and the loans you are paying off.</p>'+lentSection()+'<section class="grp"><h2><span>Loans I\'m paying</span><span class="h2r"><span class="gsum neg">'+money(c.loansOwe)+'</span><button data-act="newloan">+ Add</button></span></h2>';
+  if(!mine.length) return h+'<div class="empty"><strong>No loans to pay</strong><span>Add a car loan, student loan or personal loan. Enter what is left today and log each payment as you make it.</span></div></section>';
+  const monthly=mine.reduce((s,l)=>s+(+l.payment||0),0);
+  h+='<div class="split" style="margin-bottom:12px"><div><div class="eyebrow">I still owe</div><div class="v neg">'+money(c.loansOwe)+'</div></div><div><div class="eyebrow">Monthly payments</div><div class="v">'+money(monthly)+'</div></div></div>';
+  h+='<div class="list">'+mine.map(l=>{
+    const left=c.loan[l.id], n=nextDue(l);
     const pill = n&&left>0 ? '<span class="pill'+(n.days<=5?" due":"")+'">'+esc(dueText(n))+'</span>' : (left<=0?'<span class="pill">Paid off</span>':'');
-    const meta=[lent?"Owed to me":(l.party||"Loan")]; if(+l.payment) meta.push(money(l.payment)+"/mo"); if(+l.rate) meta.push(l.rate+"% interest");
-    return '<button class="row" data-openloan="'+esc(l.id)+'"><span class="badge '+(lent?"lent":"loan")+'">'+esc(initials(l.name))+'</span><span class="main"><span class="t">'+esc(l.name)+pill+'</span><span class="m">'+esc(meta.join(" · "))+'</span></span>'+
-      '<span class="amt '+(lent?"pos":(left>0?"neg":""))+'">'+money(left)+'<span class="owed">left</span></span></button>';
-  }).join("")+'</div>';
-  return h+'<div style="margin-top:14px"><button class="btn wide" data-act="newloan">Add a loan</button></div>';
+    const meta=[l.party||"Loan"]; if(+l.payment) meta.push(money(l.payment)+"/mo"); if(+l.rate) meta.push(l.rate+"% interest");
+    return '<button class="row" data-openloan="'+esc(l.id)+'"><span class="badge loan">'+esc(initials(l.name))+'</span><span class="main"><span class="t">'+esc(l.name)+pill+'</span><span class="m">'+esc(meta.join(" · "))+'</span></span>'+
+      '<span class="amt '+(left>0?"neg":"")+'">'+money(left)+'<span class="owed">left</span></span></button>';
+  }).join("")+'</div></section>';
+  return h;
 }
 function dIso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function pDate(s){const [y,m,d]=String(s).split("-").map(Number);return new Date(y,(m||1)-1,d||1);}
@@ -1493,7 +1499,7 @@ function loanChart(l,orig,pays,rows){
 function openLoanForm(l){
   const edit=!!l; l=l||{name:"",dir:"owe",party:"",original:"",balance:"",rate:"",payment:"",dueDay:""};
   const num=v=>v===0||v?esc(v):"";
-  let h=sheetHead(edit?"Edit loan":"New loan")+'<form id="loanForm" novalidate>'+
+  let h=sheetHead(edit?(l.dir==="lent"?"Edit money owed to me":"Edit loan"):"New loan")+'<form id="loanForm" novalidate>'+
     '<div class="seg" role="group" aria-label="Loan direction"><button type="button" class="chip" data-loandir="owe" aria-pressed="'+(l.dir!=="lent")+'">I owe this</button><button type="button" class="chip" data-loandir="lent" aria-pressed="'+(l.dir==="lent")+'">Someone owes me</button></div>'+
     '<div class="field"><label for="l_name">Loan name</label><input id="l_name" maxlength="40" placeholder="e.g. Car loan, Personal loan" value="'+esc(l.name)+'"></div>'+
     '<div class="field"><label for="l_party" id="l_partyL">'+(l.dir==="lent"?"Who owes you (optional)":"Lender (optional)")+'</label><input id="l_party" maxlength="40" placeholder="e.g. bank or person" value="'+esc(l.party)+'"></div>'+
@@ -1826,15 +1832,20 @@ function openProj(p){
   const edit=!!p; p=p||{name:"",goal:""};
   let h=sheetHead(edit?"Edit project":"New project")+'<form id="projForm" novalidate>'+
     '<div class="field"><label for="p_name">Project name</label><input id="p_name" maxlength="40" placeholder="e.g. Vacation fund" value="'+esc(p.name)+'"></div>'+
-    '<div class="field"><label for="p_goal">Savings goal (optional)</label><input id="p_goal" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(p.goal||"")+'"></div><div id="pErr"></div>'+
+    '<div class="field"><label>Type</label><div class="seg" role="group" aria-label="Project type"><button type="button" class="chip" data-ptype="goal" aria-pressed="'+(!p.fund)+'">Saving for a goal</button><button type="button" class="chip" data-ptype="fund" aria-pressed="'+(!!p.fund)+'">Ongoing fund</button></div></div>'+
+    '<div class="field" id="p_goalF"'+(p.fund?' hidden':'')+'><label for="p_goal">Goal amount</label><input id="p_goal" class="amount" inputmode="decimal" placeholder="e.g. 1500" value="'+esc(p.goal||"")+'"></div>'+
+    '<p class="hint" id="p_fundHint"'+(p.fund?'':' hidden')+' style="margin:-4px 0 12px">Money you always keep set aside, like an emergency or car fund. No end amount.</p><div id="pErr"></div>'+
     '<div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Create project")+'</button></div><div id="delBox"></div></form>';
   draft=Object.assign({},p,{kind:"project"});
   openSheet(h);
+  let isFund=!!p.fund;
+  document.querySelectorAll("[data-ptype]").forEach(bt=>bt.addEventListener("click",()=>{ isFund=bt.dataset.ptype==="fund";
+    document.querySelectorAll("[data-ptype]").forEach(x=>x.setAttribute("aria-pressed",String((x.dataset.ptype==="fund")===isFund))); $("p_goalF").hidden=isFund; $("p_fundHint").hidden=!isFund; if(!isFund) $("p_goal").focus(); }));
   $("projForm").addEventListener("submit",async e=>{
-    e.preventDefault(); const name=$("p_name").value.trim(); const g=$("p_goal").value.trim(); const goal=g?parseFloat(g.replace(/[$,\s]/g,"")):0;
+    e.preventDefault(); const name=$("p_name").value.trim(); const g=isFund?"":$("p_goal").value.trim(); const goal=g?parseFloat(g.replace(/[$,\s]/g,"")):0;
     if(!name){$("pErr").innerHTML='<p class="err" role="alert">Give the project a name.</p>';return;}
     if(isNaN(goal)||goal<0){$("pErr").innerHTML='<p class="err" role="alert">Enter the goal as a number, like 2500.</p>';return;}
-    if(await save(p.id,Object.assign({},(p.id&&STORE[p.id])||{},{kind:"project",name,goal:Math.round(goal*100)/100,created:p.created||Date.now()}))){closeSheet();toast(edit?"Project updated":"Project created");}
+    if(await save(p.id,Object.assign({},(p.id&&STORE[p.id])||{},{kind:"project",name,goal:Math.round(goal*100)/100,fund:isFund,created:p.created||Date.now()}))){closeSheet();toast(edit?"Project updated":"Project created");}
   });
 }
 
@@ -1875,11 +1886,13 @@ document.addEventListener("click",async e=>{
   if(ds.tab){S.open=null;S.openLoan=null;S.openProj=null;S.tab=ds.tab;try{localStorage.setItem("pb_tab",S.tab);}catch(_){} render();window.scrollTo(0,0);return;}
   if(ds.actview){S.actView=ds.actview;render();window.scrollTo(0,0);return;}
   if(ds.closing){S.open=null;S.openLoan=null;S.openProj=null;S.tab="activity";S.actView="closing";render();window.scrollTo(0,0);return;}
+  if(ds.fundonly){ const doc=STORE[ds.fundonly]; if(doc&&await save(ds.fundonly,Object.assign({},doc,{fund:true}))) toast("Saved as an ongoing fund"); return; }
   if(ds.lentperson){ openLentPerson(ds.lentperson); return; }
   if(ds.repay){ const r=lentPeople().find(x=>x.name===ds.repay); const ck=S.accounts.find(a=>a.type==="checking"); openTx(null,{type:"income",category:REPAY,borrower:ds.repay,payer:ds.repay,amount:r?r.left.toFixed(2):"",desc:"Repayment from "+ds.repay,to:ck?ck.id:""}); return; }
   if(ds.catlist){ openCatList(ds.catlist,ds.catym); return; }
   if(ds.addfor){ const k=ds.addfor, first=t=>S.accounts.find(a=>a.type===t);
     if(k==="credit") openTx(null,{type:"expense"});
+    else if(k==="lend") openTx(null,{type:"expense",category:LENT});
     else if(k==="savings"){ const sv=first("savings"); const ck=first("checking"); openTx(null,{type:"transfer",to:sv?sv.id:"",from:ck?ck.id:""}); }
     else if(k==="projects"){ openTx(null,{type:"transfer",project:S.projects.length===1?S.projects[0].id:""}); }
     else if(k==="day"){ const ck=first("checking"); openTx(null,ck?{ctx:ck.id}:{type:"transfer"}); }
