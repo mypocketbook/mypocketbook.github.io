@@ -117,6 +117,9 @@ button.row:hover{background:var(--sunk)}
 .authtabs button[aria-selected="true"]{background:var(--surface);color:var(--ink)}
 .authcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px}
 .okmsg{color:var(--pos);font-size:13px;margin:0}
+.pwbox{position:relative}.field .pwbox input{padding-right:52px}
+.eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;border-radius:8px}.eye:hover{color:var(--ink)}.eye svg{width:22px;height:22px}
+.pwnote{font-size:12.5px;margin:4px 0 0;color:var(--muted);min-height:16px}.pwnote.ok{color:var(--pos)}.pwnote.bad{color:var(--neg)}
 .pincard{justify-items:center;text-align:center;max-width:340px;margin:0 auto;width:100%}
 .pindots{display:flex;gap:16px;margin:10px 0 4px}.pindots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted)}.pindots i.on{background:var(--accent);border-color:var(--accent)}
 .pinkeys{display:grid;grid-template-columns:repeat(3,72px);gap:12px;margin:8px 0}
@@ -644,7 +647,7 @@ async function cloudStart(){
     if(S.status==="ready") scheduleReload(); });
 }
 /* ---------- sign in, create account, forgot PIN ---------- */
-const PASS_RE=/^.{12,72}$/, QPIN_RE=/^\d{4}$/, USER_RE=/^[a-z0-9_.]{3,20}$/, PIN_RE=PASS_RE;
+const PASS_RE=/^.{8,72}$/, QPIN_RE=/^\d{4}$/, USER_RE=/^[a-z0-9_.]{3,20}$/, PIN_RE=PASS_RE;
 let HIDDEN_AT=0, PIN_TRIES=0; const LOCK_AFTER=5*60*1000;
 /* ---------- quick-access PIN: 4 digits to unlock the app on your devices (your password stays the real key) ---------- */
 async function pinHash(pin,salt){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+":"+pin)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
@@ -681,19 +684,32 @@ async function pinKey(k){
     if(await savePin(pin)){ markUnlocked(); toast("PIN saved. Use it to open Pocketbook"); S.status="ready"; render(); } else { S.pinMsg="Couldn't save the PIN. Try again."; render(); }
   }
 }
+const EYE_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  EYE_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.9 8.4 2 12 2 12s3.5 7 10 7c1.8 0 3.4-.5 4.8-1.3"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+function pwField(id,label,ac,note){ return '<div class="field" style="margin:0"><label for="'+id+'">'+label+'</label><div class="pwbox"><input id="'+id+'" type="password" autocomplete="'+ac+'" maxlength="72" autocapitalize="off" spellcheck="false"><button type="button" class="eye" data-eye="'+id+'" aria-label="Show password" aria-pressed="false">'+EYE_ON+'</button></div>'+(note?'<p class="pwnote" id="'+id+'_note" aria-live="polite"></p>':'')+'</div>'; }
+function pwStrongErr(pin){ if(!PASS_RE.test(pin)) return "The password needs at least 8 characters."; if(/^(.)\1+$/.test(pin)||/^(?:12345678|password|qwerty|abcdefgh)/i.test(pin)) return "Pick a password that's harder to guess."; return ""; }
+// eye toggles + live "at least 8" and "passwords match" notes for a pair of fields
+function wirePw(a,b){
+  document.querySelectorAll("[data-eye]").forEach(btn=>btn.addEventListener("click",()=>{ const i=$(btn.dataset.eye); if(!i) return; const show=i.type==="password"; i.type=show?"text":"password"; btn.innerHTML=show?EYE_OFF:EYE_ON; btn.setAttribute("aria-pressed",String(show)); btn.setAttribute("aria-label",show?"Hide password":"Show password"); }));
+  const A=$(a), B=b?$(b):null; if(!A) return;
+  const set=(id,t,c)=>{ const n=$(id+"_note"); if(n){ n.textContent=t; n.className="pwnote"+(c?" "+c:""); } };
+  const upd=()=>{ const v=A.value, w=B?B.value:"";
+    if(!v) set(a,"At least 8 characters.",""); else { const e=pwStrongErr(v); set(a,e?(e.includes("8")?v.length+" of 8 characters minimum":e):"✓ Good length ("+v.length+" characters)",e?"bad":"ok"); }
+    if(B){ if(!w) set(b,"",""); else if(w===v) set(b,"✓ Passwords match","ok"); else if(v.startsWith(w)) set(b,"Keep typing…",""); else set(b,"✗ Passwords don't match","bad"); } };
+  A.addEventListener("input",upd); if(B) B.addEventListener("input",upd); upd();
+}
 function authView(){
   const m=S.status==="newpin"?"newpin":(S.authMode||"login"), msg=S.loginMsg?'<p class="'+(S.loginOk?"okmsg":"err")+'" role="alert" style="margin:0">'+esc(S.loginMsg)+'</p>':'';
-  const pinField=(id,label,ac)=>'<div class="field" style="margin:0"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="password" autocomplete="'+ac+'" maxlength="72"></div>';
   let h='<div class="authwrap"><div class="authlogo">Pocketbook</div>';
-  if(m==="newpin") return h+'<form id="authForm" class="authcard" novalidate><strong>Set a new password</strong><span class="hint">At least 12 characters.</span>'+pinField("au_pin","New password","new-password")+pinField("au_pin2","Repeat the new password","new-password")+msg+'<button id="au_btn" class="btn primary wide" type="submit">Save new password</button></form></div>';
+  if(m==="newpin") return h+'<form id="authForm" class="authcard" novalidate><strong>Set a new password</strong><span class="hint">At least 8 characters.</span>'+pwField("au_pin","New password","new-password",1)+pwField("au_pin2","Repeat the new password","new-password",1)+msg+'<button id="au_btn" class="btn primary wide" type="submit">Save new password</button></form></div>';
   h+='<div class="authtabs" role="tablist"><button type="button" data-authmode="login" aria-selected="'+(m==="login")+'">Log in</button><button type="button" data-authmode="signup" aria-selected="'+(m==="signup")+'">Create account</button></div>';
   if(m==="login") h+='<form id="authForm" class="authcard" novalidate>'+
-    '<div class="field" style="margin:0"><label for="au_login">Email or username</label><input id="au_login" autocomplete="username" autocapitalize="off" spellcheck="false"></div>'+pinField("au_pin","Password","current-password")+msg+
+    '<div class="field" style="margin:0"><label for="au_login">Email or username</label><input id="au_login" autocomplete="username" autocapitalize="off" spellcheck="false"></div>'+pwField("au_pin","Password","current-password")+msg+
     '<button id="au_btn" class="btn primary wide" type="submit">Log in</button><button type="button" class="sadd" data-authmode="forgot" style="justify-self:center">Forgot your password?</button></form>';
   else if(m==="signup") h+='<form id="authForm" class="authcard" novalidate><span class="hint">Your own private Pocketbook. Nobody else can see your accounts.</span>'+
     '<div class="field" style="margin:0"><label for="au_email">Email</label><input id="au_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off"></div>'+
     '<div class="field" style="margin:0"><label for="au_user">Username</label><input id="au_user" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="3 to 20 letters, numbers, . or _"></div>'+
-    pinField("au_pin","Password (at least 12 characters)","new-password")+pinField("au_pin2","Repeat the password","new-password")+msg+
+    pwField("au_pin","Password (at least 8 characters)","new-password",1)+pwField("au_pin2","Repeat the password","new-password",1)+msg+
     '<button id="au_btn" class="btn primary wide" type="submit">Create account</button></form>';
   else h+='<form id="authForm" class="authcard" novalidate><strong>Forgot your password?</strong><span class="hint">We\'ll email you a link to set a new one.</span>'+
     '<div class="field" style="margin:0"><label for="au_email">Email</label><input id="au_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off"></div>'+msg+
@@ -704,6 +720,7 @@ function authErr(m,ok){ S.loginMsg=m; S.loginOk=!!ok; render(); }
 function wireAuth(){
   document.querySelectorAll("[data-authmode]").forEach(b=>b.addEventListener("click",()=>{ S.authMode=b.dataset.authmode; S.loginMsg=""; render(); }));
   const f=$("authForm"); if(!f) return;
+  const am=S.status==="newpin"?"newpin":(S.authMode||"login"); wirePw("au_pin",(am==="signup"||am==="newpin")?"au_pin2":null);
   f.addEventListener("submit",async e=>{ e.preventDefault(); const g=id=>($(id)||{}).value||"", btn=$("au_btn"), m=S.status==="newpin"?"newpin":(S.authMode||"login");
     const busy=t=>{ if(btn){ btn.disabled=true; btn.textContent=t; } };
     try{
@@ -722,8 +739,7 @@ function wireAuth(){
         const email=g("au_email").trim(), user=g("au_user").trim().toLowerCase(), pin=g("au_pin"), pin2=g("au_pin2");
         if(!/^\S+@\S+\.\S+$/.test(email)) return authErr("Enter a valid email.");
         if(!USER_RE.test(user)) return authErr("Username: 3 to 20 characters, using letters, numbers, . or _");
-        if(!PASS_RE.test(pin)) return authErr("The password needs at least 12 characters.");
-        if(/^(.)\1+$/.test(pin)||/^(?:123456789|password|qwerty)/i.test(pin)) return authErr("Pick a password that's harder to guess.");
+        const pe=pwStrongErr(pin); if(pe) return authErr(pe);
         if(pin!==pin2) return authErr("The two passwords don't match.");
         busy("Creating account…");
         try{ const {data:free}=await SB.rpc("pocketbook_username_free",{u:user}); if(free===false) return authErr("That username is taken. Try another one."); }catch(_){}
@@ -739,7 +755,7 @@ function wireAuth(){
         return authErr("If that email has an account, a reset link is on its way. Open it on this device.",true);
       }
       if(m==="newpin"){
-        const pin=g("au_pin"), pin2=g("au_pin2"); if(!PASS_RE.test(pin)) return authErr("The password needs at least 12 characters."); if(pin!==pin2) return authErr("The two passwords don't match.");
+        const pin=g("au_pin"), pin2=g("au_pin2"); const pe=pwStrongErr(pin); if(pe) return authErr(pe); if(pin!==pin2) return authErr("The two passwords don't match.");
         busy("Saving…"); const {error}=await SB.auth.updateUser({password:pin}); if(error) return authErr("Couldn't save the new password: "+error.message);
         RECOVERY=false; try{ history.replaceState(null,"",location.pathname); }catch(_){} S.loginMsg=""; toast("New password saved"); await cloudReady(); return;
       }
@@ -1488,18 +1504,19 @@ function accountBlock(){
   return '<h2 style="margin-top:4px">Your account</h2><div class="list" style="margin-bottom:6px">'+
     '<div class="row" style="cursor:default"><span class="main"><span class="t">'+esc(me.username?"@"+me.username:"No username yet")+'</span><span class="m">'+esc(me.email||"")+'</span></span></div></div>'+
     (me.username?'':'<form id="userForm" class="goalf" novalidate><label for="su_user">Choose a username to log in with it</label><div class="gf"><input id="su_user" autocapitalize="off" spellcheck="false" placeholder="e.g. alfredo"><button class="btn primary" type="submit">Save</button></div></form>')+
-    '<form id="pinForm" class="goalf" novalidate style="margin-top:10px"><label for="sp_pin">Change password (at least 12 characters)</label><div class="gf"><input id="sp_pin" type="password" autocomplete="new-password" placeholder="New password"><button class="btn" type="submit">Change</button></div></form>'+
+    '<form id="pinForm" class="goalf" novalidate style="margin-top:10px;gap:10px"><strong style="font-size:14px">Change password</strong>'+pwField("sp_pin","New password (at least 8 characters)","new-password",1)+pwField("sp_pin2","Repeat the new password","new-password",1)+'<button class="btn" type="submit" style="justify-self:start">Change password</button></form>'+
     '<div class="goalf" style="margin-top:12px"><label>Quick-access PIN (4 digits)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-pinset="1">'+(STORE["meta-pin"]?"Change PIN":"Set up PIN")+'</button>'+(STORE["meta-pin"]?'<button type="button" class="btn" data-pinoff="1">Turn off PIN</button>':'')+'</div></div><div id="accMsg"></div>';
 }
 function wireAccount(){
+  if($("sp_pin")) wirePw("sp_pin","sp_pin2");
   const msg=(t,ok)=>{ const m=$("accMsg"); if(m) m.innerHTML='<p class="'+(ok?"okmsg":"err")+'" style="margin:8px 0 0">'+esc(t)+'</p>'; };
   const uf=$("userForm"); if(uf) uf.addEventListener("submit",async e=>{ e.preventDefault(); const u=$("su_user").value.trim().toLowerCase();
     if(!USER_RE.test(u)) return msg("Username: 3 to 20 characters, using letters, numbers, . or _");
     const {error}=await SB.from(UTABLE).insert({username:u,user_id:UID});
     if(error) return msg(/duplicate|unique|23505/i.test((error.code||"")+error.message)?"That username is taken.":"Couldn't save it. Is the database set up?");
     S.me.username=u; toast("Username saved"); closeSheet(); });
-  const pf=$("pinForm"); if(pf) pf.addEventListener("submit",async e=>{ e.preventDefault(); const pin=$("sp_pin").value;
-    if(!PASS_RE.test(pin)) return msg("The password needs at least 12 characters.");
+  const pf=$("pinForm"); if(pf) pf.addEventListener("submit",async e=>{ e.preventDefault(); const pin=$("sp_pin").value, pin2=$("sp_pin2").value;
+    const pe=pwStrongErr(pin); if(pe) return msg(pe); if(pin!==pin2) return msg("The two passwords don't match.");
     const {error}=await SB.auth.updateUser({password:pin}); if(error) return msg("Couldn't change it: "+error.message);
     toast("Password changed"); closeSheet(); });
 }
