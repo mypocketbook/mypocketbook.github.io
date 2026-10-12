@@ -598,7 +598,9 @@ function projById(id){return S.projects.find(p=>p.id===id);}
 const CASHBACK="cashback"; // card payment paid with the card's cash back rewards (no account money moves)
 function acctName(id){if(id===CASHBACK) return "Cash back";const a=acctById(id);return a?a.name:"Deleted account";}
 function loanById(id){return S.loans.find(l=>l.id===id);}
-function loanName(id){const l=loanById(id);return l?l.name:"Deleted loan";}
+function loanLabel(l){ return l&&l.dir==="lent"&&l.party?l.party:(l?l.name:""); }   /* money owed to me: the person is the name */
+function loanReason(l){ return l&&l.dir==="lent"&&l.party?l.name:""; }
+function loanName(id){const l=loanById(id);return l?loanLabel(l):"Deleted loan";}
 function projName(id){const p=projById(id);return p?p.name:"Deleted project";}
 function acctBadge(a){ return a.icon?'<span class="badge pic"><img src="'+esc(a.icon)+'" alt=""></span>':'<span class="badge '+a.type+'">'+esc(initials(a.name))+'</span>'; }
 // Shrink a picked photo/logo to a small square icon (stored with the account).
@@ -1182,7 +1184,7 @@ function render(){
   document.querySelectorAll("nav.tabs [data-tab]").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===S.tab?"page":"false"));
   if(S.status==="ready"){ if(S.open&&!acctById(S.open)) S.open=null; if(S.openLoan&&!loanById(S.openLoan)) S.openLoan=null; if(S.openProj&&!projById(S.openProj)) S.openProj=null; }
   const openA=S.open&&acctById(S.open), openL=!openA&&S.openLoan&&loanById(S.openLoan), openP=!openA&&!openL&&S.openProj&&projById(S.openProj);
-  $("title").textContent= openA? openA.name : openL? openL.name : openP? openP.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans"}[S.tab];
+  $("title").textContent= openA? openA.name : openL? loanLabel(openL) : openP? openP.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans"}[S.tab];
   $("backBtn").hidden=!(openA||openL||openP);
   $("monthnav").hidden = true;
   $("topact").hidden = S.status!=="ready"; $("logoutBtn").hidden = MODE!=="cloud";
@@ -1492,14 +1494,14 @@ function lentSection(){
   const c=compute();
   const P=lentPeople().map(r=>Object.assign({},r,{attr:'data-lentperson="'+esc(r.name)+'"'}));
   S.loans.filter(l=>l.dir==="lent").forEach(l=>{ const lent=Math.max(+l.balance||0,+l.original||0), left=Math.max(0,c.loan[l.id]||0);
-    P.push({name:l.name,lent,repaid:Math.round(Math.max(0,lent-left)*100)/100,left,attr:'data-openloan="'+esc(l.id)+'"'}); });
+    P.push({name:loanLabel(l),why:loanReason(l),lent,repaid:Math.round(Math.max(0,lent-left)*100)/100,left,attr:'data-openloan="'+esc(l.id)+'"'}); });
   P.sort((a,b)=>b.left-a.left||a.name.localeCompare(b.name));
   const out=P.reduce((s,r)=>s+r.left,0);
   let h='<section class="grp"><h2 id="g-lent"><span>Money lent to others</span><span class="h2r"><span class="gsum pos">'+money(out)+' owed to you</span><button data-addfor="lend">+ Lend</button></span></h2>';
   if(!P.length) return h+'<div class="empty">When you lend money, log it as an expense with the category <b>Lent to others</b> and write who it is for. It shows up here so you can track repayments.</div></section>';
   h+='<div class="list">'+P.map(r=>{ const st=lentStatus(r), pct=r.lent?Math.min(100,r.repaid/r.lent*100):100;
     return '<button class="row" '+r.attr+'><span class="badge lent">'+esc(initials(r.name))+'</span><span class="main"><span class="t">'+esc(r.name)+' <span class="pill st-'+st.c+'">'+st.t+'</span></span>'+
-      '<span class="ubar goal"><i style="width:'+pct.toFixed(1)+'%"></i></span><span class="m">Lent '+money(r.lent)+' · repaid '+money(r.repaid)+'</span></span>'+
+      '<span class="ubar goal"><i style="width:'+pct.toFixed(1)+'%"></i></span><span class="m">'+(r.why?'For '+esc(r.why)+' · ':'')+'Lent '+money(r.lent)+' · repaid '+money(r.repaid)+'</span></span>'+
       '<span class="amt '+(r.left>0?"":"mut")+'">'+money(r.left)+'<span class="owed">still owed</span></span></button>'; }).join("")+'</div></section>';
   return h;
 }
@@ -1766,7 +1768,7 @@ function viewLoan(l){
   const pays=sortTx(S.txns.filter(t=>t.loan===l.id));
   const paid=pays.reduce((s,t)=>s+(+t.amount||0),0), intPaid=pays.reduce((s,t)=>s+(+t.interest||0),0);
   const pct=orig?Math.max(0,Math.min(100,(orig-left)/orig*100)):0, n=lent?null:nextDue(l);
-  let h='<section class="hero"><div class="eyebrow">'+(lent?"Still owed to me":"Still owed")+(l.party?" · "+esc(l.party):"")+'</div><div class="big '+(lent?"":(left>0?"neg":""))+'">'+money(left)+'</div>';
+  let h='<section class="hero"><div class="eyebrow">'+(lent?(l.party?esc(l.party)+" still owes me · for "+esc(l.name):"Still owed to me"):"Still owed"+(l.party?" · "+esc(l.party):""))+'</div><div class="big '+(lent?"":(left>0?"neg":""))+'">'+money(left)+'</div>';
   if(orig) h+='<div class="bar" role="img" aria-label="'+Math.round(pct)+'% paid off" style="margin-bottom:6px"><i style="width:'+pct+'%"></i></div><div class="hint" style="margin:0 0 12px">'+Math.round(pct)+'% of '+money(orig)+' paid off</div>';
   h+='<div class="actions" style="margin:0"><button class="btn" data-editloan="'+esc(l.id)+'">Edit loan</button><button class="btn primary" data-payloan="'+esc(l.id)+'">'+(lent?"+ Log repayment":"+ Log payment")+'</button></div></section>';
   const tab=lent?"history":(S.loanTab||"progress");
@@ -1873,8 +1875,8 @@ function openLoanForm(l){
   const num=v=>v===0||v?esc(v):"";
   let h=sheetHead(edit?(l.dir==="lent"?"Edit money owed to me":"Edit loan"):"New loan")+'<form id="loanForm" novalidate>'+
     '<div class="seg" role="group" aria-label="Loan direction"><button type="button" class="chip" data-loandir="owe" aria-pressed="'+(l.dir!=="lent")+'">I owe this</button><button type="button" class="chip" data-loandir="lent" aria-pressed="'+(l.dir==="lent")+'">Someone owes me</button></div>'+
-    '<div class="field"><label for="l_name">Loan name</label><input id="l_name" maxlength="40" placeholder="e.g. Car loan, Personal loan" value="'+esc(l.name)+'"></div>'+
-    '<div class="field"><label for="l_party" id="l_partyL">'+(l.dir==="lent"?"Who owes you (optional)":"Lender (optional)")+'</label><input id="l_party" maxlength="40" placeholder="e.g. bank or person" value="'+esc(l.party)+'"></div>'+
+    '<div class="field"><label for="l_name" id="l_nameL">'+(l.dir==="lent"?"What it was for":"Loan name")+'</label><input id="l_name" maxlength="40" placeholder="e.g. Car loan, Personal loan" value="'+esc(l.name)+'"></div>'+
+    '<div class="field"><label for="l_party" id="l_partyL">'+(l.dir==="lent"?"Who owes you":"Lender (optional)")+'</label><input id="l_party" maxlength="40" placeholder="e.g. bank or person" value="'+esc(l.party)+'"></div>'+
     '<div class="two"><div class="field"><label for="l_bal">Still owed today</label><input id="l_bal" class="amount" inputmode="decimal" placeholder="0.00" value="'+num(l.balance)+'"></div>'+
     '<div class="field"><label for="l_orig">Original amount (optional)</label><input id="l_orig" class="amount" inputmode="decimal" placeholder="0.00" value="'+num(l.original)+'"></div></div>'+
     '<div class="two"><div class="field"><label for="l_pay">Monthly payment (optional)</label><input id="l_pay" inputmode="decimal" placeholder="0.00" value="'+num(l.payment)+'"></div>'+
@@ -2005,7 +2007,7 @@ function updTxPrev(){
     return '<div class="tpr"><span class="tpn">'+esc(a.name)+'</span><span class="tpv">'+show(before)+tag+' <span class="arr">→</span> <b class="'+(Math.abs(after-before)<0.005?"":(worse?"neg":"pos"))+'">'+show(after)+'</b>'+(util?'<em>'+util+'</em>':'')+'</span></div>'; });
   if(ln){ const intr=parseFloat(String(g("f_int")||"").replace(/[$,\s]/g,""))||0;
     const left=(c.loan[ln.id]||0)+(orig&&orig.loan===ln.id?Math.max(0,(+orig.amount||0)-(+orig.interest||0)):0), afterL=Math.max(0,left-Math.max(0,amt-(lent?0:intr)));
-    rows.push('<div class="tpr"><span class="tpn">'+esc(ln.name)+'</span><span class="tpv">'+money(left)+' <span class="mut">left</span> <span class="arr">→</span> <b class="pos">'+money(afterL)+'</b></span></div>'); }
+    rows.push('<div class="tpr"><span class="tpn">'+esc(loanLabel(ln))+'</span><span class="tpv">'+money(left)+' <span class="mut">left</span> <span class="arr">→</span> <b class="pos">'+money(afterL)+'</b></span></div>'); }
   const late=ids.some(id=>!counts(t,id));
   box.innerHTML=rows.length?'<div class="tph">Balances '+(amt?'after this':'now')+'</div>'+rows.join("")+(late?'<p class="hint" style="margin:6px 0 0">This date is before an account\'s starting balance, so that account won\'t change.</p>':''):'';
 }
@@ -2087,8 +2089,8 @@ function renderTx(errMsg){
     const owedMe=S.loans.filter(x=>x.dir==="lent"), iPay=S.loans.filter(x=>x.dir!=="lent");
     const grp=(label,list,fn)=>list.length?'<optgroup label="'+label+'">'+opts(list.map(x=>({v:x.id,l:fn(x)})),t.loan)+'</optgroup>':'';
     h+='<div class="field"><label for="f_loan">'+(lent?"Who is paying you back":"Loan or person")+'</label><select id="f_loan"><option value="">Choose who</option>'+
-      grp("People paying me back",owedMe,x=>(x.party?x.party+" · ":"")+x.name+" (owes you)")+grp("Loans I'm paying",iPay,x=>x.name+(x.party?" · "+x.party:""))+'</select></div>';
-    if(lent) h+='<p class="hint" style="margin-top:-6px">'+esc((l.party||"This person")+" is paying you back for "+l.name+".")+'</p>';
+      grp("People paying me back",owedMe,x=>x.party?x.party+" (for "+x.name+")":x.name+" (owes you)")+grp("Loans I'm paying",iPay,x=>x.name+(x.party?" · "+x.party:""))+'</select></div>';
+    if(lent) h+='<p class="hint" style="margin-top:-6px">'+esc((l.party||"This person")+" is paying you back for "+l.name+". Left: "+money(Math.max(0,compute().loan[l.id]||0))+".")+'</p>';
     if(lent){
       h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(liquid),t.to,"Choose account")+'</select></div>';
     } else {
@@ -2296,7 +2298,7 @@ document.addEventListener("click",async e=>{
   if(ds.wishtoggle){await wishUpdate(ds.wishproj,w=>w.map(x=>x.id===ds.wishtoggle?Object.assign({},x,{done:!x.done}):x));return;}
   if(ds.wishdel){await wishUpdate(ds.wishproj,w=>w.filter(x=>x.id!==ds.wishdel));return;}
   if(ds.editproj){openProj(projById(ds.editproj));return;}
-  if(ds.loandir){draft.dir=ds.loandir;document.querySelectorAll("[data-loandir]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.loandir===ds.loandir));$("l_partyL").textContent=ds.loandir==="lent"?"Who owes you (optional)":"Lender (optional)";return;}
+  if(ds.loandir){draft.dir=ds.loandir;document.querySelectorAll("[data-loandir]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.loandir===ds.loandir));$("l_partyL").textContent=ds.loandir==="lent"?"Who owes you":"Lender (optional)"; if($("l_nameL")) $("l_nameL").textContent=ds.loandir==="lent"?"What it was for":"Loan name";return;}
   if(ds.txtype){readTxForm();draft.type=ds.txtype;if(!draft.id&&draft.ctx)placeCtx();
     if(!draft.id&&draft.type==="loanpay"){ if(!draft.loan){const ow=S.loans.filter(x=>x.dir!=="lent"); if(ow.length===1) draft.loan=ow[0].id;} if(!draft.from){const chk=S.accounts.find(a=>a.type==="checking"); if(chk) draft.from=chk.id;} loanDefaults(); }
     renderTx();return;}
