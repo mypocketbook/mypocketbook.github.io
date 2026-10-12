@@ -2084,7 +2084,11 @@ function renderTx(errMsg){
   } else if(t.type==="loanpay"){
     const l=loanById(t.loan), lent=l&&l.dir==="lent";
     if(!S.loans.length) h+='<p class="hint">You have no loans yet. <button type="button" class="btn" data-act="newloan">Add a loan</button></p>';
-    h+='<div class="field"><label for="f_loan">'+(lent?"Loan (who is paying you back)":"Destination loan")+'</label><select id="f_loan">'+opts(S.loans.map(x=>({v:x.id,l:x.name+(x.dir==="lent"?" · owed to me":"")})),t.loan,"Choose loan")+'</select></div>';
+    const owedMe=S.loans.filter(x=>x.dir==="lent"), iPay=S.loans.filter(x=>x.dir!=="lent");
+    const grp=(label,list,fn)=>list.length?'<optgroup label="'+label+'">'+opts(list.map(x=>({v:x.id,l:fn(x)})),t.loan)+'</optgroup>':'';
+    h+='<div class="field"><label for="f_loan">'+(lent?"Who is paying you back":"Loan or person")+'</label><select id="f_loan"><option value="">Choose who</option>'+
+      grp("People paying me back",owedMe,x=>(x.party?x.party+" · ":"")+x.name+" (owes you)")+grp("Loans I'm paying",iPay,x=>x.name+(x.party?" · "+x.party:""))+'</select></div>';
+    if(lent) h+='<p class="hint" style="margin-top:-6px">'+esc((l.party||"This person")+" is paying you back for "+l.name+".")+'</p>';
     if(lent){
       h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(liquid),t.to,"Choose account")+'</select></div>';
     } else {
