@@ -117,6 +117,11 @@ button.row:hover{background:var(--sunk)}
 .authtabs button[aria-selected="true"]{background:var(--surface);color:var(--ink)}
 .authcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px}
 .okmsg{color:var(--pos);font-size:13px;margin:0}
+.pincard{justify-items:center;text-align:center;max-width:340px;margin:0 auto;width:100%}
+.pindots{display:flex;gap:16px;margin:10px 0 4px}.pindots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted)}.pindots i.on{background:var(--accent);border-color:var(--accent)}
+.pinkeys{display:grid;grid-template-columns:repeat(3,72px);gap:12px;margin:8px 0}
+.pk{width:72px;height:72px;border-radius:50%;border:0;background:var(--sunk);color:var(--ink);font-size:26px;font-family:var(--f-num);cursor:pointer}
+.pk:active{transform:scale(.95);background:color-mix(in srgb,var(--accent) 25%,var(--sunk))}
 .settings{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 .settings summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:14px;font-weight:600;cursor:pointer}
 .settings summary::-webkit-details-marker{display:none}
@@ -623,7 +628,7 @@ async function cloudReady(){
     try{ STORE=JSON.parse(localStorage.getItem("pb_cloud_cache")||"{}"); }catch(_){ STORE={}; }
     refresh(); toast("Can't reach your data right now. Showing the last saved copy."); return;
   }
-  await runSetup(); refresh();
+  await runSetup(); refresh(); gateAfterLogin();
   if(!rtChannel){ rtChannel=SB.channel("pb-items").on("postgres_changes",{event:"*",schema:"public",table:TABLE},()=>scheduleReload()).subscribe(); }
 }
 async function cloudStart(){
@@ -633,25 +638,64 @@ async function cloudStart(){
   const {data}=await SB.auth.getSession();
   if(data&&data.session) await cloudReady(); else { S.status="login"; render(); }
   SB.auth.onAuthStateChange((ev)=>{ if(ev==="PASSWORD_RECOVERY"){ RECOVERY=true; S.status="newpin"; render(); return; } if(ev==="SIGNED_OUT"){ STORE={}; SYNCED={}; S.authMode="login"; S.loginMsg=""; S.me=null; S.open=null; S.openLoan=null; S.openProj=null; S.tab="home"; try{ localStorage.removeItem("pb_view"); localStorage.removeItem("pb_tab"); history.replaceState(null,"",location.pathname); }catch(e){} try{ localStorage.removeItem("pb_cloud_cache"); }catch(e){} S.status="login"; render(); } });
-  document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&S.status==="ready") scheduleReload(); });
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){ HIDDEN_AT=Date.now(); return; }
+    if(S.status==="ready"&&STORE["meta-pin"]&&HIDDEN_AT&&Date.now()-HIDDEN_AT>LOCK_AFTER){ S.status="locked"; S.pinMsg=""; render(); return; }
+    if(S.status==="ready") scheduleReload(); });
 }
 /* ---------- sign in, create account, forgot PIN ---------- */
-const PIN_RE=/^\d{6,12}$/, USER_RE=/^[a-z0-9_.]{3,20}$/;
+const PASS_RE=/^.{12,72}$/, QPIN_RE=/^\d{4}$/, USER_RE=/^[a-z0-9_.]{3,20}$/, PIN_RE=PASS_RE;
+let HIDDEN_AT=0, PIN_TRIES=0; const LOCK_AFTER=5*60*1000;
+/* ---------- quick-access PIN: 4 digits to unlock the app on your devices (your password stays the real key) ---------- */
+async function pinHash(pin,salt){ const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+":"+pin)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+function recentlyUnlocked(){ try{ const t=+sessionStorage.getItem("pb_unlocked")||0; return Date.now()-t<LOCK_AFTER; }catch(_){ return false; } }
+function markUnlocked(){ try{ sessionStorage.setItem("pb_unlocked",String(Date.now())); }catch(_){} }
+function gateAfterLogin(){
+  if(MODE!=="cloud") return;
+  if(STORE["meta-pin"]){ if(!recentlyUnlocked()){ S.status="locked"; S.pinMsg=""; render(); } }
+  else if(!lsGet("pb_pin_skip_"+UID)){ S.status="setpin"; S.pinMsg=""; S.pinStep=1; S.pinFirst=""; render(); }
+}
+async function savePin(pin){ const salt=Math.random().toString(36).slice(2)+Date.now().toString(36); STORE["meta-pin"]={kind:"meta",salt,hash:await pinHash(pin,salt)}; return await persist(); }
+function pinPad(title,sub){
+  return '<div class="authwrap"><div class="authlogo">Pocketbook</div><div class="authcard pincard"><strong>'+esc(title)+'</strong><span class="hint">'+esc(sub)+'</span>'+
+    '<div class="pindots" aria-live="polite">'+[0,1,2,3].map(i=>'<i class="'+((S.pinBuf||"").length>i?"on":"")+'"></i>').join("")+'</div>'+
+    (S.pinMsg?'<p class="err" role="alert" style="margin:0;text-align:center">'+esc(S.pinMsg)+'</p>':'')+
+    '<div class="pinkeys">'+["1","2","3","4","5","6","7","8","9","","0","⌫"].map(k=>k?'<button type="button" class="pk" data-pk="'+k+'" aria-label="'+(k==="⌫"?"Delete":k)+'">'+k+'</button>':'<span></span>').join("")+'</div>'+
+    (S.status==="locked"?'<button type="button" class="sadd" data-pinact="password" style="justify-self:center">Forgot your PIN? Log in with your password</button>':'<button type="button" class="sadd" data-pinact="skip" style="justify-self:center">Not now</button>')+
+    '</div></div>';
+}
+async function pinKey(k){
+  if(k==="⌫"){ S.pinBuf=(S.pinBuf||"").slice(0,-1); render(); return; }
+  if((S.pinBuf||"").length>=4) return;
+  S.pinBuf=(S.pinBuf||"")+k; S.pinMsg=""; render();
+  if(S.pinBuf.length<4) return;
+  const pin=S.pinBuf; await new Promise(r=>setTimeout(r,120)); S.pinBuf="";
+  if(S.status==="locked"){
+    const m=STORE["meta-pin"]; if(m&&await pinHash(pin,m.salt)===m.hash){ PIN_TRIES=0; markUnlocked(); S.status="ready"; render(); return; }
+    PIN_TRIES++; if(PIN_TRIES>=5){ PIN_TRIES=0; await SB.auth.signOut(); S.loginMsg="Too many wrong PINs. Log in with your password."; S.loginOk=false; render(); return; }
+    S.pinMsg="Wrong PIN. "+(5-PIN_TRIES)+" tries left."; render(); return;
+  }
+  if(S.status==="setpin"){
+    if(S.pinStep!==2){ if(/^(\d)\1{3}$/.test(pin)||pin==="1234"||pin==="4321"){ S.pinMsg="Pick a PIN that's harder to guess."; render(); return; } S.pinFirst=pin; S.pinStep=2; render(); return; }
+    if(pin!==S.pinFirst){ S.pinStep=1; S.pinFirst=""; S.pinMsg="The PINs didn't match. Start again."; render(); return; }
+    if(await savePin(pin)){ markUnlocked(); toast("PIN saved. Use it to open Pocketbook"); S.status="ready"; render(); } else { S.pinMsg="Couldn't save the PIN. Try again."; render(); }
+  }
+}
 function authView(){
   const m=S.status==="newpin"?"newpin":(S.authMode||"login"), msg=S.loginMsg?'<p class="'+(S.loginOk?"okmsg":"err")+'" role="alert" style="margin:0">'+esc(S.loginMsg)+'</p>':'';
-  const pinField=(id,label,ac)=>'<div class="field" style="margin:0"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="password" inputmode="numeric" autocomplete="'+ac+'" maxlength="64" placeholder="••••••"></div>';
+  const pinField=(id,label,ac)=>'<div class="field" style="margin:0"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="password" autocomplete="'+ac+'" maxlength="72"></div>';
   let h='<div class="authwrap"><div class="authlogo">Pocketbook</div>';
-  if(m==="newpin") return h+'<form id="authForm" class="authcard" novalidate><strong>Set a new PIN</strong><span class="hint">Use 6 to 12 digits.</span>'+pinField("au_pin","New PIN","new-password")+pinField("au_pin2","Repeat the new PIN","new-password")+msg+'<button id="au_btn" class="btn primary wide" type="submit">Save new PIN</button></form></div>';
+  if(m==="newpin") return h+'<form id="authForm" class="authcard" novalidate><strong>Set a new password</strong><span class="hint">At least 12 characters.</span>'+pinField("au_pin","New password","new-password")+pinField("au_pin2","Repeat the new password","new-password")+msg+'<button id="au_btn" class="btn primary wide" type="submit">Save new password</button></form></div>';
   h+='<div class="authtabs" role="tablist"><button type="button" data-authmode="login" aria-selected="'+(m==="login")+'">Log in</button><button type="button" data-authmode="signup" aria-selected="'+(m==="signup")+'">Create account</button></div>';
   if(m==="login") h+='<form id="authForm" class="authcard" novalidate>'+
-    '<div class="field" style="margin:0"><label for="au_login">Email or username</label><input id="au_login" autocomplete="username" autocapitalize="off" spellcheck="false"></div>'+pinField("au_pin","PIN","current-password")+msg+
-    '<button id="au_btn" class="btn primary wide" type="submit">Log in</button><button type="button" class="sadd" data-authmode="forgot" style="justify-self:center">Forgot your PIN?</button></form>';
+    '<div class="field" style="margin:0"><label for="au_login">Email or username</label><input id="au_login" autocomplete="username" autocapitalize="off" spellcheck="false"></div>'+pinField("au_pin","Password","current-password")+msg+
+    '<button id="au_btn" class="btn primary wide" type="submit">Log in</button><button type="button" class="sadd" data-authmode="forgot" style="justify-self:center">Forgot your password?</button></form>';
   else if(m==="signup") h+='<form id="authForm" class="authcard" novalidate><span class="hint">Your own private Pocketbook. Nobody else can see your accounts.</span>'+
     '<div class="field" style="margin:0"><label for="au_email">Email</label><input id="au_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off"></div>'+
     '<div class="field" style="margin:0"><label for="au_user">Username</label><input id="au_user" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="3 to 20 letters, numbers, . or _"></div>'+
-    pinField("au_pin","PIN (6 to 12 digits)","new-password")+pinField("au_pin2","Repeat the PIN","new-password")+msg+
+    pinField("au_pin","Password (at least 12 characters)","new-password")+pinField("au_pin2","Repeat the password","new-password")+msg+
     '<button id="au_btn" class="btn primary wide" type="submit">Create account</button></form>';
-  else h+='<form id="authForm" class="authcard" novalidate><strong>Forgot your PIN?</strong><span class="hint">We\'ll email you a link to set a new one.</span>'+
+  else h+='<form id="authForm" class="authcard" novalidate><strong>Forgot your password?</strong><span class="hint">We\'ll email you a link to set a new one.</span>'+
     '<div class="field" style="margin:0"><label for="au_email">Email</label><input id="au_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off"></div>'+msg+
     '<button id="au_btn" class="btn primary wide" type="submit">Send reset link</button><button type="button" class="sadd" data-authmode="login" style="justify-self:center">Back to log in</button></form>';
   return h+'</div>';
@@ -664,23 +708,23 @@ function wireAuth(){
     const busy=t=>{ if(btn){ btn.disabled=true; btn.textContent=t; } };
     try{
       if(m==="login"){
-        const login=g("au_login").trim(), pin=g("au_pin"); if(!login||!pin) return authErr("Enter your email or username and your PIN.");
+        const login=g("au_login").trim(), pin=g("au_pin"); if(!login||!pin) return authErr("Enter your email or username and your password.");
         busy("Logging in…");
-        if(login.includes("@")){ const {error}=await SB.auth.signInWithPassword({email:login,password:pin}); if(error) return authErr(/confirm/i.test(error.message)?"Confirm your email first. Check your inbox for the link.":"That login and PIN don't match."); }
+        if(login.includes("@")){ const {error}=await SB.auth.signInWithPassword({email:login,password:pin}); if(error) return authErr(/confirm/i.test(error.message)?"Confirm your email first. Check your inbox for the link.":"That login and password don't match."); }
         else {
           let r; try{ r=await fetch(SB_URL+"/functions/v1/"+LOGIN_FN,{method:"POST",headers:{"Content-Type":"application/json",apikey:SB_KEY},body:JSON.stringify({login:login.toLowerCase(),pin})}); }catch(_){ return authErr("Couldn't reach the server. Try your email instead of the username."); }
-          const j=await r.json().catch(()=>({})); if(!r.ok||!j.access_token) return authErr(r.status===404?"Username login isn't set up yet. Log in with your email.":"That login and PIN don't match.");
+          const j=await r.json().catch(()=>({})); if(!r.ok||!j.access_token) return authErr(r.status===404?"Username login isn't set up yet. Log in with your email.":"That login and password don't match.");
           const {error}=await SB.auth.setSession({access_token:j.access_token,refresh_token:j.refresh_token}); if(error) return authErr("Couldn't log in. Try again.");
         }
-        S.loginMsg=""; await cloudReady(); return;
+        S.loginMsg=""; markUnlocked(); await cloudReady(); return;
       }
       if(m==="signup"){
         const email=g("au_email").trim(), user=g("au_user").trim().toLowerCase(), pin=g("au_pin"), pin2=g("au_pin2");
         if(!/^\S+@\S+\.\S+$/.test(email)) return authErr("Enter a valid email.");
         if(!USER_RE.test(user)) return authErr("Username: 3 to 20 characters, using letters, numbers, . or _");
-        if(!PIN_RE.test(pin)) return authErr("The PIN must be 6 to 12 digits.");
-        if(/^(\d)\1+$/.test(pin)||"0123456789012".includes(pin)||"9876543210987".includes(pin)) return authErr("Pick a PIN that's harder to guess (not 111111 or 123456).");
-        if(pin!==pin2) return authErr("The two PINs don't match.");
+        if(!PASS_RE.test(pin)) return authErr("The password needs at least 12 characters.");
+        if(/^(.)\1+$/.test(pin)||/^(?:123456789|password|qwerty)/i.test(pin)) return authErr("Pick a password that's harder to guess.");
+        if(pin!==pin2) return authErr("The two passwords don't match.");
         busy("Creating account…");
         try{ const {data:free}=await SB.rpc("pocketbook_username_free",{u:user}); if(free===false) return authErr("That username is taken. Try another one."); }catch(_){}
         const {data,error}=await SB.auth.signUp({email,password:pin,options:{emailRedirectTo:location.origin+location.pathname}});
@@ -695,9 +739,9 @@ function wireAuth(){
         return authErr("If that email has an account, a reset link is on its way. Open it on this device.",true);
       }
       if(m==="newpin"){
-        const pin=g("au_pin"), pin2=g("au_pin2"); if(!PIN_RE.test(pin)) return authErr("The PIN must be 6 to 12 digits."); if(pin!==pin2) return authErr("The two PINs don't match.");
-        busy("Saving…"); const {error}=await SB.auth.updateUser({password:pin}); if(error) return authErr("Couldn't save the new PIN: "+error.message);
-        RECOVERY=false; try{ history.replaceState(null,"",location.pathname); }catch(_){} S.loginMsg=""; toast("New PIN saved"); await cloudReady(); return;
+        const pin=g("au_pin"), pin2=g("au_pin2"); if(!PASS_RE.test(pin)) return authErr("The password needs at least 12 characters."); if(pin!==pin2) return authErr("The two passwords don't match.");
+        busy("Saving…"); const {error}=await SB.auth.updateUser({password:pin}); if(error) return authErr("Couldn't save the new password: "+error.message);
+        RECOVERY=false; try{ history.replaceState(null,"",location.pathname); }catch(_){} S.loginMsg=""; toast("New password saved"); await cloudReady(); return;
       }
     }catch(err){ authErr("Something went wrong. Try again."); }
   });
@@ -743,7 +787,7 @@ async function persist(){
 function refresh(){ LEDGER={};
   const acc=[],pr=[],tx=[],ln=[];
   Object.keys(STORE).forEach(id=>{const v=Object.assign({id},STORE[id]); if(v.kind==="account")acc.push(v); else if(v.kind==="project")pr.push(v); else if(v.kind==="loan")ln.push(v); else if(v.kind==="txn")tx.push(v);});
-  S.accounts=acc;S.projects=pr;S.loans=ln;S.txns=tx;S.status="ready";
+  S.accounts=acc;S.projects=pr;S.loans=ln;S.txns=tx;S.status=(S.status==="locked"||S.status==="setpin")?S.status:"ready";
   if(S.acct!=="all"&&!acctById(S.acct)) S.acct="all";
   render();
 }
@@ -977,6 +1021,12 @@ function render(){
   $("monthLabel").textContent=monthName(S.month);
   const v=$("view");
   if(S.status==="loading"){v.innerHTML='<div class="notice">Loading your books…</div>';return;}
+  if(S.status==="locked"||S.status==="setpin"){
+    $("title").textContent=""; $("monthnav").hidden=true; $("addBtn").hidden=true; $("topact").hidden=true; document.querySelector("nav.tabs").hidden=true;
+    v.innerHTML = S.status==="locked" ? pinPad("Enter your PIN","Unlock Pocketbook"+(S.me&&S.me.username?" · @"+S.me.username:"")) :
+      pinPad(S.pinStep===2?"Repeat your PIN":"Create a 4-digit PIN", S.pinStep===2?"Type the same 4 digits again.":"Use it to open Pocketbook quickly on this device. Your password stays the key to your account.");
+    return;
+  }
   if(S.status==="login"||S.status==="newpin"){
     $("title").textContent=""; $("monthnav").hidden=true; $("addBtn").hidden=true; document.querySelector("nav.tabs").hidden=true;
     v.innerHTML=authView(); wireAuth(); return;
@@ -1438,7 +1488,8 @@ function accountBlock(){
   return '<h2 style="margin-top:4px">Your account</h2><div class="list" style="margin-bottom:6px">'+
     '<div class="row" style="cursor:default"><span class="main"><span class="t">'+esc(me.username?"@"+me.username:"No username yet")+'</span><span class="m">'+esc(me.email||"")+'</span></span></div></div>'+
     (me.username?'':'<form id="userForm" class="goalf" novalidate><label for="su_user">Choose a username to log in with it</label><div class="gf"><input id="su_user" autocapitalize="off" spellcheck="false" placeholder="e.g. alfredo"><button class="btn primary" type="submit">Save</button></div></form>')+
-    '<form id="pinForm" class="goalf" novalidate style="margin-top:10px"><label for="sp_pin">Change PIN (6 to 12 digits)</label><div class="gf"><input id="sp_pin" type="password" inputmode="numeric" autocomplete="new-password" placeholder="New PIN"><button class="btn" type="submit">Change</button></div></form><div id="accMsg"></div>';
+    '<form id="pinForm" class="goalf" novalidate style="margin-top:10px"><label for="sp_pin">Change password (at least 12 characters)</label><div class="gf"><input id="sp_pin" type="password" autocomplete="new-password" placeholder="New password"><button class="btn" type="submit">Change</button></div></form>'+
+    '<div class="goalf" style="margin-top:12px"><label>Quick-access PIN (4 digits)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-pinset="1">'+(STORE["meta-pin"]?"Change PIN":"Set up PIN")+'</button>'+(STORE["meta-pin"]?'<button type="button" class="btn" data-pinoff="1">Turn off PIN</button>':'')+'</div></div><div id="accMsg"></div>';
 }
 function wireAccount(){
   const msg=(t,ok)=>{ const m=$("accMsg"); if(m) m.innerHTML='<p class="'+(ok?"okmsg":"err")+'" style="margin:8px 0 0">'+esc(t)+'</p>'; };
@@ -1448,9 +1499,9 @@ function wireAccount(){
     if(error) return msg(/duplicate|unique|23505/i.test((error.code||"")+error.message)?"That username is taken.":"Couldn't save it. Is the database set up?");
     S.me.username=u; toast("Username saved"); closeSheet(); });
   const pf=$("pinForm"); if(pf) pf.addEventListener("submit",async e=>{ e.preventDefault(); const pin=$("sp_pin").value;
-    if(!PIN_RE.test(pin)) return msg("The PIN must be 6 to 12 digits.");
+    if(!PASS_RE.test(pin)) return msg("The password needs at least 12 characters.");
     const {error}=await SB.auth.updateUser({password:pin}); if(error) return msg("Couldn't change it: "+error.message);
-    toast("PIN changed"); closeSheet(); });
+    toast("Password changed"); closeSheet(); });
 }
 function backupBlock(){
   const last=S.backups[0];
@@ -2038,6 +2089,10 @@ document.addEventListener("click",async e=>{
   if(ds.tab){S.open=null;S.openLoan=null;S.openProj=null;S.tab=ds.tab;try{localStorage.setItem("pb_tab",S.tab);}catch(_){} render();window.scrollTo(0,0);return;}
   if(ds.actview){S.actView=ds.actview;render();window.scrollTo(0,0);return;}
   if(ds.closing){S.open=null;S.openLoan=null;S.openProj=null;S.tab="activity";S.actView="closing";render();window.scrollTo(0,0);return;}
+  if(ds.pinset){ closeSheet(); S.status="setpin"; S.pinStep=1; S.pinFirst=""; S.pinMsg=""; S.pinBuf=""; render(); return; }
+  if(ds.pinoff){ delete STORE["meta-pin"]; if(await persist()){ refresh(); toast("PIN turned off"); closeSheet(); } return; }
+  if(ds.pk){ pinKey(ds.pk); return; }
+  if(ds.pinact){ if(ds.pinact==="skip"){ try{ localStorage.setItem("pb_pin_skip_"+UID,"1"); }catch(_){} markUnlocked(); S.status="ready"; render(); } else { S.loginMsg=""; await SB.auth.signOut(); } return; }
   if(ds.fundonly){ const doc=STORE[ds.fundonly]; if(doc&&await save(ds.fundonly,Object.assign({},doc,{fund:true}))) toast("Saved as an ongoing fund"); return; }
   if(ds.lentperson){ openLentPerson(ds.lentperson); return; }
   if(ds.repay){ const r=lentPeople().find(x=>x.name===ds.repay); const ck=S.accounts.find(a=>a.type==="checking"); openTx(null,{type:"income",category:REPAY,borrower:ds.repay,payer:ds.repay,amount:r?r.left.toFixed(2):"",desc:"Repayment from "+ds.repay,to:ck?ck.id:""}); return; }
@@ -2075,7 +2130,7 @@ document.addEventListener("click",async e=>{
   switch(ds.act){
     case "close": closeSheet(); break;
     case "settings": openSheet(sheetHead("Settings and backups")+accountBlock()+backupBlock()); wireAccount(); break;
-    case "asksignout": openSheet(sheetHead("Log out?")+'<p class="hint" style="margin:0 0 14px">You\'ll need your email or username and your PIN to log in again on this device. Your data stays saved online.</p><div class="actions"><button type="button" class="btn" data-act="close">Cancel</button><button type="button" class="btn primary" data-act="signout">Log out</button></div>'); break;
+    case "asksignout": openSheet(sheetHead("Log out?")+'<p class="hint" style="margin:0 0 14px">You\'ll need your email or username and your password to log in again on this device. Your data stays saved online.</p><div class="actions"><button type="button" class="btn" data-act="close">Cancel</button><button type="button" class="btn primary" data-act="signout">Log out</button></div>'); break;
     case "newacct": openAcct(); break;
     case "newproj": openProj(); break;
     case "newloan": openLoanForm(); break;
@@ -2118,6 +2173,7 @@ $("backBtn").addEventListener("click",()=>{S.open=null;S.openLoan=null;S.openPro
 $("prevM").addEventListener("click",()=>{S.month=shiftMonth(S.month,-1);render();});
 $("nextM").addEventListener("click",()=>{S.month=shiftMonth(S.month,1);render();});
 document.addEventListener("keydown",e=>{
+  if((S.status==="locked"||S.status==="setpin")&&!e.metaKey&&!e.ctrlKey){ if(/^[0-9]$/.test(e.key)){ pinKey(e.key); e.preventDefault(); return; } if(e.key==="Backspace"){ pinKey("⌫"); e.preventDefault(); return; } }
   if((e.key==="Enter"||e.key===" ")&&e.target&&e.target.dataset&&e.target.dataset.cardopen){ e.preventDefault(); S.openProj=e.target.dataset.cardopen;S.open=null;S.openLoan=null;render();window.scrollTo(0,0); return; }
   if(CALC){ const map={"Enter":"eq","=":"eq","Backspace":"back","Delete":"clear","*":"*","x":"*","/":"/","+":"+","-":"-",".":".",",":".","%":"pct"};
     if(e.key==="Escape"){ closeCalc(); e.preventDefault(); return; }
