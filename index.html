@@ -20,7 +20,7 @@
 :root{
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#9AA1B2;
   --bg:#EEF1F6; --surface:#FFFFFF; --sunk:#E3E8F0; --ink:#131826; --muted:#5B6378; --line:#D5DBE6;
-  --accent:#3550D4; --accent-ink:#FFFFFF; --pos:#18805A; --neg:#BF3F12; --card:#7A3FC4; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235B6378' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --accent:#3550D4; --accent-ink:#FFFFFF; --pos:#15803D; --neg:#C8282E; --save:#1F5FD6; --card:#7A3FC4; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235B6378' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
   --f-body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-num:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
@@ -29,11 +29,11 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#5E6578;
   --bg:#0D1017; --surface:#171B26; --sunk:#10141C; --ink:#E9ECF4; --muted:#99A1B6; --line:#272D3B;
-  --accent:#8099FF; --accent-ink:#0D1017; --pos:#4CC994; --neg:#F28B62; --card:#B98BF2; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2399A1B6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); color-scheme:dark}}
+  --accent:#8099FF; --accent-ink:#0D1017; --pos:#4ADE80; --neg:#FF6B6B; --save:#6EA8FF; --card:#B98BF2; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2399A1B6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); color-scheme:dark}}
 :root[data-theme="dark"]{
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#5E6578;
   --bg:#0D1017; --surface:#171B26; --sunk:#10141C; --ink:#E9ECF4; --muted:#99A1B6; --line:#272D3B;
-  --accent:#8099FF; --accent-ink:#0D1017; --pos:#4CC994; --neg:#F28B62; --card:#B98BF2; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2399A1B6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); color-scheme:dark}
+  --accent:#8099FF; --accent-ink:#0D1017; --pos:#4ADE80; --neg:#FF6B6B; --save:#6EA8FF; --card:#B98BF2; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2399A1B6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); color-scheme:dark}
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
@@ -117,6 +117,31 @@ button.row:hover{background:var(--sunk)}
 .authtabs button[aria-selected="true"]{background:var(--surface);color:var(--ink)}
 .authcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px}
 .okmsg{color:var(--pos);font-size:13px;margin:0}
+body.seasonal::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:var(--wall);background-size:140px 140px}
+#seasonfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+#seasonfx i{position:absolute;top:-10px;border-radius:50%;background:#fff;opacity:.75;animation:pbsnow linear infinite}
+html[data-theme="light"] #seasonfx i{background:#A9C4D8}
+@keyframes pbsnow{to{transform:translateY(105vh)}}
+@media (prefers-reduced-motion:reduce){#seasonfx i{animation:none}}
+.sline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 6px}
+.sgreet{font-weight:700;color:var(--accent);font-size:14px}
+.sart{display:flex;align-items:flex-end;gap:4px}
+.lseg{display:flex;background:var(--sunk);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap;margin-top:6px}
+.lseg button{flex:1;border:0;background:none;border-radius:9px;padding:9px 10px;font:inherit;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap}
+.lseg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.lpals{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}
+.lpal{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 10px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer;text-align:left}
+.lpal[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.lsw{width:22px;height:22px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.15)}
+.welcome{min-height:calc(100dvh - 150px);align-content:center;justify-items:center;text-align:center}
+.wring{width:132px;height:132px;box-sizing:border-box;border-radius:50%;border:14px solid var(--accent);box-shadow:0 0 0 12px color-mix(in srgb,var(--accent) 18%,transparent);display:grid;place-items:center;margin:12px 0 6px}
+.wring i{width:60px;height:60px;box-sizing:border-box;border-radius:50%;border:9px solid var(--pos)}
+.wseason{display:flex;gap:10px;align-items:flex-end;justify-content:center}
+.lg{position:relative;display:inline-block}.lghat{position:absolute;left:-21px;top:-25px;transform:rotate(-18deg);line-height:0}
+.wtag{margin:0;color:var(--muted);max-width:290px}.wtag b{color:var(--accent)}
+.wbtns{display:grid;gap:10px;width:100%;max-width:380px;margin-top:10px}
+.aback{justify-self:start;border:0;background:none;color:var(--accent);font:inherit;font-weight:600;font-size:15px;padding:6px 0;cursor:pointer}
+.aswitch{text-align:center;font-size:14px;color:var(--muted);margin:0}.aswitch button{border:0;background:none;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;padding:4px}
 .pwbox{position:relative}.field .pwbox input{padding-right:52px}
 .eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;border-radius:8px}.eye:hover{color:var(--ink)}.eye svg{width:22px;height:22px}
 .pwnote{font-size:12.5px;margin:4px 0 0;color:var(--muted);min-height:16px}.pwnote.ok{color:var(--pos)}.pwnote.bad{color:var(--neg)}
@@ -148,7 +173,7 @@ button.row:hover{background:var(--sunk)}
 .pill.st-mid{background:color-mix(in srgb,#D9A400 18%,var(--surface));color:#C08F00}
 .pill.st-neg{background:color-mix(in srgb,var(--neg) 14%,var(--surface));color:var(--neg)}
 .h2r{display:flex;align-items:baseline;gap:12px;min-width:0}
-.subh .h2r span{font-family:var(--f-num);letter-spacing:0;color:var(--pos)}
+.subh .h2r span{font-family:var(--f-num);letter-spacing:0;color:var(--save)}
 .sadd{border:0;background:none;color:var(--accent);font:inherit;font-family:var(--f-body);font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 0;cursor:pointer}
 .chp{font-style:normal;font-family:var(--f-num);font-size:12px;opacity:.8}
 .ri.none .rn{color:var(--neg)} .ri.none .sw{border:1px dashed var(--muted)}
@@ -177,7 +202,7 @@ button.row:hover{background:var(--sunk)}
 .crow span:not(:first-child){font-family:var(--f-num);white-space:nowrap;text-align:right}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .subh{display:flex;justify-content:space-between;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 2px 6px}
-.subh span:last-child{font-family:var(--f-num);letter-spacing:0;color:var(--pos)}
+.subh span:last-child{font-family:var(--f-num);letter-spacing:0;color:var(--save)}
 h2[id]{scroll-margin-top:80px}
 button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;min-width:0}
@@ -187,7 +212,7 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .ubar{display:block;height:6px;border-radius:3px;background:var(--sunk);margin:6px 0 4px;overflow:hidden}
 .ubar i{display:block;height:100%;border-radius:3px;background:var(--pos)}
 .ubar.mid i{background:#D9A400} .ubar.hi i,.ubar.share i{background:var(--neg)} .ubar.goal i{background:var(--pos)}
-.badge.savings{color:var(--pos)}
+.badge.savings{color:var(--save)}
 .badge.checking{color:var(--accent)} .badge.credit{color:var(--card)} .badge.cash{color:var(--pos)}
 .pos{color:var(--pos)} .neg{color:var(--neg)} .mut{color:var(--muted)}
 .owed{font-size:11px;color:var(--muted);display:block;text-align:right}
@@ -426,7 +451,122 @@ const CAT_GONE = {"Other":1,"Gifts":1,"Gifts & other":1};
 function catOf(t){ const c=t&&t.category; if(!c||CAT_GONE[c]) return ""; return CAT_MERGE[c]||c; }
 const INC_CATS = ["Salary","Freelance","Refund","Gift","Loan repayment","Other"];
 
-const S = {db:null,col:null,uid:null,status:"loading",accounts:[],projects:[],loans:[],txns:[],openLoan:null,
+/* ===== Look: Day/Night, color palettes, automatic seasonal themes ===== */
+const PALETTES={
+  terra:{name:"Terracotta Earth",light:{bg:"#F5EFE8",surface:"#FFFCF8",sunk:"#EADFD3",ink:"#2A1D16",muted:"#6F5E52",line:"#E2D4C6",accent:"#B5502F","accent-ink":"#FFFFFF"},
+    dark:{bg:"#15100D",surface:"#211913",sunk:"#1A130F",ink:"#F3E9DF",muted:"#B19F90",line:"#3A2C23",accent:"#E8845E","accent-ink":"#15100D"}},
+  classic:{name:"Pocketbook Blue",light:{bg:"#EEF1F6",surface:"#FFFFFF",sunk:"#E3E8F0",ink:"#131826",muted:"#5B6378",line:"#D5DBE6",accent:"#3550D4","accent-ink":"#FFFFFF"},
+    dark:{bg:"#0D1017",surface:"#171B26",sunk:"#10141C",ink:"#E9ECF4",muted:"#99A1B6",line:"#272D3B",accent:"#8099FF","accent-ink":"#0D1017"}},
+  teal:{name:"Transformative Teal",light:{bg:"#EDF2EF",surface:"#FFFFFF",sunk:"#DFE8E3",ink:"#10201E",muted:"#52645F",line:"#CEDAD5",accent:"#1F6F6B","accent-ink":"#FFFFFF"},
+    dark:{bg:"#0B1413",surface:"#13201E",sunk:"#0E1918",ink:"#E5F0EC",muted:"#93A9A3",line:"#22332F",accent:"#4FBFB5","accent-ink":"#0B1413"}},
+  cloud:{name:"Cloud Dancer & Mocha",light:{bg:"#F0EEE9",surface:"#FBFAF7",sunk:"#E6E2DA",ink:"#2B211B",muted:"#6E6258",line:"#DDD6CB",accent:"#6B4A35","accent-ink":"#FBFAF7"},
+    dark:{bg:"#16120F",surface:"#211A16",sunk:"#1A1411",ink:"#F0EEE9",muted:"#B3A79B",line:"#352A24",accent:"#D9B79A","accent-ink":"#16120F"}},
+  lavender:{name:"Soft-tech Lavender",light:{bg:"#F2F0F8",surface:"#FFFFFF",sunk:"#E6E2F2",ink:"#1C1830",muted:"#635D7D",line:"#DAD5EA",accent:"#6A5BD0","accent-ink":"#FFFFFF"},
+    dark:{bg:"#100E1B",surface:"#1B1829",sunk:"#141221",ink:"#ECE9F7",muted:"#A39DBF",line:"#2C2840",accent:"#A99BFF","accent-ink":"#100E1B"}},
+  fuchsia:{name:"Electric Fuchsia",light:{bg:"#F4F2F3",surface:"#FFFFFF",sunk:"#E9E4E7",ink:"#1A1418",muted:"#645A60",line:"#DDD4D9",accent:"#C42A7A","accent-ink":"#FFFFFF"},
+    dark:{bg:"#121012",surface:"#1D191C",sunk:"#171416",ink:"#F2ECEF",muted:"#A99BA3",line:"#322A30",accent:"#FF5FAE","accent-ink":"#121012"}}
+};
+/* Every spending category keeps its own color in the ring, in any palette */
+const CAT_COLORS={"Food & dining":"#E8590C","Groceries":"#2F9E44","Transport & gas":"#1C7ED6","Bills & utilities":"#F59F00","Rent / housing":"#7048E8","Shopping":"#D6336C","Health & personal care":"#0CA678","Entertainment":"#AE3EC9","Subscriptions":"#4263EB","Travel":"#1098AD","Lent to others":"#868E96"};
+const CAT_EXTRA=["#5C940D","#C2255C","#364FC7","#E67700","#0B7285","#862E9C"];
+function catColor(c,i){ return CAT_COLORS[c]||CAT_EXTRA[(i||0)%CAT_EXTRA.length]; }
+
+/* --- original seasonal art (simple shapes) --- */
+const _sv=(vb,w,inner)=>'<svg viewBox="'+vb+'" width="'+w+'" aria-hidden="true" focusable="false">'+inner+'</svg>';
+const ART={
+  pumpkin:w=>_sv("0 0 64 58",w,'<path d="M32 13c-2-6 0-10 5-11" stroke="#4E7A2A" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse cx="19" cy="35" rx="15" ry="20" fill="#D9590B"/><ellipse cx="45" cy="35" rx="15" ry="20" fill="#D9590B"/><ellipse cx="32" cy="35" rx="15" ry="21" fill="#F07A1E"/><path d="M20 29l6-6 4 7zM44 29l-6-6-4 7z" fill="#3A1A05"/><path d="M18 40c4 7 24 7 28 0l-4 2-3-3-3 3-4-3-4 3-3-3-3 3z" fill="#3A1A05"/>'),
+  ghost:w=>_sv("0 0 52 62",w,'<path d="M6 58V26a20 20 0 0 1 40 0v32l-6.6-5-6.6 5-6.8-5-6.8 5-6.6-5z" fill="#F5F2EC" stroke="rgba(0,0,0,.15)"/><ellipse cx="19" cy="27" rx="3.6" ry="5" fill="#1E1A24"/><ellipse cx="33" cy="27" rx="3.6" ry="5" fill="#1E1A24"/><ellipse cx="26" cy="38" rx="3.4" ry="4" fill="#1E1A24"/>'),
+  bat:(w,c)=>_sv("0 0 40 18",w,'<path d="M20 6c-1-3 1-4 1-4l1 3 1-3s2 1 1 4c4-3 9-5 16 0-4 0-6 2-7 6-3-3-6-2-8 1-1-2-3-3-5-3s-4 1-5 3c-2-3-5-4-8-1-1-4-3-6-7-6 7-5 12-3 16 0z" fill="'+(c||"#3B2257")+'"/>'),
+  candy:w=>_sv("0 0 40 20",w,'<path d="M10 10L1 3v14zM30 10l9-7v14z" fill="#8E4FD1"/><circle cx="20" cy="10" r="9" fill="#FF8A2A"/><path d="M14 6c4 2 8 6 12 8" stroke="#fff" stroke-width="2" fill="none" opacity=".8"/>'),
+  moon:w=>_sv("0 0 60 60",w,'<circle cx="30" cy="30" r="26" fill="#FBE7A8"/><circle cx="22" cy="24" r="4" fill="#EED58A"/><circle cx="38" cy="36" r="6" fill="#EED58A"/>'),
+  tree:w=>_sv("0 0 60 80",w,'<rect x="26" y="66" width="8" height="12" rx="2" fill="#7A4A2A"/><path d="M30 8L8 40h10L4 60h14L2 72h56L42 60h14L42 40h10z" fill="#1E7A46"/><path d="M30 2l2.4 5 5.4.6-4 3.7 1.1 5.3L30 14l-4.9 2.6 1.1-5.3-4-3.7 5.4-.6z" fill="#F6C343"/><circle cx="24" cy="34" r="3" fill="#E23B3B"/><circle cx="38" cy="46" r="3" fill="#F6C343"/><circle cx="20" cy="56" r="3" fill="#4FA3F7"/><circle cx="36" cy="64" r="3" fill="#E23B3B"/>'),
+  hat:w=>_sv("0 0 48 40",w,'<path d="M6 30C10 12 24 3 40 6c-6 4-8 12-6 24z" fill="#C8202B" stroke="#8E1219"/><rect x="2" y="27" width="38" height="10" rx="5" fill="#fff" stroke="#C9C4BC"/><circle cx="41" cy="7" r="5.5" fill="#fff" stroke="#C9C4BC"/>'),
+  sleigh:(w,c)=>_sv("0 0 170 40",w,'<g fill="'+c+'"><path d="M118 14h30c4 0 6-3 6-6h4c0 6-4 12-10 12h-2v6h-26c-4 0-6-3-6-6z"/><path d="M112 32h50c3 0 5-2 6-4l2 1c-1 4-4 6-8 6h-50z"/>'+[0,34,68].map(x=>'<g transform="translate('+x+' 0)"><ellipse cx="18" cy="20" rx="11" ry="5"/><circle cx="30" cy="15" r="3.5"/><path d="M29 12l-2-6m2 6l3-6" stroke="'+c+'" stroke-width="1.4" fill="none"/><rect x="10" y="23" width="1.6" height="8"/><rect x="24" y="23" width="1.6" height="8"/></g>').join("")+'<path d="M96 19h22" stroke="'+c+'"/></g>'),
+  heart:(w,c)=>_sv("0 0 32 28",w,'<path d="M16 27S1 18 1 9a7.5 7.5 0 0 1 15-2 7.5 7.5 0 0 1 15 2c0 9-15 18-15 18z" fill="'+(c||"#E64980")+'"/>'),
+  clover:w=>_sv("0 0 40 44",w,'<g fill="#2F9E44"><circle cx="20" cy="11" r="8"/><circle cx="11" cy="20" r="8"/><circle cx="29" cy="20" r="8"/><circle cx="20" cy="27" r="8"/></g><path d="M20 26c0 8 3 13 6 16" stroke="#2B8A3E" stroke-width="3" fill="none" stroke-linecap="round"/>'),
+  flower:(w,c)=>_sv("0 0 40 40",w,'<g fill="'+(c||"#F783AC")+'"><circle cx="20" cy="9" r="7"/><circle cx="31" cy="17" r="7"/><circle cx="27" cy="30" r="7"/><circle cx="13" cy="30" r="7"/><circle cx="9" cy="17" r="7"/></g><circle cx="20" cy="20" r="6" fill="#FCC419"/>'),
+  egg:(w,c)=>_sv("0 0 30 38",w,'<ellipse cx="15" cy="21" rx="13" ry="16" fill="'+(c||"#A5D8FF")+'"/><path d="M3 18q6-5 12 0t12 0M3 26q6 5 12 0t12 0" stroke="#fff" stroke-width="2.5" fill="none"/>'),
+  star:(w,c)=>_sv("0 0 24 24",w,'<path d="M12 1.5l3.1 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.3 5.6 20.9l1.5-7.1L1.7 8.9l7.2-.8z" fill="'+(c||"#F6C343")+'"/>'),
+  burst:(w,c)=>_sv("0 0 60 60",w,'<g stroke="'+(c||"#E03131")+'" stroke-width="3" stroke-linecap="round">'+[0,30,60,90,120,150,180,210,240,270,300,330].map(a=>'<path d="M30 30" transform="rotate('+a+' 30 30)"/><line x1="30" y1="12" x2="30" y2="4" transform="rotate('+a+' 30 30)"/>').join("")+'</g><circle cx="30" cy="30" r="4" fill="'+(c||"#E03131")+'"/>'),
+  sun:w=>_sv("0 0 60 60",w,'<g stroke="#F59F00" stroke-width="4" stroke-linecap="round">'+[0,45,90,135,180,225,270,315].map(a=>'<line x1="30" y1="5" x2="30" y2="12" transform="rotate('+a+' 30 30)"/>').join("")+'</g><circle cx="30" cy="30" r="13" fill="#FCC419"/>'),
+  wave:w=>_sv("0 0 60 24",w,'<path d="M2 14q7-10 14 0t14 0 14 0 14 0" stroke="#1C7ED6" stroke-width="4" fill="none" stroke-linecap="round"/>'),
+  leaf:(w,c)=>_sv("0 0 40 40",w,'<path d="M6 34C4 18 14 6 34 6c0 20-12 30-28 28z" fill="'+(c||"#D9480F")+'"/><path d="M8 32L28 12" stroke="rgba(0,0,0,.25)" stroke-width="2"/>'),
+  acorn:w=>_sv("0 0 30 40",w,'<path d="M15 4v6" stroke="#5C3A1E" stroke-width="3" stroke-linecap="round"/><path d="M3 15a12 7 0 0 1 24 0z" fill="#7A4A2A"/><path d="M5 15h20c0 12-5 20-10 22C10 35 5 27 5 15z" fill="#C68642"/>'),
+  pie:w=>_sv("0 0 60 34",w,'<path d="M4 16h52l-5 14H9z" fill="#B5651D"/><ellipse cx="30" cy="16" rx="26" ry="8" fill="#E8590C"/><path d="M8 15q4-4 8 0t8 0 8 0 8 0 8 0 8 0" stroke="#F2C17D" stroke-width="3" fill="none"/>'),
+  confetti:w=>_sv("0 0 60 40",w,'<rect x="4" y="6" width="6" height="3" fill="#F6C343" transform="rotate(20 7 7)"/><rect x="22" y="2" width="6" height="3" fill="#E64980" transform="rotate(-30 25 3)"/><rect x="40" y="10" width="6" height="3" fill="#4DABF7" transform="rotate(45 43 11)"/><circle cx="14" cy="26" r="2.5" fill="#51CF66"/><circle cx="50" cy="30" r="2.5" fill="#F6C343"/><rect x="28" y="24" width="6" height="3" fill="#845EF7" transform="rotate(10 31 25)"/>')
+};
+/* Patterns behind everything (very faint) */
+function wallSvg(inner,dark){ return 'url("data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140" opacity="'+(dark?.08:.07)+'"><g fill="'+(dark?"#fff":"#3B2257")+'" stroke="none">'+inner+'</g></svg>')+'")'; }
+const BATP='<path transform="translate(10 16) scale(.75)" d="M20 6c-1-3 1-4 1-4l1 3 1-3s2 1 1 4c4-3 9-5 16 0-4 0-6 2-7 6-3-3-6-2-8 1-1-2-3-3-5-3s-4 1-5 3c-2-3-5-4-8-1-1-4-3-6-7-6 7-5 12-3 16 0z"/>';
+const HEARTP=(x,y,s)=>'<path transform="translate('+x+' '+y+') scale('+s+')" d="M16 27S1 18 1 9a7.5 7.5 0 0 1 15-2 7.5 7.5 0 0 1 15 2c0 9-15 18-15 18z"/>';
+const STARP=(x,y,s)=>'<path transform="translate('+x+' '+y+') scale('+s+')" d="M12 1.5l3.1 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.3 5.6 20.9l1.5-7.1L1.7 8.9l7.2-.8z"/>';
+const LEAFP=(x,y,s,r)=>'<path transform="translate('+x+' '+y+') rotate('+r+') scale('+s+')" d="M6 34C4 18 14 6 34 6c0 20-12 30-28 28z"/>';
+const SEASONS=[
+  {id:"newyear",name:"New Year",emoji:"🎆",from:1227,to:103,greet:"Happy New Year!",acc:{light:"#9A7400",dark:"#F2C14E"},
+    art:k=>ART.confetti(k?54:34)+ART.star(k?28:18),wall:STARP(14,14,.9)+STARP(84,70,.6)+'<circle cx="100" cy="24" r="3"/><circle cx="34" cy="100" r="3"/>'},
+  {id:"valentine",name:"Valentine's",emoji:"💝",from:207,to:214,greet:"Happy Valentine's Day!",acc:{light:"#C2255C",dark:"#FF6B9A"},
+    art:k=>ART.heart(k?40:24)+ART.heart(k?26:16,"#F783AC"),wall:HEARTP(12,14,.8)+HEARTP(84,78,.6)},
+  {id:"stpatrick",name:"St. Patrick's",emoji:"☘️",from:314,to:317,greet:"Happy St. Patrick's Day!",acc:{light:"#1B7F3B",dark:"#51CF66"},
+    art:k=>ART.clover(k?44:26),wall:'<g transform="translate(14 14) scale(.8)"><circle cx="20" cy="11" r="8"/><circle cx="11" cy="20" r="8"/><circle cx="29" cy="20" r="8"/><circle cx="20" cy="27" r="8"/></g>'},
+  {id:"spring",name:"Spring",emoji:"🌷",from:320,to:430,greet:"Happy spring!",acc:{light:"#9C36B5",dark:"#DA77F2"},
+    art:k=>ART.flower(k?40:24)+ART.egg(k?28:18)+ART.flower(k?26:16,"#B197FC"),wall:'<g transform="translate(14 14) scale(.7)"><circle cx="20" cy="9" r="7"/><circle cx="31" cy="17" r="7"/><circle cx="27" cy="30" r="7"/><circle cx="13" cy="30" r="7"/><circle cx="9" cy="17" r="7"/></g><ellipse cx="100" cy="96" rx="9" ry="12"/>'},
+  {id:"july4",name:"4th of July",emoji:"🎇",from:628,to:705,greet:"Happy 4th of July!",acc:{light:"#1E3A8A",dark:"#7DA2FF"},
+    art:k=>ART.burst(k?46:28,"#E03131")+ART.star(k?26:16,"#1C7ED6")+ART.burst(k?32:20,"#1C7ED6"),wall:STARP(14,14,.9)+STARP(84,76,.7)},
+  {id:"summer",name:"Summer",emoji:"☀️",from:706,to:831,greet:"Enjoy the summer!",acc:{light:"#B45309",dark:"#FBBF24"},
+    art:k=>ART.sun(k?44:28)+ART.wave(k?44:28),wall:'<circle cx="30" cy="30" r="10"/><circle cx="96" cy="96" r="6"/><circle cx="110" cy="40" r="3"/>'},
+  {id:"fall",name:"Fall",emoji:"🍂",from:901,to:930,greet:"Happy fall!",acc:{light:"#B45309",dark:"#F59E0B"},
+    art:k=>ART.leaf(k?36:22)+ART.leaf(k?26:16,"#F59F00")+ART.acorn(k?24:16),wall:LEAFP(10,10,.7,0)+LEAFP(90,80,.55,60)},
+  {id:"halloween",name:"Halloween",emoji:"🎃",from:1001,to:1031,greet:"Happy Halloween!",acc:{light:"#D9590B",dark:"#FF8A2A"},
+    tint:{light:{bg:"#F3EEF6",sunk:"#E8E0EE"},dark:{bg:"#120D1A",surface:"#1C1626",sunk:"#161020",line:"#2E2540"}},
+    art:k=>ART.ghost(k?40:22)+ART.pumpkin(k?56:30),wall:BATP+'<circle cx="96" cy="34" r="7"/><path d="M85 34l-7-5v10zM107 34l7-5v10z"/><path transform="translate(66 80) scale(.5)" d="M6 58V26a20 20 0 0 1 40 0v32l-6.6-5-6.6 5-6.8-5-6.8 5-6.6-5z"/><circle cx="26" cy="106" r="10"/>'},
+  {id:"thanksgiving",name:"Thanksgiving",emoji:"🦃",from:1101,to:1130,greet:"Happy Thanksgiving!",acc:{light:"#9A3412",dark:"#FB923C"},
+    art:k=>ART.leaf(k?30:20,"#E8590C")+ART.pie(k?54:32)+ART.acorn(k?22:14),wall:LEAFP(10,10,.7,10)+LEAFP(88,82,.5,70)},
+  {id:"christmas",name:"Christmas",emoji:"🎄",from:1201,to:1226,greet:"Merry Christmas!",acc:{light:"#B8202A",dark:"#FF5A5F"},snow:true,
+    tint:{light:{bg:"#EEF3F0"},dark:{bg:"#0A1410",surface:"#13211B",sunk:"#0E1A15",line:"#1F3329"}},
+    art:k=>ART.tree(k?50:28),wall:STARP(16,16,.6)+'<circle cx="96" cy="30" r="3"/><circle cx="40" cy="96" r="3"/><circle cx="110" cy="100" r="2"/>'}
+];
+function seasonFor(d){ const md=(d.getMonth()+1)*100+d.getDate();
+  return SEASONS.find(s=>s.from<=s.to?(md>=s.from&&md<=s.to):(md>=s.from||md<=s.to))||null; }
+const LOOK_DEF={mode:"auto",pal:"terra",season:"auto"};
+let LOOK=(()=>{ try{ return Object.assign({},LOOK_DEF,JSON.parse(localStorage.getItem("pb_look")||"{}")); }catch(_){ return {...LOOK_DEF}; } })();
+let LOOK_SYNCED=false;
+const MQ_DARK=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):{matches:false,addEventListener(){}};
+function curSeason(){ return LOOK.season==="off"?null:seasonFor(new Date()); }
+function isDark(){ return LOOK.mode==="dark"||(LOOK.mode==="auto"&&MQ_DARK.matches); }
+function applyLook(){
+  const m=isDark()?"dark":"light", P=(PALETTES[LOOK.pal]||PALETTES.terra)[m], se=curSeason();
+  const v={...P}; if(se){ v.accent=se.acc[m]; v["accent-ink"]=m==="dark"?"#130D09":"#FFFFFF"; if(se.tint) Object.assign(v,se.tint[m]); }
+  document.documentElement.dataset.theme=m;
+  let el=document.getElementById("lookcss"); if(!el){ el=document.createElement("style"); el.id="lookcss"; document.head.appendChild(el); }
+  el.textContent='html:root[data-theme="'+m+'"]{'+Object.entries(v).map(([k,x])=>'--'+k+':'+x).join(';')+(se?';--wall:'+wallSvg(se.wall,m==="dark"):'')+'}';
+  const tc=document.querySelector('meta[name="theme-color"]'); if(tc) tc.setAttribute("content",v.bg);
+  if(!document.body) return;
+  document.body.classList.toggle("seasonal",!!se);
+  let fx=document.getElementById("seasonfx");
+  if(se&&se.snow){ if(!fx){ fx=document.createElement("div"); fx.id="seasonfx"; fx.setAttribute("aria-hidden","true"); document.body.prepend(fx); }
+    fx.innerHTML=Array.from({length:26},(_,i)=>'<i style="left:'+((i*37)%100)+'%;width:'+(3+i%3)+'px;height:'+(3+i%3)+'px;animation-duration:'+(9+(i*7)%8)+'s;animation-delay:-'+((i*13)%11)+'s"></i>').join(""); }
+  else if(fx) fx.remove();
+}
+function setLook(k,val){ LOOK[k]=val; try{ localStorage.setItem("pb_look",JSON.stringify(LOOK)); }catch(_){}
+  applyLook(); if(typeof MODE!=="undefined"&&MODE==="cloud"&&typeof UID!=="undefined"&&UID){ STORE["meta-look"]={kind:"meta",mode:LOOK.mode,pal:LOOK.pal,season:LOOK.season}; try{ persist(); }catch(_){} } }
+function syncLookFromStore(){ if(LOOK_SYNCED||typeof STORE==="undefined"||!STORE) return; const s=STORE["meta-look"]; if(!s) return; LOOK_SYNCED=true;
+  LOOK={mode:s.mode||"auto",pal:PALETTES[s.pal]?s.pal:"terra",season:s.season==="off"?"off":"auto"}; try{ localStorage.setItem("pb_look",JSON.stringify(LOOK)); }catch(_){} applyLook(); }
+if(MQ_DARK.addEventListener) MQ_DARK.addEventListener("change",()=>{ if(LOOK.mode==="auto") applyLook(); });
+applyLook();
+function seasonLine(){ const se=curSeason(); if(!se) return "";
+  return '<div class="sline" aria-label="'+esc(se.greet)+'"><span class="sgreet">'+esc(se.greet)+'</span><span class="sart" aria-hidden="true">'+se.art(false)+'</span></div>'; }
+function lookBlock(){
+  const se=seasonFor(new Date()), seg=(k,opts)=>'<div class="lseg" role="group">'+opts.map(([v,l])=>'<button type="button" data-look="'+k+'" data-lv="'+v+'" aria-pressed="'+(LOOK[k]===v)+'">'+l+'</button>').join("")+'</div>';
+  return '<h2 style="margin-top:4px">Appearance</h2><div class="goalf" style="gap:12px;margin-bottom:14px">'+
+    '<div><label>Day or night</label>'+seg("mode",[["auto","Auto"],["light","☀︎ Day"],["dark","☾ Night"]])+'<span class="hint" style="display:block;margin:4px 0 0">Auto follows your iPhone or Mac.</span></div>'+
+    '<div><label>Colors</label><div class="lpals">'+Object.entries(PALETTES).map(([k,p])=>'<button type="button" class="lpal" data-look="pal" data-lv="'+k+'" aria-pressed="'+(LOOK.pal===k)+'" title="'+esc(p.name)+'"><span class="lsw" style="background:linear-gradient(135deg,'+p.light.bg+' 0 50%,'+p.light.accent+' 50% 100%)"></span><span>'+esc(p.name)+'</span></button>').join("")+'</div></div>'+
+    '<div><label>Seasonal look</label>'+seg("season",[["auto","Automatic"+(se?" · "+se.emoji+" "+se.name:"")],["off","Off (normal)"]])+'<span class="hint" style="display:block;margin:4px 0 0">Changes by itself for holidays and seasons. While it\'s on, the season\'s color replaces your palette\'s accent.</span></div></div>';
+}
+function wireLook(){ document.querySelectorAll("[data-look]").forEach(b=>b.addEventListener("click",()=>{ setLook(b.dataset.look,b.dataset.lv);
+  document.querySelectorAll('[data-look="'+b.dataset.look+'"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b))); render(); })); }
+/* ===== end Look ===== */
+
+const S = {authMode:(()=>{ try{ const m=sessionStorage.getItem("pb_authmode"); return /^(welcome|login|signup|forgot)$/.test(m||"")?m:"welcome"; }catch(_){ return "welcome"; } })(),db:null,col:null,uid:null,status:"loading",accounts:[],projects:[],loans:[],txns:[],openLoan:null,
   tab:"home",open:null,month:ymOf(todayStr()),acct:"all",actView:"list"};
 try{ const t=localStorage.getItem("pb_tab"); if(t) S.tab=t;
   const v=JSON.parse(localStorage.getItem("pb_view")||"null"); if(v&&typeof v==="object"){ if(v.tab) S.tab=v.tab; S.open=v.open||null; S.openLoan=v.openLoan||null; S.openProj=v.openProj||null; if(v.actView) S.actView=v.actView; }
@@ -640,7 +780,7 @@ async function cloudStart(){
   SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"pb-auth"}});
   const {data}=await SB.auth.getSession();
   if(data&&data.session) await cloudReady(); else { S.status="login"; render(); }
-  SB.auth.onAuthStateChange((ev)=>{ if(ev==="PASSWORD_RECOVERY"){ RECOVERY=true; S.status="newpin"; render(); return; } if(ev==="SIGNED_OUT"){ STORE={}; SYNCED={}; S.authMode="login"; S.loginMsg=""; S.me=null; S.open=null; S.openLoan=null; S.openProj=null; S.tab="home"; try{ localStorage.removeItem("pb_view"); localStorage.removeItem("pb_tab"); history.replaceState(null,"",location.pathname); }catch(e){} try{ localStorage.removeItem("pb_cloud_cache"); }catch(e){} S.status="login"; render(); } });
+  SB.auth.onAuthStateChange((ev)=>{ if(ev==="PASSWORD_RECOVERY"){ RECOVERY=true; S.status="newpin"; render(); return; } if(ev==="SIGNED_OUT"){ STORE={}; SYNCED={}; S.authMode="welcome"; LOOK_SYNCED=false; try{ sessionStorage.removeItem("pb_authmode"); }catch(_){} S.loginMsg=""; S.me=null; S.open=null; S.openLoan=null; S.openProj=null; S.tab="home"; try{ localStorage.removeItem("pb_view"); localStorage.removeItem("pb_tab"); history.replaceState(null,"",location.pathname); }catch(e){} try{ localStorage.removeItem("pb_cloud_cache"); }catch(e){} S.status="login"; render(); } });
   document.addEventListener("visibilitychange",()=>{
     if(document.hidden){ HIDDEN_AT=Date.now(); return; }
     if(S.status==="ready"&&STORE["meta-pin"]&&HIDDEN_AT&&Date.now()-HIDDEN_AT>LOCK_AFTER){ S.status="locked"; S.pinMsg=""; render(); return; }
@@ -675,7 +815,7 @@ async function pinKey(k){
   const pin=S.pinBuf; await new Promise(r=>setTimeout(r,120)); S.pinBuf="";
   if(S.status==="locked"){
     const m=STORE["meta-pin"]; if(m&&await pinHash(pin,m.salt)===m.hash){ PIN_TRIES=0; markUnlocked(); S.status="ready"; render(); return; }
-    PIN_TRIES++; if(PIN_TRIES>=5){ PIN_TRIES=0; await SB.auth.signOut(); S.loginMsg="Too many wrong PINs. Log in with your password."; S.loginOk=false; render(); return; }
+    PIN_TRIES++; if(PIN_TRIES>=5){ PIN_TRIES=0; await SB.auth.signOut(); S.authMode="login"; S.loginMsg="Too many wrong PINs. Log in with your password."; S.loginOk=false; render(); return; }
     S.pinMsg="Wrong PIN. "+(5-PIN_TRIES)+" tries left."; render(); return;
   }
   if(S.status==="setpin"){
@@ -699,18 +839,29 @@ function wirePw(a,b){
   A.addEventListener("input",upd); if(B) B.addEventListener("input",upd); upd();
 }
 function authView(){
-  const m=S.status==="newpin"?"newpin":(S.authMode||"login"), msg=S.loginMsg?'<p class="'+(S.loginOk?"okmsg":"err")+'" role="alert" style="margin:0">'+esc(S.loginMsg)+'</p>':'';
-  let h='<div class="authwrap"><div class="authlogo">Pocketbook</div>';
-  if(m==="newpin") return h+'<form id="authForm" class="authcard" novalidate><strong>Set a new password</strong><span class="hint">At least 8 characters.</span>'+pwField("au_pin","New password","new-password",1)+pwField("au_pin2","Repeat the new password","new-password",1)+msg+'<button id="au_btn" class="btn primary wide" type="submit">Save new password</button></form></div>';
-  h+='<div class="authtabs" role="tablist"><button type="button" data-authmode="login" aria-selected="'+(m==="login")+'">Log in</button><button type="button" data-authmode="signup" aria-selected="'+(m==="signup")+'">Create account</button></div>';
-  if(m==="login") h+='<form id="authForm" class="authcard" novalidate>'+
+  const m=S.status==="newpin"?"newpin":(S.authMode||"welcome"), msg=S.loginMsg?'<p class="'+(S.loginOk?"okmsg":"err")+'" role="alert" style="margin:0">'+esc(S.loginMsg)+'</p>':'';
+  const se=curSeason(), hatHtml=se&&se.id==="christmas"?'<span class="lghat" aria-hidden="true">'+ART.hat(40)+'</span>':'';
+  const logo='<div class="authlogo"><span class="lg">'+hatHtml+'Pocketbook</span></div>';
+  const back='<button type="button" class="aback" data-authmode="welcome">‹ Back</button>';
+  let h='<div class="authwrap">';
+  if(m==="newpin") return h+logo+'<form id="authForm" class="authcard" novalidate><strong>Set a new password</strong><span class="hint">At least 8 characters.</span>'+pwField("au_pin","New password","new-password",1)+pwField("au_pin2","Repeat the new password","new-password",1)+msg+'<button id="au_btn" class="btn primary wide" type="submit">Save new password</button></form></div>';
+  if(m==="welcome") return '<div class="authwrap welcome">'+
+    (se&&se.id!=="christmas"?'<div class="wseason" aria-hidden="true">'+se.art(true)+'</div>':'')+
+    '<div class="wring" aria-hidden="true"><i></i></div>'+logo+
+    '<p class="wtag">'+(se?'<b>'+esc(se.greet)+'</b><br>':'')+'Your money, your projects, all in one place.</p>'+msg+
+    '<div class="wbtns"><button type="button" class="btn primary wide" data-authmode="signup">Create account</button><button type="button" class="btn wide" data-authmode="login">I already have an account</button></div>'+
+    (se&&se.id==="christmas"?'<div class="wseason" aria-hidden="true">'+se.art(true)+ART.tree(34)+'</div>':'')+'</div>';
+  h+=back+logo;
+  if(m==="login") h+='<form id="authForm" class="authcard" novalidate><strong>Log in</strong>'+
     '<div class="field" style="margin:0"><label for="au_login">Email or username</label><input id="au_login" autocomplete="username" autocapitalize="off" spellcheck="false"></div>'+pwField("au_pin","Password","current-password")+msg+
-    '<button id="au_btn" class="btn primary wide" type="submit">Log in</button><button type="button" class="sadd" data-authmode="forgot" style="justify-self:center">Forgot your password?</button></form>';
-  else if(m==="signup") h+='<form id="authForm" class="authcard" novalidate><span class="hint">Your own private Pocketbook. Nobody else can see your accounts.</span>'+
+    '<button id="au_btn" class="btn primary wide" type="submit">Log in</button><button type="button" class="sadd" data-authmode="forgot" style="justify-self:center">Forgot your password?</button></form>'+
+    '<p class="aswitch">New to Pocketbook? <button type="button" data-authmode="signup">Create an account</button></p>';
+  else if(m==="signup") h+='<form id="authForm" class="authcard" novalidate><strong>Create your account</strong><span class="hint">Your own private Pocketbook. Nobody else can see your accounts.</span>'+
     '<div class="field" style="margin:0"><label for="au_email">Email</label><input id="au_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off"></div>'+
     '<div class="field" style="margin:0"><label for="au_user">Username</label><input id="au_user" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="3 to 20 letters, numbers, . or _"></div>'+
     pwField("au_pin","Password (at least 8 characters)","new-password",1)+pwField("au_pin2","Repeat the password","new-password",1)+msg+
-    '<button id="au_btn" class="btn primary wide" type="submit">Create account</button></form>';
+    '<button id="au_btn" class="btn primary wide" type="submit">Create account</button></form>'+
+    '<p class="aswitch">Already have an account? <button type="button" data-authmode="login">Log in</button></p>';
   else h+='<form id="authForm" class="authcard" novalidate><strong>Forgot your password?</strong><span class="hint">We\'ll email you a link to set a new one.</span>'+
     '<div class="field" style="margin:0"><label for="au_email">Email</label><input id="au_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off"></div>'+msg+
     '<button id="au_btn" class="btn primary wide" type="submit">Send reset link</button><button type="button" class="sadd" data-authmode="login" style="justify-self:center">Back to log in</button></form>';
@@ -718,10 +869,10 @@ function authView(){
 }
 function authErr(m,ok){ S.loginMsg=m; S.loginOk=!!ok; render(); }
 function wireAuth(){
-  document.querySelectorAll("[data-authmode]").forEach(b=>b.addEventListener("click",()=>{ S.authMode=b.dataset.authmode; S.loginMsg=""; render(); }));
+  document.querySelectorAll("[data-authmode]").forEach(b=>b.addEventListener("click",()=>{ S.authMode=b.dataset.authmode; try{ sessionStorage.setItem("pb_authmode",S.authMode); }catch(_){} S.loginMsg=""; render(); }));
   const f=$("authForm"); if(!f) return;
-  const am=S.status==="newpin"?"newpin":(S.authMode||"login"); wirePw("au_pin",(am==="signup"||am==="newpin")?"au_pin2":null);
-  f.addEventListener("submit",async e=>{ e.preventDefault(); const g=id=>($(id)||{}).value||"", btn=$("au_btn"), m=S.status==="newpin"?"newpin":(S.authMode||"login");
+  const am=S.status==="newpin"?"newpin":(S.authMode||"welcome"); wirePw("au_pin",(am==="signup"||am==="newpin")?"au_pin2":null);
+  f.addEventListener("submit",async e=>{ e.preventDefault(); const g=id=>($(id)||{}).value||"", btn=$("au_btn"), m=S.status==="newpin"?"newpin":(S.authMode||"welcome");
     const busy=t=>{ if(btn){ btn.disabled=true; btn.textContent=t; } };
     try{
       if(m==="login"){
@@ -747,7 +898,7 @@ function wireAuth(){
         if(error) return authErr(/registered|exists/i.test(error.message)?"There's already an account with that email. Log in instead.":"Couldn't create the account: "+error.message);
         try{ localStorage.setItem("pb_pending_user",JSON.stringify({email,username:user})); }catch(_){}
         if(data&&data.session){ S.loginMsg=""; await cloudReady(); return; }
-        S.authMode="login"; return authErr("Account created. Check your email to confirm it, then log in.",true);
+        S.authMode="login"; try{ sessionStorage.removeItem("pb_authmode"); }catch(_){} return authErr("Account created. Check your email to confirm it, then log in.",true);
       }
       if(m==="forgot"){
         const email=g("au_email").trim(); if(!/^\S+@\S+\.\S+$/.test(email)) return authErr("Enter the email of your account.");
@@ -1023,6 +1174,7 @@ async function pickRestore(name){
 
 /* ---------- render ---------- */
 function render(){
+  syncLookFromStore();
   S.funds=computeFunds();
   if(S.status==="ready"){ try{ localStorage.setItem("pb_view",JSON.stringify({tab:S.tab,open:S.open||null,openLoan:S.openLoan||null,openProj:S.openProj||null,actView:S.actView||"list"})); localStorage.setItem("pb_tab",S.tab); }catch(_){}
     const h=S.openProj?"#project/"+encodeURIComponent(S.openProj):S.open?"#account/"+encodeURIComponent(S.open):S.openLoan?"#loan/"+encodeURIComponent(S.openLoan):(S.tab==="activity"&&S.actView==="closing")?"#closing":"#tab/"+S.tab;
@@ -1107,15 +1259,15 @@ function viewHome(){
   const owe=S.loans.filter(l=>l.dir!=="lent"), origTot=owe.reduce((t,l)=>t+(+l.original||+l.balance||0),0), leftTot=owe.reduce((t,l)=>t+Math.max(0,c.loan[l.id]||0),0);
   const util=c.limit?c.owed/c.limit*100:null;
   const items=[
-    {attr:'data-scrollto="g-day"',name:"Available",value:c.available,neg:c.available<0,pct:share(c.available),col:"var(--accent)",sub:"of total"},
+    {attr:'data-scrollto="g-day"',name:"Available",value:c.available,neg:c.available<0,pct:share(c.available),col:"var(--pos)",sub:"of total"},
     {attr:'data-scrollto="g-cards"',name:"Cards owe",value:c.owed,neg:c.owed>0,pct:util,col:util==null?"var(--muted)":util>=50?"var(--neg)":util>=30?"#D9A400":"var(--pos)",sub:util==null?"Add card limits":"of limit"},
-    {attr:sv.length===1?'data-openacct="'+esc(sv[0].id)+'"':'data-scrollto="g-sav"',name:"Savings",value:c.personal,pct:share(c.personal),col:"var(--pos)",sub:"of total"},
-    {attr:'data-tab-go="projects"',name:"Projects",value:c.aside,pct:goalSum?goalHave/goalSum*100:share(c.aside),col:"var(--pos)",sub:goalSum?"of goals":"of total"}];
+    {attr:sv.length===1?'data-openacct="'+esc(sv[0].id)+'"':'data-scrollto="g-sav"',name:"Savings",value:c.personal,pct:share(c.personal),col:"var(--save)",sub:"of total"},
+    {attr:'data-tab-go="projects"',name:"Projects",value:c.aside,pct:goalSum?goalHave/goalSum*100:share(c.aside),col:"var(--save)",sub:goalSum?"of goals":"of total"}];
   const lentLoans=S.loans.filter(l=>l.dir==="lent"), llTot=lentLoans.reduce((t,l)=>t+Math.max(+l.balance||0,+l.original||0),0), llLeft=lentLoans.reduce((t,l)=>t+Math.max(0,c.loan[l.id]||0),0);
   const owedAll=c.lentOut+llLeft, lentAll=lentTot+llTot, repAll=repTot+Math.max(0,llTot-llLeft);
   if(owedAll>0||lentAll>0) items.push({attr:'data-tab-go="loans"',name:"Owed to me",value:owedAll,pct:lentAll?repAll/lentAll*100:null,col:"var(--pos)",sub:"paid back"});
   if(owe.length) items.push({attr:'data-tab-go="loans"',name:"Loans I owe",value:c.loansOwe,neg:c.loansOwe>0,pct:origTot?(origTot-leftTot)/origTot*100:null,col:"var(--pos)",sub:"paid off"});
-  let h=backupNudge()+'<section class="hero homehero"><div class="eyebrow">Net balance</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
+  let h=backupNudge()+seasonLine()+'<section class="hero homehero"><div class="eyebrow">Net balance</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
     '<p class="hint" style="margin:2px 0 4px">Everything you have plus what people owe you, minus what you owe on cards and loans.</p></section>'+
     switcher(items,"Your money").replace('class="pswitch rings"','class="pswitch rings homerings"')+
     '<div class="homegrid">';
@@ -1370,7 +1522,7 @@ function catBreakdown(ym){
 function catChart(ym){
   const B=catBreakdown(ym); if(!B.total) return '';
   const named=B.rows.filter(r=>r.cat!=="__none"), none=B.rows.find(r=>r.cat==="__none");
-  let parts=named.map((r,i)=>({label:r.cat,cat:r.cat,amt:r.amt,col:i<4?"var(--s"+(i+1)+")":"var(--s5)"}));
+  let parts=named.map((r,i)=>({label:r.cat,cat:r.cat,amt:r.amt,col:catColor(r.cat,i)}));
   if(none) parts.push({label:"Needs a category",cat:"__none",amt:none.amt,col:"color-mix(in srgb,var(--neg) 55%,transparent)",none:true});
   const T=B.total, cx=60, cy=60, R=54, r=40, gap=parts.length>1?0.035:0;
   let a0=-Math.PI/2, arcs='';
@@ -1437,7 +1589,7 @@ function acctSwitcher(a,c){
   }
   const list=S.accounts.filter(x=>x.type!=="credit").sort((x,y)=>c.bal[y.id]-c.bal[x.id]);
   const tot=list.reduce((s,x)=>s+Math.max(0,c.bal[x.id]),0);
-  return switcher(list.map(x=>({attr:'data-openacct="'+esc(x.id)+'"',name:x.name,value:c.bal[x.id],neg:c.bal[x.id]<0,pct:tot?Math.max(0,c.bal[x.id])/tot*100:0,col:x.type==="savings"?"var(--pos)":"var(--accent)",sub:"of your money",on:x.id===a.id})),"Accounts");
+  return switcher(list.map(x=>({attr:'data-openacct="'+esc(x.id)+'"',name:x.name,value:c.bal[x.id],neg:c.bal[x.id]<0,pct:tot?Math.max(0,c.bal[x.id])/tot*100:0,col:x.type==="savings"?"var(--save)":"var(--pos)",sub:"of your money",on:x.id===a.id})),"Accounts");
 }
 /* ---------- project page: money in, purchases, and a wish list ---------- */
 async function wishUpdate(pid,fn){
@@ -2109,7 +2261,7 @@ document.addEventListener("click",async e=>{
   if(ds.pinset){ closeSheet(); S.status="setpin"; S.pinStep=1; S.pinFirst=""; S.pinMsg=""; S.pinBuf=""; render(); return; }
   if(ds.pinoff){ delete STORE["meta-pin"]; if(await persist()){ refresh(); toast("PIN turned off"); closeSheet(); } return; }
   if(ds.pk){ pinKey(ds.pk); return; }
-  if(ds.pinact){ if(ds.pinact==="skip"){ try{ localStorage.setItem("pb_pin_skip_"+UID,"1"); }catch(_){} markUnlocked(); S.status="ready"; render(); } else { S.loginMsg=""; await SB.auth.signOut(); } return; }
+  if(ds.pinact){ if(ds.pinact==="skip"){ try{ localStorage.setItem("pb_pin_skip_"+UID,"1"); }catch(_){} markUnlocked(); S.status="ready"; render(); } else { S.loginMsg=""; await SB.auth.signOut(); S.authMode="login"; render(); } return; }
   if(ds.fundonly){ const doc=STORE[ds.fundonly]; if(doc&&await save(ds.fundonly,Object.assign({},doc,{fund:true}))) toast("Saved as an ongoing fund"); return; }
   if(ds.lentperson){ openLentPerson(ds.lentperson); return; }
   if(ds.repay){ const r=lentPeople().find(x=>x.name===ds.repay); const ck=S.accounts.find(a=>a.type==="checking"); openTx(null,{type:"income",category:REPAY,borrower:ds.repay,payer:ds.repay,amount:r?r.left.toFixed(2):"",desc:"Repayment from "+ds.repay,to:ck?ck.id:""}); return; }
@@ -2146,7 +2298,7 @@ document.addEventListener("click",async e=>{
     renderTx();return;}
   switch(ds.act){
     case "close": closeSheet(); break;
-    case "settings": openSheet(sheetHead("Settings and backups")+accountBlock()+backupBlock()); wireAccount(); break;
+    case "settings": openSheet(sheetHead("Settings and backups")+lookBlock()+accountBlock()+backupBlock()); wireLook(); wireAccount(); break;
     case "asksignout": openSheet(sheetHead("Log out?")+'<p class="hint" style="margin:0 0 14px">You\'ll need your email or username and your password to log in again on this device. Your data stays saved online.</p><div class="actions"><button type="button" class="btn" data-act="close">Cancel</button><button type="button" class="btn primary" data-act="signout">Log out</button></div>'); break;
     case "newacct": openAcct(); break;
     case "newproj": openProj(); break;
