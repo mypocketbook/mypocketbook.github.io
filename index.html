@@ -1768,7 +1768,7 @@ function viewLoan(l){
   const pays=sortTx(S.txns.filter(t=>t.loan===l.id));
   const paid=pays.reduce((s,t)=>s+(+t.amount||0),0), intPaid=pays.reduce((s,t)=>s+(+t.interest||0),0);
   const pct=orig?Math.max(0,Math.min(100,(orig-left)/orig*100)):0, n=lent?null:nextDue(l);
-  let h='<section class="hero"><div class="eyebrow">'+(lent?(l.party?esc(l.party)+" still owes me · for "+esc(l.name):"Still owed to me"):"Still owed"+(l.party?" · "+esc(l.party):""))+'</div><div class="big '+(lent?"":(left>0?"neg":""))+'">'+money(left)+'</div>';
+  let h='<section class="hero"><div class="eyebrow">'+(lent?(l.party?esc(l.party)+(left>0?" owes me · ":" paid me back · ")+esc(l.name):"Still owed to me"):"Still owed"+(l.party?" · "+esc(l.party):""))+'</div><div class="big '+(lent?"":(left>0?"neg":""))+'">'+money(left)+'</div>';
   if(orig) h+='<div class="bar" role="img" aria-label="'+Math.round(pct)+'% paid off" style="margin-bottom:6px"><i style="width:'+pct+'%"></i></div><div class="hint" style="margin:0 0 12px">'+Math.round(pct)+'% of '+money(orig)+' paid off</div>';
   h+='<div class="actions" style="margin:0"><button class="btn" data-editloan="'+esc(l.id)+'">Edit loan</button><button class="btn primary" data-payloan="'+esc(l.id)+'">'+(lent?"+ Log repayment":"+ Log payment")+'</button></div></section>';
   const tab=lent?"history":(S.loanTab||"progress");
@@ -2057,7 +2057,7 @@ function renderTx(errMsg){
   h+='<form id="txForm" novalidate>';
   h+='<div class="two"><div class="field"><label for="f_date">Date made</label>'+dateField("f_date",t.date)+'</div>'+
      '<div class="field"><label for="f_amount">Amount</label><div class="calcwrap"><input id="f_amount" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount)+'"><button type="button" class="calcbtn" data-calcfor="f_amount" aria-label="Open calculator" title="Calculator"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7h7M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h.01M15.5 18h.01"/></svg></button></div></div></div>';
-  h+='<div class="field"><label for="f_desc">Description</label><input id="f_desc" maxlength="120" placeholder="'+({expense:"e.g. Weekly groceries",income:"e.g. Paycheck Oct 1–15",transfer:"e.g. ATM withdrawal",cardpay:"e.g. October statement",loanpay:(loanById(t.loan)&&loanById(t.loan).dir==="lent"?"e.g. Paying me back for the "+loanById(t.loan).name+" order":"e.g. SoFi loan payment"),save:"e.g. Monthly deposit"}[t.type])+'" value="'+esc(t.desc)+'"></div>';
+  h+='<div class="field"><label for="f_desc">Description</label><input id="f_desc" maxlength="120" placeholder="'+({expense:"e.g. Weekly groceries",income:"e.g. Paycheck Oct 1–15",transfer:"e.g. ATM withdrawal",cardpay:"e.g. October statement",loanpay:(loanById(t.loan)&&loanById(t.loan).dir==="lent"?"e.g. Paying me back for the "+loanById(t.loan).name+" order":"e.g. SoFi loan payment"),save:"e.g. Monthly deposit"}[t.type])+'" value="'+esc(t.desc||(t.type==="loanpay"&&!t.id&&loanById(t.loan)&&loanById(t.loan).dir==="lent"?loanById(t.loan).name:""))+'"></div>';
   if(t.type==="expense"){
     h+='<div class="field"><label for="f_from">Paid with</label><select id="f_from">'+opts(acctOpts(credit).concat(acctOpts(liquid)),t.from,"Choose card or account")+'</select></div>';
     h+='<div class="field"><label for="f_payee">Destination: who you paid</label><input id="f_payee" list="payees" maxlength="60" placeholder="e.g. Publix, Shell, Netflix" value="'+esc(t.payee)+'"><datalist id="payees">'+payeeList().map(p=>'<option value="'+esc(p)+'"></option>').join("")+'</datalist></div>';
@@ -2090,7 +2090,7 @@ function renderTx(errMsg){
     const grp=(label,list,fn)=>list.length?'<optgroup label="'+label+'">'+opts(list.map(x=>({v:x.id,l:fn(x)})),t.loan)+'</optgroup>':'';
     h+='<div class="field"><label for="f_loan">'+(lent?"Who is paying you back":"Loan or person")+'</label><select id="f_loan"><option value="">Choose who</option>'+
       grp("People paying me back",owedMe,x=>{ const who=loanLabel(x), twice=owedMe.filter(y=>loanLabel(y)===who).length>1; return who+(twice?" · "+x.name:""); })+grp("Loans I'm paying",iPay,x=>x.name+(x.party?" · "+x.party:""))+'</select></div>';
-    if(lent) h+='<p class="hint" style="margin-top:-6px">'+esc(loanLabel(l)+" owes you "+money(Math.max(0,compute().loan[l.id]||0))+".")+'</p>';
+    if(lent) h+='<p class="hint" style="margin-top:-6px">'+esc(loanLabel(l)+" is paying me back. Still owes "+money(Math.max(0,compute().loan[l.id]||0))+".")+'</p>';
     if(lent){
       h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(liquid),t.to,"Choose account")+'</select></div>';
     } else {
