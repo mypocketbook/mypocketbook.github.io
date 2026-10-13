@@ -337,6 +337,9 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#D59BD5}
 .proj[data-pr]{border-left:4px solid var(--prc)}
 .prlegend{display:flex;flex-wrap:wrap;gap:6px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 6px;font-size:13px;color:var(--muted)}
 .prlegend span{display:inline-flex;align-items:center;gap:6px}.prlegend i{width:10px;height:10px;border-radius:50%;background:var(--prc)}.prlegend b{color:var(--prc);font-weight:700}
+.tipcard{margin-top:12px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-radius:14px;padding:12px 14px;display:grid;gap:8px}
+.tipcard p{margin:0;font-size:14.5px;line-height:1.45}.tiphd{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+.tipbtns{display:grid;gap:8px}.tipbtns .btn{width:100%;white-space:normal;height:auto;min-height:44px;padding:8px 14px}
 .prrings{justify-content:center;gap:8px;overflow:visible}.prrings>.bring:first-child,.prrings>.bring:last-child{margin-left:0;margin-right:0}
 .prrings .bring{width:min(118px,30vw);height:min(118px,30vw)}.prrings .bring .bin{inset:14px}.prrings .bring .bv{font-size:clamp(12px,3.4vw,15px)}.prrings .bring .bn{font-size:11.5px}.prrings .bring .bp{font-size:10.5px}
 @media (min-width:700px){.prrings{gap:22px}.prrings .bring{width:140px;height:140px}}
@@ -545,7 +548,7 @@ const SEASONS=[
 ];
 function seasonFor(d){ const md=(d.getMonth()+1)*100+d.getDate();
   return SEASONS.find(s=>s.from<=s.to?(md>=s.from&&md<=s.to):(md>=s.from||md<=s.to))||null; }
-const LOOK_DEF={mode:"auto",pal:"terra",season:"auto"};
+const LOOK_DEF={mode:"auto",pal:"terra",season:"auto",tips:"on"};
 let LOOK=(()=>{ try{ return Object.assign({},LOOK_DEF,JSON.parse(localStorage.getItem("pb_look")||"{}")); }catch(_){ return {...LOOK_DEF}; } })();
 let LOOK_SYNCED=false;
 const MQ_DARK=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):{matches:false,addEventListener(){}};
@@ -566,9 +569,9 @@ function applyLook(){
   else if(fx) fx.remove();
 }
 function setLook(k,val){ LOOK[k]=val; try{ localStorage.setItem("pb_look",JSON.stringify(LOOK)); }catch(_){}
-  applyLook(); if(typeof MODE!=="undefined"&&MODE==="cloud"&&typeof UID!=="undefined"&&UID){ STORE["meta-look"]={kind:"meta",mode:LOOK.mode,pal:LOOK.pal,season:LOOK.season}; try{ persist(); }catch(_){} } }
+  applyLook(); if(typeof MODE!=="undefined"&&MODE==="cloud"&&typeof UID!=="undefined"&&UID){ STORE["meta-look"]={kind:"meta",mode:LOOK.mode,pal:LOOK.pal,season:LOOK.season,tips:LOOK.tips}; try{ persist(); }catch(_){} } }
 function syncLookFromStore(){ if(LOOK_SYNCED||typeof STORE==="undefined"||!STORE) return; const s=STORE["meta-look"]; if(!s) return; LOOK_SYNCED=true;
-  LOOK={mode:s.mode||"auto",pal:PALETTES[s.pal]?s.pal:"terra",season:s.season==="off"?"off":"auto"}; try{ localStorage.setItem("pb_look",JSON.stringify(LOOK)); }catch(_){} applyLook(); }
+  LOOK={mode:s.mode||"auto",pal:PALETTES[s.pal]?s.pal:"terra",season:s.season==="off"?"off":"auto",tips:s.tips==="off"?"off":"on"}; try{ localStorage.setItem("pb_look",JSON.stringify(LOOK)); }catch(_){} applyLook(); }
 if(MQ_DARK.addEventListener) MQ_DARK.addEventListener("change",()=>{ if(LOOK.mode==="auto") applyLook(); });
 applyLook();
 function seasonLine(){ const se=curSeason(); if(!se) return "";
@@ -580,7 +583,8 @@ function lookBlock(){
   return '<h2 style="margin-top:4px">Appearance</h2><div class="goalf" style="gap:12px;margin-bottom:14px">'+
     '<div><label>Day or night</label>'+seg("mode",[["auto","Auto"],["light","☀︎ Day"],["dark","☾ Night"]])+'<span class="hint" style="display:block;margin:4px 0 0">Auto follows your iPhone or Mac.</span></div>'+
     '<div><label>Colors</label><div class="lpals">'+Object.entries(PALETTES).map(([k,p])=>'<button type="button" class="lpal" data-look="pal" data-lv="'+k+'" aria-pressed="'+(LOOK.pal===k)+'" title="'+esc(p.name)+'"><span class="lsw" style="background:linear-gradient(135deg,'+p.light.bg+' 0 50%,'+p.light.accent+' 50% 100%)"></span><span>'+esc(p.name)+'</span></button>').join("")+'</div></div>'+
-    '<div><label>Seasonal look</label>'+seg("season",[["auto","Automatic"+(se?" · "+se.emoji+" "+se.name:"")],["off","Off (normal)"]])+'<span class="hint" style="display:block;margin:4px 0 0">Changes by itself for holidays and seasons. While it\'s on, the season\'s color replaces your palette\'s accent.</span></div></div>';
+    '<div><label>Seasonal look</label>'+seg("season",[["auto","Automatic"+(se?" · "+se.emoji+" "+se.name:"")],["off","Off (normal)"]])+'<span class="hint" style="display:block;margin:4px 0 0">Changes by itself for holidays and seasons. While it\'s on, the season\'s color replaces your palette\'s accent.</span></div>'+
+    '<div><label>Smart suggestions</label>'+seg("tips",[["on","On"],["off","Off"]])+'<span class="hint" style="display:block;margin:4px 0 0">Before you add money to a project, Pocketbook may suggest one that is closer to its goal or has a higher priority. You always choose.</span></div></div>';
 }
 function wireLook(){ document.querySelectorAll("[data-look]").forEach(b=>b.addEventListener("click",()=>{ setLook(b.dataset.look,b.dataset.lv);
   document.querySelectorAll('[data-look="'+b.dataset.look+'"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b))); render(); })); }
@@ -2216,7 +2220,44 @@ async function submitTx(e){
     project:["save","expense","transfer","income","cardpay"].includes(t.type)?(t.project||""):"",
     borrower:((t.type==="expense"&&t.category===LENT)||(t.type==="income"&&t.category===REPAY))?String(t.borrower||"").trim():""};
   if(t.type==="loanpay"){ doc.loan=t.loan; doc.from=lentLoan?"":t.from; doc.to=lentLoan?t.to:""; doc.interest=Math.round(intr*100)/100; }
+  const ef=!t.id&&!t._tipDone?projEffect(doc):null;
+  if(ef&&ef.sign>0){ const sug=smartSuggest(ef.pid,doc.amount); if(sug) return showTip(sug,doc); }
   if(await save(t.id,doc)){closeSheet();toast(t.id?"Transaction updated":"Transaction added"); if(!S.open) S.month=ymOf(doc.date); render();}
+}
+/* ===== Smart suggestions: a gentle second look before money goes into a project ===== */
+function smartSuggest(pid,amt){
+  if(LOOK.tips==="off") return null;
+  const P=projById(pid); if(!P||S.projects.length<2) return null;
+  const c=compute(), bal=id=>c.proj[id]||0, goal=p=>+p.goal||0, left=p=>goal(p)?Math.max(0,goal(p)-bal(p.id)):Infinity, pct=p=>goal(p)?Math.max(0,bal(p.id))/goal(p):1;
+  const others=S.projects.filter(q=>q.id!==pid), pr=prioRank(P), open=others.filter(q=>goal(q)&&left(q)>0);
+  if(goal(P)&&bal(pid)>=goal(P)){ const q=open.slice().sort((a,b)=>prioRank(a)-prioRank(b)||pct(a)-pct(b))[0]; if(q) return {kind:"done",P,q,amt,left:left(q),pct:pct(q)}; return null; }
+  const pFinishes=goal(P)&&left(P)<=amt;
+  if(!pFinishes){ const q=open.filter(q=>left(q)<=amt&&prioRank(q)<=pr).sort((a,b)=>prioRank(a)-prioRank(b)||left(a)-left(b))[0]; if(q) return {kind:"finish",P,q,amt,left:left(q),pct:pct(P)}; }
+  if(pr>0){ const q=open.filter(q=>prioRank(q)<pr&&pct(q)<0.5).sort((a,b)=>prioRank(a)-prioRank(b)||pct(a)-pct(b))[0]; if(q) return {kind:"prio",P,q,amt,pct:pct(q)}; }
+  return null;
+}
+let TIP=null;
+function showTip(sug,doc){
+  TIP={sug,doc}; const {P,q,amt}=sug, Pn='<b>'+esc(P.name)+'</b>', Qn='<b>'+esc(q.name)+'</b>', pr=r=>{ const x=prioOf(r); return x?' ('+x[2]+')':''; };
+  let msg, btns='';
+  if(sug.kind==="done"){ msg=Pn+' already reached its '+money(+P.goal)+' goal. Put this '+money(amt)+' toward '+Qn+pr(q)+' instead? It\'s at '+Math.round(sug.pct*100)+'%.';
+    btns='<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'; }
+  else if(sug.kind==="finish"){ msg='You\'re only '+money(sug.left)+' away from finishing '+Qn+'. This '+money(amt)+' would complete it.'+((+P.goal)?' '+Pn+' is at '+Math.round(sug.pct*100)+'% of its goal.':'');
+    btns=(amt>sug.left+0.004?'<button type="button" class="btn primary" data-tip="split">Finish '+esc(q.name)+', rest ('+money(amt-sug.left)+') to '+esc(P.name)+'</button><button type="button" class="btn" data-tip="all">All '+money(amt)+' to '+esc(q.name)+'</button>':'<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'); }
+  else { msg=Qn+pr(q)+' is only '+Math.round(sug.pct*100)+'% funded. '+Pn+(prioOf(P)?' is '+prioOf(P)[1].toLowerCase():' has no priority yet')+'. Still put '+money(amt)+' in '+esc(P.name)+'?';
+    btns='<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'; }
+  let box=$("tipBox"); if(!box){ box=document.createElement("div"); box.id="tipBox"; $("txForm").after(box); }
+  box.innerHTML='<div class="tipcard" role="alert"><div class="tiphd">✦ Smart suggestion</div><p>'+msg+'</p><div class="tipbtns">'+btns+'<button type="button" class="btn" data-tip="keep">Keep my choice</button></div></div>';
+  box.querySelectorAll("[data-tip]").forEach(b=>b.addEventListener("click",()=>tipChoose(b.dataset.tip)));
+  box.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+async function tipChoose(how){
+  if(!TIP) return; const {sug,doc}=TIP; TIP=null; let ok=true;
+  if(how==="keep") ok=await save(null,doc);
+  else if(how==="all") ok=await save(null,Object.assign({},doc,{project:sug.q.id}));
+  else if(how==="split"){ const a=Math.round(sug.left*100)/100, b=Math.round((doc.amount-a)*100)/100;
+    ok=await save(null,Object.assign({},doc,{project:sug.q.id,amount:a})) && await save(null,Object.assign({},doc,{project:sug.P.id,amount:b,created:doc.created+1})); }
+  if(ok){ closeSheet(); toast(how==="keep"?"Transaction added":how==="split"?"Split between "+sug.q.name+" and "+sug.P.name:"Added to "+sug.q.name); if(!S.open) S.month=ymOf(doc.date); render(); }
 }
 
 function openAcct(a){
