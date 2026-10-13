@@ -337,6 +337,11 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#94A3B8}
 .proj[data-pr]{border-left:4px solid var(--prc)}
 .prlegend{display:flex;flex-wrap:wrap;gap:6px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 6px;font-size:13px;color:var(--muted)}
 .prlegend span{display:inline-flex;align-items:center;gap:6px}.prlegend i{width:10px;height:10px;border-radius:50%;background:var(--prc)}.prlegend b{color:var(--prc);font-weight:700}
+.prrings{justify-content:center;gap:8px;overflow:visible}.prrings>.bring:first-child,.prrings>.bring:last-child{margin-left:0;margin-right:0}
+.prrings .bring{width:min(118px,30vw);height:min(118px,30vw)}.prrings .bring .bin{inset:14px}.prrings .bring .bv{font-size:clamp(12px,3.4vw,15px)}.prrings .bring .bn{font-size:11.5px}.prrings .bring .bp{font-size:10.5px}
+@media (min-width:700px){.prrings{gap:22px}.prrings .bring{width:140px;height:140px}}
+.prmean{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;font-size:12.5px;color:var(--muted);margin:2px 0 8px}.prmean b{color:var(--prc);font-weight:700}
+.prshow{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);margin:0 0 4px}
 .prhead{display:flex;align-items:center;gap:8px;margin:18px 0 8px;font-family:var(--f-display);font-size:16px;font-weight:500}.prhead:first-of-type{margin-top:4px}
 .prhead i{width:10px;height:10px;border-radius:50%;background:var(--prc)}.prhead span{color:var(--muted);font-family:var(--f-body);font-size:13px;font-weight:600}
 .seg .chip[data-prset]{display:inline-flex;align-items:center;gap:6px}.seg .chip[data-prset]::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--prc)}
@@ -1313,6 +1318,16 @@ function prioOf(p){ return PRIOS.find(x=>x[0]===p.prio)||null; }
 function prioRank(p){ const i=PRIOS.findIndex(x=>x[0]===p.prio); return i<0?9:i; }
 function prioTag(p){ const r=prioOf(p); return r?' <span class="prtag" style="--prc:'+r[3]+'">'+r[2]+'</span>':''; }
 const PRIO_MEAN={top:"Save for these first",mid:"Next in line",low:"When there is room"};
+/* Projects page: one ring per priority. Tap a ring to show only those projects; tap again for all. */
+function prioRings(c){
+  const items=PRIOS.map(r=>{ const list=S.projects.filter(p=>p.prio===r[0]), bal=list.reduce((t,p)=>t+(c.proj[p.id]||0),0);
+    const gs=list.reduce((t,p)=>t+(+p.goal||0),0), gh=list.reduce((t,p)=>t+((+p.goal||0)?Math.min(+p.goal,Math.max(0,c.proj[p.id]||0)):0),0), all=S.projects.reduce((t,p)=>t+Math.max(0,c.proj[p.id]||0),0);
+    return {attr:'data-prfilter="'+r[0]+'" aria-label="'+esc(r[1]+": "+list.length+" project"+(list.length===1?"":"s")+". "+PRIO_MEAN[r[0]])+'"',name:r[2]+" · "+list.length,value:bal,pct:gs?gh/gs*100:(all?Math.max(0,bal)/all*100:0),sub:gs?"of goals":"of projects",col:r[3],keep:true,on:S.prioFilter===r[0]}; });
+  const F=S.prioFilter, fr=F&&PRIOS.find(r=>r[0]===F);
+  return switcher(items,"Projects by priority").replace('class="pswitch rings"','class="pswitch rings prrings"')+
+    '<p class="prmean">'+PRIOS.map(r=>'<span style="--prc:'+r[3]+'"><b>'+r[2]+'</b> '+PRIO_MEAN[r[0]].toLowerCase()+'</span>').join("")+'</p>'+
+    (fr?'<div class="prshow"><span>Showing <b style="color:'+fr[3]+'">'+fr[2]+'</b> only</span><button type="button" class="sadd" data-prfilter="'+F+'">Show all</button></div>':'');
+}
 function prioLegend(){ return '<div class="prlegend" role="note" aria-label="What the priority colors mean">'+PRIOS.map(r=>'<span style="--prc:'+r[3]+'"><i></i><b>'+r[2]+'</b> '+PRIO_MEAN[r[0]]+'</span>').join("")+'</div>'; }
 function projSorted(){ return S.projects.slice().sort((a,b)=>prioRank(a)-prioRank(b)||(a.created||0)-(b.created||0)); }
 function projRow(p,c){
@@ -1600,8 +1615,8 @@ function ringSvg(pct,col){ const r=21, C=2*Math.PI*r, v=pct==null?0:Math.max(0,M
 function switcher(items,label){
   if(items.length<2) return '';
   const R=64, C=2*Math.PI*R;
-  return '<div class="pswitch rings" role="tablist" aria-label="'+esc(label)+'">'+items.map(it=>{ const v=it.pct==null?0:Math.max(0,Math.min(100,it.pct)), col=it.on?"var(--accent)":(it.col||"var(--pos)");
-    return '<button class="bring'+(it.on?' on':'')+'" role="tab" '+it.attr+' aria-selected="'+(!!it.on)+'" title="'+esc(it.name+" · "+money(it.value))+'">'+
+  return '<div class="pswitch rings" role="tablist" aria-label="'+esc(label)+'">'+items.map(it=>{ const v=it.pct==null?0:Math.max(0,Math.min(100,it.pct)), col=it.on&&!it.keep?"var(--accent)":(it.col||"var(--pos)");
+    return '<button class="bring'+(it.on?' on':'')+'"'+(it.keep?' style="--accent:'+it.col+'"':'')+' role="tab" '+it.attr+' aria-selected="'+(!!it.on)+'" title="'+esc(it.name+" · "+money(it.value))+'">'+
       '<svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="'+R+'" class="trk"/>'+(v>0?'<circle cx="75" cy="75" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+(C*v/100).toFixed(2)+' '+C.toFixed(2)+'" transform="rotate(-90 75 75)"/>':'')+'</svg>'+
       '<span class="bin"><span class="bn">'+esc(it.name)+'</span><span class="bv'+(it.neg?' neg':'')+'">'+money(it.value)+'</span><span class="bp">'+(it.pct==null?esc(it.sub||""):Math.round(it.pct)+'% '+esc(it.sub||""))+'</span></span></button>'; }).join("")+'</div>';
 }
@@ -1665,8 +1680,9 @@ function viewProjects(){
       '<div class="foot"><span>'+(goal?Math.round(pct)+'% of '+money(goal)+(b<goal?' · '+money(goal-b)+' to go':' · goal reached'):(p.fund?'Ongoing fund':'No goal set'))+'</span>'+
       '<span class="chev2" aria-hidden="true">›</span></div></div>';
   };
-  h+=prioLegend();
-  const groups=PRIOS.map(r=>[r,S.projects.filter(p=>p.prio===r[0])]).concat([[["none","No priority yet","","var(--line)"],S.projects.filter(p=>!prioOf(p))]]).filter(g=>g[1].length);
+  h+=prioRings(c);
+  const F=S.prioFilter||"";
+  const groups=PRIOS.map(r=>[r,S.projects.filter(p=>p.prio===r[0])]).concat([[["none","No priority yet","","var(--line)"],S.projects.filter(p=>!prioOf(p))]]).filter(g=>g[1].length&&(!F||g[0][0]===F));
   h+=groups.map(([r,list])=>'<div class="prhead" style="--prc:'+r[3]+'"><i></i>'+r[1]+' <span>'+list.length+'</span></div><div class="pgrid">'+list.sort((a,b)=>(a.created||0)-(b.created||0)).map(card).join("")+'</div>').join("");
   h+='<div style="margin-top:14px"><button class="btn wide" data-act="newproj">New project</button></div>';
   return h;
@@ -2312,6 +2328,7 @@ document.addEventListener("click",async e=>{
     else if(k==="day"){ const ck=first("checking"); openTx(null,ck?{ctx:ck.id}:{type:"transfer"}); }
     else openTx(null,null);
     return; }
+  if(ds.prfilter){ S.prioFilter=S.prioFilter===ds.prfilter?"":ds.prfilter; render(); return; }
   if(ds.scrollto){const el=$(ds.scrollto); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); return;}
   if(ds.tabGo){S.open=null;S.openLoan=null;S.openProj=null;S.tab=ds.tabGo;render();window.scrollTo(0,0);return;}
   if(ds.filteracct){S.acct=ds.filteracct;S.tab="activity";S.open=null;render();return;}
