@@ -337,6 +337,10 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#D59BD5}
 .proj[data-pr]{border-left:4px solid var(--prc)}
 .prlegend{display:flex;flex-wrap:wrap;gap:6px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 6px;font-size:13px;color:var(--muted)}
 .prlegend span{display:inline-flex;align-items:center;gap:6px}.prlegend i{width:10px;height:10px;border-radius:50%;background:var(--prc)}.prlegend b{color:var(--prc);font-weight:700}
+.tiprules{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin:0 0 10px;font-size:13.5px}
+.tiprules summary{cursor:pointer;padding:10px 14px;font-weight:600;color:var(--accent);list-style:none}.tiprules summary::-webkit-details-marker{display:none}
+.tiprules summary::after{content:"›";float:right;transition:transform .2s;color:var(--muted)}.tiprules[open] summary::after{transform:rotate(90deg)}
+.tiprules>div{padding:0 14px 12px;color:var(--muted);line-height:1.5}.tiprules p{margin:0 0 8px}.tiprules ol{margin:0 0 8px;padding-left:20px;display:grid;gap:6px}.tiprules b{color:var(--ink)}
 .tipcard{margin-top:12px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));background:color-mix(in srgb,var(--accent) 8%,var(--surface));border-radius:14px;padding:12px 14px;display:grid;gap:8px}
 .tipcard p{margin:0;font-size:14.5px;line-height:1.45}.tiphd{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
 .tipbtns{display:grid;gap:8px}.tipbtns .btn{width:100%;white-space:normal;height:auto;min-height:44px;padding:8px 14px}
@@ -1334,6 +1338,16 @@ function prioRings(c){
     '<p class="prmean">'+PRIOS.map(r=>'<span style="--prc:'+r[3]+'"><b>'+r[2]+'</b> '+PRIO_MEAN[r[0]].toLowerCase()+'</span>').join("")+'</p>'+
     (fr?'<div class="prshow"><span>Showing <b style="color:'+fr[3]+'">'+fr[2]+'</b> only</span><button type="button" class="sadd" data-prfilter="'+F+'">Show all</button></div>':'');
 }
+function tipRules(){
+  return '<details class="tiprules"><summary>✦ How smart suggestions work</summary><div>'+
+    '<p>When you add money to a project, Pocketbook checks your other projects first. If one looks like a better place for it, a suggestion appears under the form. It checks in this order:</p><ol>'+
+    '<li><b>Goal already reached.</b> The project you picked has hit its goal, so it suggests one that still needs money.</li>'+
+    '<li><b>Close to finishing.</b> Another project needs this much or less to reach its goal. It only suggests projects with the same or higher priority, and it offers to finish that one and send the rest to yours.</li>'+
+    '<li><b>Higher priority is behind.</b> A higher-priority project with a goal is under 50% funded.</li>'+
+    '<li><b>Higher-priority fund falling behind.</b> A higher-priority project with no goal would end up with less money than the one you picked.</li></ol>'+
+    '<p>No suggestion appears when you add to a Top project that isn\'t done, when you edit a transaction, or when nothing fits better. You always choose: <b>Keep my choice</b> saves it exactly as you entered it.</p>'+
+    '<p>Turn it on or off in <b>Settings → Appearance → Smart suggestions</b>'+(LOOK.tips==="off"?' (it\'s <b>off</b> right now)':'')+'.</p></div></details>';
+}
 function prioLegend(){ return '<div class="prlegend" role="note" aria-label="What the priority colors mean">'+PRIOS.map(r=>'<span style="--prc:'+r[3]+'"><i></i><b>'+r[2]+'</b> '+PRIO_MEAN[r[0]]+'</span>').join("")+'</div>'; }
 function projSorted(){ return S.projects.slice().sort((a,b)=>prioRank(a)-prioRank(b)||(a.created||0)-(b.created||0)); }
 function projRow(p,c){
@@ -1686,7 +1700,7 @@ function viewProjects(){
       '<div class="foot"><span>'+(goal?Math.round(pct)+'% of '+money(goal)+(b<goal?' · '+money(goal-b)+' to go':' · goal reached'):(p.fund?'Ongoing fund':'No goal set'))+'</span>'+
       '<span class="chev2" aria-hidden="true">›</span></div></div>';
   };
-  h+=prioRings(c);
+  h+=prioRings(c)+tipRules();
   const F=S.prioFilter||"";
   const groups=PRIOS.map(r=>[r,S.projects.filter(p=>p.prio===r[0])]).concat([[["none","No priority yet","","var(--line)"],S.projects.filter(p=>!prioOf(p))]]).filter(g=>g[1].length&&(!F||g[0][0]===F));
   const col=([r,list])=>'<div class="prhead" style="--prc:'+r[3]+'"><i></i>'+r[1]+' <span>'+list.length+'</span></div><div class="pgrid">'+list.sort((a,b)=>(a.created||0)-(b.created||0)).map(card).join("")+'</div>';
@@ -2237,6 +2251,8 @@ function smartSuggest(pid,amt){
   const pFinishes=goal(P)&&left(P)<=amt;
   if(!pFinishes){ const q=open.filter(q=>left(q)<=amt&&prioRank(q)<=pr).sort((a,b)=>prioRank(a)-prioRank(b)||left(a)-left(b))[0]; if(q) return {kind:"finish",P,q,amt,left:left(q),pct:pct(P)}; }
   if(pr>0){ const q=open.filter(q=>prioRank(q)<pr&&pct(q)<0.5).sort((a,b)=>prioRank(a)-prioRank(b)||pct(a)-pct(b))[0]; if(q) return {kind:"prio",P,q,amt,pct:pct(q)}; }
+  /* higher-priority funds with no goal: keep them ahead of lower-priority ones */
+  if(pr>0){ const after=bal(pid)+amt, q=others.filter(q=>prioRank(q)<pr&&!goal(q)&&bal(q.id)<after).sort((a,b)=>prioRank(a)-prioRank(b)||bal(a.id)-bal(b.id))[0]; if(q) return {kind:"fund",P,q,amt,qb:bal(q.id),after}; }
   return null;
 }
 let TIP=null;
@@ -2247,6 +2263,8 @@ function showTip(sug,doc){
     btns='<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'; }
   else if(sug.kind==="finish"){ msg='You\'re only '+money(sug.left)+' away from finishing '+Qn+'. This '+money(amt)+' would complete it.'+((+P.goal)?' '+Pn+' is at '+Math.round(sug.pct*100)+'% of its goal.':'');
     btns=(amt>sug.left+0.004?'<button type="button" class="btn primary" data-tip="split">Finish '+esc(q.name)+', rest ('+money(amt-sug.left)+') to '+esc(P.name)+'</button><button type="button" class="btn" data-tip="all">All '+money(amt)+' to '+esc(q.name)+'</button>':'<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'); }
+  else if(sug.kind==="fund"){ msg=Qn+pr(q)+' has '+money(sug.qb)+'. After this, '+Pn+pr(P)+' would have '+money(sug.after)+', more than your higher-priority fund. Put this '+money(amt)+' toward '+esc(q.name)+' instead?';
+    btns='<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'; }
   else { msg=Qn+pr(q)+' is only '+Math.round(sug.pct*100)+'% funded. '+Pn+(prioOf(P)?' is '+prioOf(P)[1].toLowerCase():' has no priority yet')+'. Still put '+money(amt)+' in '+esc(P.name)+'?';
     btns='<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'; }
   let box=$("tipBox"); if(!box){ box=document.createElement("div"); box.id="tipBox"; $("txForm").after(box); }
