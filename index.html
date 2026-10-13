@@ -283,7 +283,7 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .empty strong{color:var(--ink);font-family:var(--f-display);font-weight:500;font-size:17px}
 
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;height:62px}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;height:62px}
 nav.tabs button{border:0;background:none;display:grid;justify-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted);height:100%}
 nav.tabs button svg{width:22px;height:22px}
 nav.tabs button[aria-current="page"]{color:var(--accent)}
@@ -335,6 +335,8 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#94A3B8}
 .prtag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;letter-spacing:.02em;padding:2px 8px 2px 6px;border-radius:99px;color:var(--prc);background:color-mix(in srgb,var(--prc) 14%,var(--surface));white-space:nowrap;vertical-align:middle}
 .prtag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--prc)}
 .proj[data-pr]{border-left:4px solid var(--prc)}
+.prlegend{display:flex;flex-wrap:wrap;gap:6px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 6px;font-size:13px;color:var(--muted)}
+.prlegend span{display:inline-flex;align-items:center;gap:6px}.prlegend i{width:10px;height:10px;border-radius:50%;background:var(--prc)}.prlegend b{color:var(--prc);font-weight:700}
 .prhead{display:flex;align-items:center;gap:8px;margin:18px 0 8px;font-family:var(--f-display);font-size:16px;font-weight:500}.prhead:first-of-type{margin-top:4px}
 .prhead i{width:10px;height:10px;border-radius:50%;background:var(--prc)}.prhead span{color:var(--muted);font-family:var(--f-body);font-size:13px;font-weight:600}
 .seg .chip[data-prset]{display:inline-flex;align-items:center;gap:6px}.seg .chip[data-prset]::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--prc)}
@@ -435,7 +437,6 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#94A3B8}
   <div class="in">
     <button type="button" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg>Home</button>
     <button type="button" data-tab="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h14M5 12h14M5 18h9"/></svg>Activity</button>
-    <button type="button" data-tab="accounts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Accounts</button>
     <button type="button" data-tab="loans"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16M5 20v-8M9.5 20v-8M14.5 20v-8M19 20v-8M3 10l9-6 9 6z"/></svg>Loans</button>
     <button type="button" data-tab="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M7 8h7.5a3 3 0 0 1 0 6H8"/><circle cx="12" cy="12" r="9.5"/></svg>Projects</button>
   </div>
@@ -588,7 +589,7 @@ try{ const t=localStorage.getItem("pb_tab"); if(t) S.tab=t;
   const hm=(location.hash||"").replace(/^#/,"").split("/");
   if(hm[0]){ S.open=null;S.openLoan=null;S.openProj=null;
     if(hm[0]==="project"&&hm[1]){ S.openProj=decodeURIComponent(hm[1]); S.tab="projects"; }
-    else if(hm[0]==="account"&&hm[1]){ S.open=decodeURIComponent(hm[1]); S.tab="accounts"; }
+    else if(hm[0]==="account"&&hm[1]){ S.open=decodeURIComponent(hm[1]); S.tab="home"; }
     else if(hm[0]==="loan"&&hm[1]){ S.openLoan=decodeURIComponent(hm[1]); S.tab="loans"; }
     else if(hm[0]==="closing"){ S.tab="activity"; S.actView="closing"; }
     else if(hm[0]==="tab"&&hm[1]) S.tab=hm[1]; }
@@ -1190,7 +1191,7 @@ async function pickRestore(name){
 
 /* ---------- render ---------- */
 function render(){
-  syncLookFromStore();
+  syncLookFromStore(); if(S.tab==="accounts") S.tab="home";
   S.funds=computeFunds();
   if(S.status==="ready"){ try{ localStorage.setItem("pb_view",JSON.stringify({tab:S.tab,open:S.open||null,openLoan:S.openLoan||null,openProj:S.openProj||null,actView:S.actView||"list"})); localStorage.setItem("pb_tab",S.tab); }catch(_){}
     const h=S.openProj?"#project/"+encodeURIComponent(S.openProj):S.open?"#account/"+encodeURIComponent(S.open):S.openLoan?"#loan/"+encodeURIComponent(S.openLoan):(S.tab==="activity"&&S.actView==="closing")?"#closing":"#tab/"+S.tab;
@@ -1287,7 +1288,7 @@ function viewHome(){
     '<p class="hint" style="margin:2px 0 4px">Everything you have plus what people owe you, minus what you owe on cards and loans.</p></section>'+
     switcher(items,"Your money").replace('class="pswitch rings"','class="pswitch rings homerings"')+
     '<div class="homegrid">';
-  h+='<div class="gb">'+acctGroups(c,true)+'</div>';
+  h+='<div class="gb">'+acctGroups(c,true)+'<div class="actions" style="margin-top:14px"><button class="btn" data-act="newacct">+ Add account</button><button class="btn primary" data-addfor="any">+ Add transaction</button></div></div>';
   const ym=ymOf(todayStr());
   h+='<div class="gc"><h2>'+esc(monthName(ym,true))+' so far <button data-closing="1">All months</button></h2>'+monthCard(monthReport(ym),true)+'</div></div>';
   return h;
@@ -1311,6 +1312,8 @@ const PRIOS=[["top","Top priority","Top","var(--pr-top)"],["mid","Medium priorit
 function prioOf(p){ return PRIOS.find(x=>x[0]===p.prio)||null; }
 function prioRank(p){ const i=PRIOS.findIndex(x=>x[0]===p.prio); return i<0?9:i; }
 function prioTag(p){ const r=prioOf(p); return r?' <span class="prtag" style="--prc:'+r[3]+'">'+r[2]+'</span>':''; }
+const PRIO_MEAN={top:"Save for these first",mid:"Next in line",low:"When there is room"};
+function prioLegend(){ return '<div class="prlegend" role="note" aria-label="What the priority colors mean">'+PRIOS.map(r=>'<span style="--prc:'+r[3]+'"><i></i><b>'+r[2]+'</b> '+PRIO_MEAN[r[0]]+'</span>').join("")+'</div>'; }
 function projSorted(){ return S.projects.slice().sort((a,b)=>prioRank(a)-prioRank(b)||(a.created||0)-(b.created||0)); }
 function projRow(p,c){
   const v=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,v/goal*100)):0;
@@ -1326,17 +1329,17 @@ function acctGroups(c,withProjects){
   let h='';
   if(cards.length){
     const u=c.limit?Math.round(c.owed/c.limit*100):null;
-    h+='<section class="grp"><h2 id="g-cards"><span>Credit cards</span><span class="h2r"><span class="gsum neg">'+money(c.owed)+(u!==null?' · '+u+'% used':'')+'</span><button data-addfor="credit">+ Purchase</button></span></h2><div class="list">'+cards.map(a=>utilRow(a,c,c.owed)).join("")+'</div></section>';
+    h+='<section class="grp"><h2 id="g-cards"><span>Credit cards</span><span class="h2r"><span class="gsum neg">'+money(c.owed)+(u!==null?' · '+u+'% used':'')+'</span><button data-addmenu="credit">+ Add</button></span></h2><div class="list">'+cards.map(a=>utilRow(a,c,c.owed)).join("")+'</div></section>';
   }
   const projs=withProjects?projSorted():[];
   if(sav.length||projs.length){
     h+='<section class="grp"><h2 id="g-sav">Savings</h2>';
-    if(sav.length) h+='<div class="subh"><span>Personal savings</span><span class="h2r"><span>'+money(c.personal)+'</span><button class="sadd" data-addfor="savings">+ Add</button></span></div><div class="list">'+sav.map(a=>{ const ip=S.projects.reduce((t,p)=>t+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0); return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(ip)>=0.005?' · '+money(ip)+' for projects · '+money(c.bal[a.id]-ip)+' free':'')); }).join("")+'</div>';
+    if(sav.length) h+='<div class="subh"><span>Personal savings</span><span class="h2r"><span>'+money(c.personal)+'</span><button class="sadd" data-addmenu="savings">+ Add</button></span></div><div class="list">'+sav.map(a=>{ const ip=S.projects.reduce((t,p)=>t+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0); return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(ip)>=0.005?' · '+money(ip)+' for projects · '+money(c.bal[a.id]-ip)+' free':'')); }).join("")+'</div>';
     if(projs.length) h+='<div class="subh"><span>Projects</span><span class="h2r"><span>'+money(c.aside)+'</span><button class="sadd" data-addfor="projects">+ Add money</button></span></div><div class="list">'+projs.map(p=>projRow(p,c)).join("")+'</div>';
     h+='</section>';
   }
   if(day.length){
-    h+='<section class="grp"><h2 id="g-day"><span>Checking and cash</span><span class="h2r"><span class="gsum">'+money(c.daily)+'</span><button data-addfor="day">+ Add</button></span></h2><div class="list">'+day.map(a=>{
+    h+='<section class="grp"><h2 id="g-day"><span>Checking and cash</span><span class="h2r"><span class="gsum">'+money(c.daily)+'</span><button data-addmenu="day">+ Add</button></span></h2><div class="list">'+day.map(a=>{
       const inProj=S.projects.reduce((s,p)=>s+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0);
       return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(inProj)>=0.005?' · '+money(inProj)+' for projects':''));
     }).join("")+'</div></section>';
@@ -1662,6 +1665,7 @@ function viewProjects(){
       '<div class="foot"><span>'+(goal?Math.round(pct)+'% of '+money(goal)+(b<goal?' · '+money(goal-b)+' to go':' · goal reached'):(p.fund?'Ongoing fund':'No goal set'))+'</span>'+
       '<span class="chev2" aria-hidden="true">›</span></div></div>';
   };
+  h+=prioLegend();
   const groups=PRIOS.map(r=>[r,S.projects.filter(p=>p.prio===r[0])]).concat([[["none","No priority yet","","var(--line)"],S.projects.filter(p=>!prioOf(p))]]).filter(g=>g[1].length);
   h+=groups.map(([r,list])=>'<div class="prhead" style="--prc:'+r[3]+'"><i></i>'+r[1]+' <span>'+list.length+'</span></div><div class="pgrid">'+list.sort((a,b)=>(a.created||0)-(b.created||0)).map(card).join("")+'</div>').join("");
   h+='<div style="margin-top:14px"><button class="btn wide" data-act="newproj">New project</button></div>';
@@ -2048,7 +2052,7 @@ function updRepayHint(){
   hn.textContent= left>0.004 ? "Partial repayment: "+r.name+" will still owe "+money(left)+"." : left<-0.004 ? "That's "+money(-left)+" more than "+r.name+" owes ("+money(owed)+")." : "Full repayment: "+r.name+" will be paid in full.";
 }
 function openTx(tx,preset){
-  if(!S.accounts.length){toast("Add an account first.");S.tab="accounts";S.open=null;render();return;}
+  if(!S.accounts.length){toast("Add an account first.");S.tab="home";S.open=null;render();return;}
   draft = tx? Object.assign({},tx,{desc:tx.desc||tx.note||""}) : Object.assign({type:"expense",date:todayStr(),amount:"",from:"",to:"",category:"",project:"",desc:"",payee:"",payer:""},preset||{});
   if(!tx&&!(preset&&preset.type)){
     const a=draft.ctx&&acctById(draft.ctx);
@@ -2200,7 +2204,7 @@ async function submitTx(e){
 }
 
 function openAcct(a){
-  const edit=!!a; a=a||{name:"",type:"checking",opening:""};
+  const edit=!!(a&&a.id); a=edit?a:Object.assign({name:"",type:"checking",opening:""},a||{});
   let h=sheetHead(edit?"Edit account":"New account")+'<form id="acctForm" novalidate>'+
     '<div class="field"><label for="a_name">Name</label><input id="a_name" maxlength="40" placeholder="e.g. Chase checking, Visa" value="'+esc(a.name)+'"></div>'+
     '<div class="field"><label>Picture</label><div class="iconpick"><span id="a_iconPrev">'+acctBadge(a)+'</span><button type="button" class="btn" id="a_iconBtn">Choose picture</button><button type="button" class="btn" id="a_iconDel"'+(a.icon?'':' hidden')+'>Remove</button><input type="file" id="a_iconFile" accept="image/*" hidden></div></div>'+
@@ -2233,7 +2237,7 @@ function openProj(p){
   let h=sheetHead(edit?"Edit project":"New project")+'<form id="projForm" novalidate>'+
     '<div class="field"><label for="p_name">Project name</label><input id="p_name" maxlength="40" placeholder="e.g. Vacation fund" value="'+esc(p.name)+'"></div>'+
     '<div class="field"><label>Type</label><div class="seg" role="group" aria-label="Project type"><button type="button" class="chip" data-ptype="goal" aria-pressed="'+(!p.fund)+'">Saving for a goal</button><button type="button" class="chip" data-ptype="fund" aria-pressed="'+(!!p.fund)+'">Ongoing fund</button></div></div>'+
-    '<div class="field"><label>Priority</label><div class="seg" role="group" aria-label="Priority">'+PRIOS.map(r=>'<button type="button" class="chip" data-prset="'+r[0]+'" style="--prc:'+r[3]+'" aria-pressed="'+((p.prio||(edit?"":"mid"))===r[0])+'">'+r[2]+'</button>').join("")+'</div></div>'+
+    '<div class="field"><label>Priority</label><div class="seg" role="group" aria-label="Priority">'+PRIOS.map(r=>'<button type="button" class="chip" data-prset="'+r[0]+'" style="--prc:'+r[3]+'" aria-pressed="'+((p.prio||(edit?"":"mid"))===r[0])+'">'+r[2]+'</button>').join("")+'</div><span class="hint" style="display:block;margin:6px 0 0">'+PRIOS.map(r=>r[2]+': '+PRIO_MEAN[r[0]].toLowerCase()).join(" · ")+'.</span></div>'+
     '<div class="field" id="p_goalF"'+(p.fund?' hidden':'')+'><label for="p_goal">Goal amount</label><input id="p_goal" class="amount" inputmode="decimal" placeholder="e.g. 1500" value="'+esc(p.goal||"")+'"></div>'+
     '<p class="hint" id="p_fundHint"'+(p.fund?'':' hidden')+' style="margin:-4px 0 12px">Money you always keep set aside, like an emergency or car fund. No end amount.</p><div id="pErr"></div>'+
     '<div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Create project")+'</button></div><div id="delBox"></div></form>';
@@ -2296,7 +2300,11 @@ document.addEventListener("click",async e=>{
   if(ds.lentperson){ openLentPerson(ds.lentperson); return; }
   if(ds.repay){ const r=lentPeople().find(x=>x.name===ds.repay); const ck=S.accounts.find(a=>a.type==="checking"); openTx(null,{type:"income",category:REPAY,borrower:ds.repay,payer:ds.repay,amount:r?r.left.toFixed(2):"",desc:"Repayment from "+ds.repay,to:ck?ck.id:""}); return; }
   if(ds.catlist){ openCatList(ds.catlist,ds.catym); return; }
-  if(ds.addfor){ const k=ds.addfor, first=t=>S.accounts.find(a=>a.type===t);
+  if(ds.addmenu){ const k=ds.addmenu, T={credit:["a credit card","Add a transaction","A purchase with one of your cards"],savings:["a savings account","Add a transaction","Move money into one of your savings"],day:["a checking or cash account","Add a transaction","An expense, income or transfer"]}[k];
+    openSheet(sheetHead("Add")+'<div class="list">'+
+      '<button class="row" data-act="newacct" data-acctype="'+(k==="day"?"checking":k)+'"><span class="badge">+</span><span class="main"><span class="t">Add account</span><span class="m">Add '+T[0]+'</span></span></button>'+
+      '<button class="row" data-addfor="'+k+'"><span class="badge">⇄</span><span class="main"><span class="t">'+T[1]+'</span><span class="m">'+T[2]+'</span></span></button></div>'); return; }
+  if(ds.addfor){ closeSheet(); const k=ds.addfor, first=t=>S.accounts.find(a=>a.type===t);
     if(k==="credit") openTx(null,{type:"expense"});
     else if(k==="lend") openTx(null,{type:"expense",category:LENT});
     else if(k==="savings"){ const sv=first("savings"); const ck=first("checking"); openTx(null,{type:"transfer",to:sv?sv.id:"",from:ck?ck.id:""}); }
@@ -2330,7 +2338,7 @@ document.addEventListener("click",async e=>{
     case "close": closeSheet(); break;
     case "settings": openSheet(sheetHead("Settings and backups")+lookBlock()+accountBlock()+backupBlock()+creditBlock()); wireLook(); wireAccount(); break;
     case "asksignout": openSheet(sheetHead("Log out?")+'<p class="hint" style="margin:0 0 14px">You\'ll need your email or username and your password to log in again on this device. Your data stays saved online.</p><div class="actions"><button type="button" class="btn" data-act="close">Cancel</button><button type="button" class="btn primary" data-act="signout">Log out</button></div>'); break;
-    case "newacct": openAcct(); break;
+    case "newacct": openAcct(ds.acctype?{type:ds.acctype}:null); break;
     case "newproj": openProj(); break;
     case "newloan": openLoanForm(); break;
     case "askdel": askDelete(); break;
@@ -2354,7 +2362,7 @@ document.addEventListener("click",async e=>{
       if(ok&&!has("checking")) ok=await save(null,{kind:"account",name:"Checking",type:"checking",opening:0,asOf:todayStr(),asOfAt:now,created:now});
       if(ok&&!has("credit")) ok=await save(null,{kind:"account",name:"Credit card",type:"credit",opening:0,asOf:todayStr(),asOfAt:now,created:now+1});
       if(ok&&!has("cash")) ok=await save(null,{kind:"account",name:"Cash",type:"cash",opening:0,asOf:todayStr(),asOfAt:now,created:now+2});
-      if(ok){S.tab="accounts";toast("Accounts added. Tap each one to set its balance.");}
+      if(ok){S.tab="home";toast("Accounts added. Tap each one to set its balance.");}
       b.disabled=false; render(); break;
   }
 });
