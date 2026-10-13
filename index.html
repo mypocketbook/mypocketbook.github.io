@@ -341,7 +341,7 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#D59BD5}
 .tipcard p{margin:0;font-size:14.5px;line-height:1.45}.tiphd{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
 .tipbtns{display:grid;gap:8px}.tipbtns .btn{width:100%;white-space:normal;height:auto;min-height:44px;padding:8px 14px}
 .prrings{justify-content:center;gap:8px;overflow:visible}.prrings>.bring:first-child,.prrings>.bring:last-child{margin-left:0;margin-right:0}
-.prrings .bring{width:min(96px,26vw);height:min(96px,26vw)}.blab{font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--accent)}.bcnt{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}.prrings .bring .bin{inset:14px}.prrings .bring .bv{font-size:clamp(12px,3.4vw,15px)}.prrings .bring .bn{font-size:11.5px}.prrings .bring .bp{font-size:10.5px}
+.prrings .bring{width:min(96px,26vw);height:min(96px,26vw)}.blab{font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--accent)}.bnum{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1;color:var(--accent)}.prrings .bring .bin{inset:14px}.prrings .bring .bv{font-size:clamp(12px,3.4vw,15px)}.prrings .bring .bn{font-size:11.5px}.prrings .bring .bp{font-size:10.5px}
 @media (min-width:700px){.prrings{gap:26px}.prrings .bring{width:108px;height:108px}}
 .prcols{display:grid;gap:4px 16px;align-items:start}.prcol .pgrid{grid-template-columns:1fr}
 @media (min-width:700px){.prcols{grid-template-columns:repeat(var(--n),minmax(0,1fr))}.prcol .proj .head{flex-wrap:wrap}.prcol .proj .name{font-size:16px}.prcol .proj .bal{font-size:18px}}
@@ -1624,7 +1624,7 @@ function switcher(items,label){
   return '<div class="pswitch rings" role="tablist" aria-label="'+esc(label)+'">'+items.map(it=>{ const v=it.pct==null?0:Math.max(0,Math.min(100,it.pct)), col=it.on&&!it.keep?"var(--accent)":(it.col||"var(--pos)");
     return '<button class="bring'+(it.on?' on':'')+'"'+(it.keep?' style="--accent:'+it.col+'"':'')+' role="tab" '+it.attr+' aria-selected="'+(!!it.on)+'" title="'+esc(it.bare?it.name:it.name+" · "+money(it.value))+'">'+
       '<svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="'+R+'" class="trk"/>'+(v>0?'<circle cx="75" cy="75" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+(C*v/100).toFixed(2)+' '+C.toFixed(2)+'" transform="rotate(-90 75 75)"/>':'')+'</svg>'+
-      (it.bare?'<span class="bin"><span class="blab">'+esc(it.name)+'</span>'+(it.count!=null?'<span class="bcnt">'+it.count+' project'+(it.count===1?'':'s')+'</span>':'')+'</span></button>':'<span class="bin"><span class="bn">'+esc(it.name)+'</span><span class="bv'+(it.neg?' neg':'')+'">'+money(it.value)+'</span><span class="bp">'+(it.pct==null?esc(it.sub||""):Math.round(it.pct)+'% '+esc(it.sub||""))+'</span></span></button>'); }).join("")+'</div>';
+      (it.bare?'<span class="bin"><span class="bnum">'+(it.count!=null?it.count:esc(it.name))+'</span></span></button>':'<span class="bin"><span class="bn">'+esc(it.name)+'</span><span class="bv'+(it.neg?' neg':'')+'">'+money(it.value)+'</span><span class="bp">'+(it.pct==null?esc(it.sub||""):Math.round(it.pct)+'% '+esc(it.sub||""))+'</span></span></button>'); }).join("")+'</div>';
 }
 function acctSwitcher(a,c){
   if(a.type==="credit"){
