@@ -16,7 +16,7 @@
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Pocketbook</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
 <style>
 /* Layout: phone-first ledger. One column, sticky header, bottom tab bar with a central add button, bottom sheets for forms. */
 :root{
@@ -350,11 +350,25 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#D59BD5}
 .prcols{display:grid;gap:4px 16px;align-items:start}.prcol .pgrid{grid-template-columns:1fr}
 @media (min-width:700px){.prcols{grid-template-columns:repeat(var(--n),minmax(0,1fr))}.prcol .proj .head{flex-wrap:wrap}.prcol .proj .name{font-size:16px}.prcol .proj .bal{font-size:18px}}
 .prmean{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;font-size:12.5px;color:var(--muted);margin:2px 0 8px}.prmean b{color:var(--prc);font-weight:700}
+.addplus{width:32px;height:32px;border-radius:50%;border:0;padding:0;display:inline-grid;place-items:center;flex:none;background:color-mix(in srgb,var(--accent) 14%,var(--surface));color:var(--accent);cursor:pointer;transition:transform .12s,background .12s;vertical-align:middle}
+.h2r:has(.addplus){align-items:center}
+.addplus:hover{background:color-mix(in srgb,var(--accent) 24%,var(--surface))}.addplus:active{transform:scale(.92)}
+.secadd{position:relative;width:38px;height:34px;border-radius:11px;border:1.5px solid color-mix(in srgb,var(--accent) 55%,var(--line));background:var(--surface);color:var(--accent);display:inline-grid;place-items:center;padding:0;cursor:pointer;flex:none;vertical-align:middle;transition:transform .12s,background .12s}
+.secadd:hover{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}.secadd:active{transform:scale(.93)}
+.secadd b{position:absolute;right:-6px;top:-6px;width:17px;height:17px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font:800 13px/17px var(--f-body);text-align:center;box-shadow:0 0 0 2px var(--bg)}
+.h2r:has(.secadd),.subh .h2r{align-items:center}
+.qa{display:flex;justify-content:center;gap:26px;margin:14px 0 2px}
+.qa button{border:0;background:none;display:grid;justify-items:center;gap:6px;font:700 12.5px var(--f-body);color:var(--ink);cursor:pointer;padding:0;max-width:96px;text-align:center}
+.qa i{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:var(--shadow);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);color:var(--ink);transition:transform .12s}
+.qa button:active i{transform:scale(.93)} .qa .pri i{background:var(--accent);color:var(--accent-ink);border:0;box-shadow:0 8px 18px -8px color-mix(in srgb,var(--accent) 80%,transparent)}
+.prinfo{display:grid;justify-items:center;margin:-2px 0 8px}.prinfo summary{list-style:none;cursor:pointer;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--muted);color:var(--muted);display:grid;place-items:center;font:italic 700 14px Georgia,serif}
+.prinfo summary::-webkit-details-marker{display:none}.prinfo[open] summary{border-color:var(--accent);color:var(--accent)}.prinfo .prmean{margin:8px 0 0}
 .prshow{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);margin:0 0 4px}
 .prhead{display:flex;align-items:center;gap:8px;margin:18px 0 8px;font-family:var(--f-display);font-size:16px;font-weight:500}.prhead:first-of-type{margin-top:4px}
 .prhead i{width:10px;height:10px;border-radius:50%;background:var(--prc)}.prhead span{color:var(--muted);font-family:var(--f-body);font-size:13px;font-weight:600}
 .seg .chip[data-prset]{display:inline-flex;align-items:center;gap:6px}.seg .chip[data-prset]::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--prc)}
 .devcredit{margin:22px 0 4px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);text-align:center;line-height:1.5}.devcredit b{color:var(--ink);font-weight:600}
+.wlang{display:flex;gap:8px;justify-content:center;align-items:center;margin:6px 0 0;color:var(--muted);font-size:14px}.wlang button{border:0;background:none;font:inherit;color:var(--muted);cursor:pointer;padding:6px 4px}.wlang button[aria-pressed="true"]{color:var(--accent);font-weight:700}
 .wcredit{font-size:12px;color:var(--muted);text-align:center;margin-top:14px}
 .field select.flash{border-color:var(--pos);box-shadow:0 0 0 2px color-mix(in srgb,var(--pos) 35%,transparent)}
 .sched{margin-top:4px}.sched summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;padding:6px 0}
@@ -425,6 +439,47 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#D59BD5}
 @media (min-width:1500px){ .homegrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .homegrid .gb .grps{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))} }
 .notice{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;color:var(--muted);margin-top:12px}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+
+/* ===== 2026 refresh: Manrope, softer cards, floating glass tab bar ===== */
+:root{--f-display:"Manrope",ui-sans-serif,system-ui,-apple-system,sans-serif;--f-body:"Manrope",ui-sans-serif,system-ui,-apple-system,sans-serif;--f-num:"Manrope",ui-sans-serif,system-ui,-apple-system,sans-serif;--r:18px;
+  --shadow:0 1px 2px rgba(20,12,6,.04),0 10px 28px -18px rgba(20,12,6,.22)}
+html[data-theme="dark"]{--shadow:0 1px 0 rgba(255,255,255,.03),0 12px 30px -18px rgba(0,0,0,.6)}
+body{font-feature-settings:"tnum" 1,"cv11" 1;letter-spacing:-.005em}
+.num,.big,.bv,.amt,.v,.bal,.gsum,.pb,.wp,.tpv,.cres{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.big{font-weight:700;letter-spacing:-.035em}
+.homehero .big{font-size:clamp(40px,12vw,54px)}
+header.top{background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);margin-inline:-16px;padding-inline:16px}
+header.top h1{font-weight:800;font-size:26px;letter-spacing:-.03em}
+h2{font-weight:700;letter-spacing:-.015em}
+.eyebrow{letter-spacing:.06em}
+/* cards */
+.list,.hero.card,.mcard,.proj,.authcard,.tiprules,.prlegend,.card,.tile,.ptile{border-color:color-mix(in srgb,var(--line) 70%,transparent)!important;box-shadow:var(--shadow)}
+.list,.mcard,.proj,.authcard,.tile{border-radius:var(--r)}
+.row{padding:13px 16px}
+.row .t{font-weight:600}
+/* round avatars */
+.badge{width:40px;height:40px;border-radius:50%;font-size:13.5px;font-weight:800;letter-spacing:.02em}
+.badge.tx{background:color-mix(in srgb,var(--tint) 16%,var(--surface));font-size:18px;font-weight:400}
+.badge.pic{border-radius:50%}
+/* buttons & inputs */
+.btn{border-radius:14px;font-weight:700}
+.btn.primary{box-shadow:0 6px 16px -8px color-mix(in srgb,var(--accent) 70%,transparent)}
+.field input,.field select,.field .datebtn{border-radius:12px}
+.chip{font-weight:600}
+/* folded explanations */
+.hinfo{margin:0 0 4px;text-align:center}.hinfo summary{list-style:none;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--muted);display:inline-block;padding:4px 8px;border-radius:99px}
+.hinfo summary::-webkit-details-marker{display:none}.hinfo summary:hover{background:var(--sunk)}.hinfo p{margin:6px auto 0;max-width:420px;font-size:13.5px;color:var(--muted)}
+.tiprules.help summary{color:var(--ink)}
+/* floating glass tab bar on phones */
+@media (max-width:999px){
+  nav.tabs{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-bottom:0;border:1px solid color-mix(in srgb,var(--line) 70%,transparent);border-radius:24px;background:color-mix(in srgb,var(--surface) 82%,transparent);-webkit-backdrop-filter:saturate(1.8) blur(20px);backdrop-filter:saturate(1.8) blur(20px);box-shadow:0 12px 32px -14px rgba(0,0,0,.35)}
+  nav.tabs .in{height:64px;padding:0 6px}
+  nav.tabs button{border-radius:18px;margin:6px 2px;height:auto;font-weight:700}
+  nav.tabs button[aria-current="page"]{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+  .fab{bottom:calc(88px + env(safe-area-inset-bottom,0px));border-radius:50%;width:58px;height:58px;box-shadow:0 12px 24px -10px color-mix(in srgb,var(--accent) 80%,transparent)}
+  .app{padding-block-end:150px}
+}
+@media (min-width:1000px){ nav.tabs{background:color-mix(in srgb,var(--surface) 70%,transparent)} nav.tabs::before{font-family:var(--f-display);font-weight:800} .fab{border-radius:50%} }
 </style>
 </head>
 <body>
@@ -495,6 +550,7 @@ const PALETTES={
 };
 /* Every spending category keeps its own color in the ring, in any palette */
 const CAT_COLORS={"Food & dining":"#E8590C","Groceries":"#2F9E44","Transport & gas":"#1C7ED6","Bills & utilities":"#F59F00","Rent / housing":"#7048E8","Shopping":"#D6336C","Health & personal care":"#0CA678","Entertainment":"#AE3EC9","Subscriptions":"#4263EB","Travel":"#1098AD","Lent to others":"#868E96"};
+const CAT_EMOJI={"Food & dining":"🍔","Groceries":"🛒","Transport & gas":"⛽","Bills & utilities":"💡","Rent / housing":"🏠","Shopping":"🛍️","Health & personal care":"💊","Entertainment":"🎬","Subscriptions":"📺","Travel":"✈️","Lent to others":"🤝","Salary":"💼","Freelance":"💻","Refund":"↩️","Gift":"🎁","Loan repayment":"🤝","Other":"💰"};
 const CAT_EXTRA=["#5C940D","#C2255C","#364FC7","#E67700","#0B7285","#862E9C"];
 function catColor(c,i){ return CAT_COLORS[c]||CAT_EXTRA[(i||0)%CAT_EXTRA.length]; }
 
@@ -554,10 +610,13 @@ const SEASONS=[
 ];
 function seasonFor(d){ const md=(d.getMonth()+1)*100+d.getDate();
   return SEASONS.find(s=>s.from<=s.to?(md>=s.from&&md<=s.to):(md>=s.from||md<=s.to))||null; }
-const LOOK_DEF={mode:"auto",pal:"terra",season:"auto",tips:"on"};
+const LOOK_DEF={mode:"auto",pal:"terra",season:"auto",tips:"on",lang:(((navigator.language||"en")+"").toLowerCase().startsWith("es")?"es":"en")};
 let LOOK=(()=>{ try{ return Object.assign({},LOOK_DEF,JSON.parse(localStorage.getItem("pb_look")||"{}")); }catch(_){ return {...LOOK_DEF}; } })();
 let LOOK_SYNCED=false;
 const MQ_DARK=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):{matches:false,addEventListener(){}};
+function LANG(){ return LOOK.lang==="es"?"es":"en"; }
+function L(en,es){ return LANG()==="es"?es:en; }
+function LOC(){ return LANG()==="es"?"es-US":"en-US"; }
 function curSeason(){ return LOOK.season==="off"?null:seasonFor(new Date()); }
 /* Auto = by the clock: Day from 7:00 AM to 7:00 PM, Night the rest */
 const DAY_FROM=7, DAY_TO=19;
@@ -578,9 +637,9 @@ function applyLook(){
   else if(fx) fx.remove();
 }
 function setLook(k,val){ LOOK[k]=val; try{ localStorage.setItem("pb_look",JSON.stringify(LOOK)); }catch(_){}
-  applyLook(); if(typeof MODE!=="undefined"&&MODE==="cloud"&&typeof UID!=="undefined"&&UID){ STORE["meta-look"]={kind:"meta",mode:LOOK.mode,pal:LOOK.pal,season:LOOK.season,tips:LOOK.tips}; try{ persist(); }catch(_){} } }
+  applyLook(); if(typeof MODE!=="undefined"&&MODE==="cloud"&&typeof UID!=="undefined"&&UID){ STORE["meta-look"]={kind:"meta",mode:LOOK.mode,pal:LOOK.pal,season:LOOK.season,tips:LOOK.tips,lang:LOOK.lang}; try{ persist(); }catch(_){} } }
 function syncLookFromStore(){ if(LOOK_SYNCED||typeof STORE==="undefined"||!STORE) return; const s=STORE["meta-look"]; if(!s) return; LOOK_SYNCED=true;
-  LOOK={mode:s.mode||"auto",pal:PALETTES[s.pal]?s.pal:"terra",season:s.season==="off"?"off":"auto",tips:s.tips==="off"?"off":"on"}; try{ localStorage.setItem("pb_look",JSON.stringify(LOOK)); }catch(_){} applyLook(); }
+  const oldLang=LOOK.lang; LOOK={mode:s.mode||"auto",pal:PALETTES[s.pal]?s.pal:"terra",season:s.season==="off"?"off":"auto",tips:s.tips==="off"?"off":"on",lang:(s.lang==="es"||s.lang==="en")?s.lang:oldLang}; try{ localStorage.setItem("pb_look",JSON.stringify(LOOK)); }catch(_){} applyLook(); if(LOOK.lang!==oldLang) setTimeout(()=>location.reload(),50); }
 let LAST_DARK=null; const autoTick=()=>{ if(LOOK.mode!=="auto") return; const d=isDark(); if(d!==LAST_DARK){ LAST_DARK=d; applyLook(); } };
 setInterval(autoTick,60000); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) autoTick(); });
 applyLook();
@@ -591,14 +650,106 @@ function creditBlock(){ return '<div class="devcredit"><b>Pocketbook</b><br>Desi
 function lookBlock(){
   const se=seasonFor(new Date()), seg=(k,opts)=>'<div class="lseg" role="group">'+opts.map(([v,l])=>'<button type="button" data-look="'+k+'" data-lv="'+v+'" aria-pressed="'+(LOOK[k]===v)+'">'+l+'</button>').join("")+'</div>';
   return '<h2 style="margin-top:4px">Appearance</h2><div class="goalf" style="gap:12px;margin-bottom:14px">'+
+    '<div data-noi18n><label>Language · Idioma</label>'+seg("lang",[["en","English"],["es","Español"]])+'</div>'+
     '<div><label>Day or night</label>'+seg("mode",[["auto","Auto"],["light","☀︎ Day"],["dark","☾ Night"]])+'<span class="hint" style="display:block;margin:4px 0 0">Auto: Day from 7 AM to 7 PM, Night from 7 PM to 7 AM.</span></div>'+
     '<div><label>Colors</label><div class="lpals">'+Object.entries(PALETTES).map(([k,p])=>'<button type="button" class="lpal" data-look="pal" data-lv="'+k+'" aria-pressed="'+(LOOK.pal===k)+'" title="'+esc(p.name)+'"><span class="lsw" style="background:linear-gradient(135deg,'+p.light.bg+' 0 50%,'+p.light.accent+' 50% 100%)"></span><span>'+esc(p.name)+'</span></button>').join("")+'</div></div>'+
     '<div><label>Seasonal look</label>'+seg("season",[["auto","Automatic"+(se?" · "+se.emoji+" "+se.name:"")],["off","Off (normal)"]])+'<span class="hint" style="display:block;margin:4px 0 0">Changes by itself for holidays and seasons. While it\'s on, the season\'s color replaces your palette\'s accent.</span></div>'+
     '<div><label>Smart suggestions</label>'+seg("tips",[["on","On"],["off","Off"]])+'<span class="hint" style="display:block;margin:4px 0 0">Before you add money to a project, Pocketbook may suggest one that is closer to its goal or has a higher priority. You always choose.</span></div></div>';
 }
-function wireLook(){ document.querySelectorAll("[data-look]").forEach(b=>b.addEventListener("click",()=>{ setLook(b.dataset.look,b.dataset.lv);
+function wireLook(){ document.querySelectorAll("[data-look]").forEach(b=>b.addEventListener("click",()=>{ if(b.dataset.look==="lang"){ if(LOOK.lang!==b.dataset.lv){ setLook("lang",b.dataset.lv); setTimeout(()=>location.reload(),150); } return; } setLook(b.dataset.look,b.dataset.lv);
   document.querySelectorAll('[data-look="'+b.dataset.look+'"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b))); render(); })); }
 /* ===== end Look ===== */
+/* ===== Language: English (built in) / Español (translated on screen) ===== */
+const ES={
+"Overview":"Resumen","Home":"Inicio","Activity":"Actividad","Loans":"Préstamos","Projects":"Proyectos","Accounts":"Cuentas",
+"Settings and backups":"Configuración y copias","Settings":"Configuración","Log out":"Cerrar sesión","Log out?":"¿Cerrar sesión?","Close":"Cerrar","Back":"Atrás","‹ Back":"‹ Atrás","Cancel":"Cancelar","Delete":"Eliminar","Save":"Guardar","Save changes":"Guardar cambios","Open":"Abrir","Add":"Agregar","Use":"Usar","Change":"Cambiar","Remove":"Quitar","Keep it":"Mantenerlo","See all":"Ver todo","Show all":"Ver todo","Now":"Ahora","Today":"Hoy","Yesterday":"Ayer","Tomorrow":"Mañana","None":"Ninguno","Name":"Nombre","Type":"Tipo","Date":"Fecha","Amount":"Monto","Balance":"Saldo","Balances":"Saldos","Status":"Estado","Plan":"Plan","Picture":"Imagen","History":"Historial","Progress":"Progreso","Goal":"Meta","Left":"Restante","Due":"Vence","Term":"Plazo","Interest":"Intereses","Principal":"Capital","Payment":"Pago","Payments":"Pagos","Sections":"Secciones","Calculator":"Calculadora","Category":"Categoría","Description":"Descripción","Destination":"Destino","From":"Desde","Priority":"Prioridad","Started":"Comenzó","Reached":"Alcanzada","Open with":"Abrir con","Nothing here.":"No hay nada aquí.",
+/* auth */
+"Your money, your projects, all in one place.":"Tu dinero y tus proyectos, todo en un solo lugar.","Create account":"Crear cuenta","Create an account":"Crear una cuenta","I already have an account":"Ya tengo una cuenta","Log in":"Iniciar sesión","Logging in…":"Iniciando sesión…","Create your account":"Crea tu cuenta","Your own private Pocketbook. Nobody else can see your accounts.":"Tu propio Pocketbook privado. Nadie más puede ver tus cuentas.","Email":"Correo electrónico","Username":"Nombre de usuario","Email or username":"Correo o nombre de usuario","Password":"Contraseña","Password (at least 8 characters)":"Contraseña (mínimo 8 caracteres)","Repeat the password":"Repite la contraseña","Repeat the new password":"Repite la nueva contraseña","New password":"Nueva contraseña","New password (at least 8 characters)":"Nueva contraseña (mínimo 8 caracteres)","3 to 20 letters, numbers, . or _":"De 3 a 20 letras, números, . o _","At least 8 characters.":"Mínimo 8 caracteres.","Keep typing…":"Sigue escribiendo…","✓ Passwords match":"✓ Las contraseñas coinciden","✗ Passwords don't match":"✗ Las contraseñas no coinciden","Show password":"Mostrar contraseña","Hide password":"Ocultar contraseña","Forgot your password?":"¿Olvidaste tu contraseña?","New to Pocketbook?":"¿Nuevo en Pocketbook?","Already have an account?":"¿Ya tienes una cuenta?","Send reset link":"Enviar enlace","Sending…":"Enviando…","Back to log in":"Volver a iniciar sesión","We'll email you a link to set a new one.":"Te enviaremos un enlace por correo para crear una nueva.","Set a new password":"Crea una nueva contraseña","Save new password":"Guardar nueva contraseña","New password saved":"Nueva contraseña guardada","Creating account…":"Creando cuenta…","Saving…":"Guardando…","Signing in…":"Iniciando sesión…","Enter a valid email.":"Escribe un correo válido.","Enter the email of your account.":"Escribe el correo de tu cuenta.","Enter your email or username and your password.":"Escribe tu correo o usuario y tu contraseña.","Enter your email and password.":"Escribe tu correo y tu contraseña.","That login and password don't match.":"El usuario y la contraseña no coinciden.","Couldn't reach the server. Try your email instead of the username.":"No se pudo conectar con el servidor. Prueba con tu correo en lugar del usuario.","Username login isn't set up yet. Log in with your email.":"El inicio con usuario aún no está activo. Inicia sesión con tu correo.","Couldn't log in. Try again.":"No se pudo iniciar sesión. Inténtalo otra vez.","Confirm your email first. Check your inbox for the link.":"Primero confirma tu correo. Busca el enlace en tu bandeja de entrada.","Username: 3 to 20 characters, using letters, numbers, . or _":"Usuario: de 3 a 20 caracteres, con letras, números, . o _","The password needs at least 8 characters.":"La contraseña necesita al menos 8 caracteres.","Pick a password that's harder to guess.":"Elige una contraseña más difícil de adivinar.","The two passwords don't match.":"Las dos contraseñas no coinciden.","That username is taken. Try another one.":"Ese usuario ya existe. Prueba otro.","That username is taken.":"Ese usuario ya existe.","There's already an account with that email. Log in instead.":"Ya existe una cuenta con ese correo. Inicia sesión.","Account created. Check your email to confirm it, then log in.":"Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión.","If that email has an account, a reset link is on its way. Open it on this device.":"Si ese correo tiene una cuenta, el enlace ya va en camino. Ábrelo en este dispositivo.","Something went wrong. Try again.":"Algo salió mal. Inténtalo otra vez.","Loading your books…":"Cargando tus cuentas…",
+/* PIN */
+"Create a 4-digit PIN":"Crea un PIN de 4 dígitos","Use it to open Pocketbook quickly on this device. Your password stays the key to your account.":"Úsalo para abrir Pocketbook rápido en este dispositivo. Tu contraseña sigue siendo la llave de tu cuenta.","Repeat your PIN":"Repite tu PIN","Type the same 4 digits again.":"Escribe los mismos 4 dígitos otra vez.","Enter your PIN":"Escribe tu PIN","Unlock Pocketbook":"Desbloquear Pocketbook","Not now":"Ahora no","Forgot your PIN? Log in with your password":"¿Olvidaste tu PIN? Entra con tu contraseña","The PINs didn't match. Start again.":"Los PIN no coinciden. Empieza otra vez.","Couldn't save the PIN. Try again.":"No se pudo guardar el PIN. Inténtalo otra vez.","PIN saved. Use it to open Pocketbook":"PIN guardado. Úsalo para abrir Pocketbook","PIN turned off":"PIN desactivado","Too many wrong PINs. Log in with your password.":"Demasiados PIN incorrectos. Entra con tu contraseña.","Pick a PIN that's harder to guess.":"Elige un PIN más difícil de adivinar.","Quick-access PIN (4 digits)":"PIN de acceso rápido (4 dígitos)","Set up PIN":"Crear PIN","Change PIN":"Cambiar PIN","Turn off PIN":"Desactivar PIN","Backspace":"Borrar",
+/* settings */
+"Appearance":"Apariencia","Day or night":"Día o noche","Auto":"Auto","☀︎ Day":"☀︎ Día","☾ Night":"☾ Noche","Auto: Day from 7 AM to 7 PM, Night from 7 PM to 7 AM.":"Auto: Día de 7 AM a 7 PM, Noche de 7 PM a 7 AM.","Colors":"Colores","Seasonal look":"Estilo de temporada","Automatic":"Automático","Off (normal)":"Apagado (normal)","On":"Activado","Off":"Apagado","Changes by itself for holidays and seasons. While it's on, the season's color replaces your palette's accent.":"Cambia solo en fiestas y temporadas. Mientras esté activo, el color de la temporada reemplaza el color principal de tu paleta.","Smart suggestions":"Sugerencias inteligentes","Before you add money to a project, Pocketbook may suggest one that is closer to its goal or has a higher priority. You always choose.":"Antes de agregar dinero a un proyecto, Pocketbook puede sugerirte otro que esté más cerca de su meta o tenga más prioridad. Tú siempre decides.","Your account":"Tu cuenta","No username yet":"Aún sin usuario","Choose a username to log in with it":"Elige un usuario para iniciar sesión con él","Username saved":"Usuario guardado","Change password":"Cambiar contraseña","Password changed":"Contraseña cambiada","Data & backups":"Datos y copias de seguridad","Your data is saved online in your private Pocketbook database and syncs between your Mac and iPhone. A copy is kept automatically each day (last 30).":"Tus datos se guardan en línea en tu base de datos privada de Pocketbook y se sincronizan entre tu Mac y tu iPhone. Cada día se guarda una copia automática (últimos 30).","Save backup file":"Guardar copia en archivo","Import a file":"Importar un archivo","Go back to an earlier day":"Volver a un día anterior","No backup file yet.":"Aún no hay archivo de copia.","also gives you a file to keep. No backup file yet.":"también te da un archivo para guardar. Aún no hay archivo de copia.","Backup file saved":"Copia guardada en archivo","Backup restored":"Copia restaurada","Pick the point to go back to.":"Elige el punto al que quieres volver.","Restore":"Restaurar","Restore a backup":"Restaurar una copia","Save backup now":"Guardar copia ahora","Nothing saved yet.":"Aún no hay nada guardado.","Pocketbook":"Pocketbook","Designed and developed by":"Diseñada y desarrollada por",
+"Terracotta Earth":"Terracota","Pocketbook Blue":"Azul Pocketbook","Transformative Teal":"Turquesa","Cloud Dancer & Mocha":"Blanco nube y moca","Soft-tech Lavender":"Lavanda","Electric Fuchsia":"Fucsia eléctrico",
+"Happy Halloween!":"¡Feliz Noche de Brujas!","Merry Christmas!":"¡Feliz Navidad!","Happy New Year!":"¡Feliz Año Nuevo!","Happy Valentine's Day!":"¡Feliz San Valentín!","Happy St. Patrick's Day!":"¡Feliz Día de San Patricio!","Happy spring!":"¡Feliz primavera!","Happy 4th of July!":"¡Feliz 4 de julio!","Enjoy the summer!":"¡Disfruta el verano!","Happy fall!":"¡Feliz otoño!","Happy Thanksgiving!":"¡Feliz Día de Acción de Gracias!",
+"Halloween":"Noche de Brujas","Christmas":"Navidad","New Year":"Año Nuevo","Valentine's":"San Valentín","St. Patrick's":"San Patricio","Spring":"Primavera","4th of July":"4 de julio","Summer":"Verano","Fall":"Otoño","Thanksgiving":"Acción de Gracias",
+/* home */
+"Net balance":"Balance neto","Everything you have plus what people owe you, minus what you owe on cards and loans.":"Todo lo que tienes más lo que te deben, menos lo que debes en tarjetas y préstamos.","Your money":"Tu dinero","Available":"Disponible","Cards owe":"Tarjetas","Savings":"Ahorros","Owed to me":"Me deben","Loans I owe":"Mis préstamos","All months":"Todos los meses","Net balance change so far":"Cambio del balance hasta hoy","Net balance change":"Cambio del balance","Closed at":"Cerró en","Spent":"Gastado","spent":"gastado","Income":"Ingresos","Card payments":"Pagos de tarjeta","Cash back":"Cashback","Loan payments":"Pagos de préstamos","Spending by category":"Gastos por categoría","Tap a category to see its transactions.":"Toca una categoría para ver sus transacciones.","Tap \"Needs a category\" to see those expenses and pick one for each.":"Toca \"Necesita categoría\" para ver esos gastos y elegir una para cada uno.","See these transactions":"Ver estas transacciones","Top 3 changes":"Los 3 cambios más grandes","No changes yet this month.":"Aún no hay cambios este mes.","Improved":"Mejoraron","Went the other way":"Empeoraron","Closing balances":"Saldos al cierre","Credit cards":"Tarjetas de crédito","Checking and cash":"Cuentas corrientes y efectivo","Personal savings":"Ahorros personales","Add card limits":"Agrega los límites","No limit set":"Sin límite","owed":"debe","+ Add":"+ Agregar","+ Add money":"+ Agregar dinero","+ Add account":"+ Agregar cuenta","+ Add transaction":"+ Agregar transacción","+ New transaction":"+ Nueva transacción","+ Lend":"+ Prestar","+ Log payment":"+ Registrar pago","+ Log repayment":"+ Registrar devolución","Add account":"Agregar cuenta","Add a transaction":"Agregar una transacción","Add transaction":"Agregar transacción","An expense, income or transfer":"Un gasto, ingreso o transferencia","A purchase with one of your cards":"Una compra con una de tus tarjetas","Move money into one of your savings":"Pasar dinero a uno de tus ahorros","Set up your accounts":"Configura tus cuentas","Add the places your money lives, then log what you spend, earn and move.":"Agrega dónde está tu dinero y luego registra lo que gastas, ganas y mueves.","Add Checking, Credit card and Cash":"Agregar cuenta corriente, tarjeta y efectivo","Add one account myself":"Agregar una cuenta yo mismo","Open an account to see its transactions and add new ones.":"Abre una cuenta para ver sus transacciones y agregar nuevas.",
+/* account types / categories */
+"Checking":"Cuenta corriente","Credit card":"Tarjeta de crédito","Cash":"Efectivo","Loan":"Préstamo",
+"Food & dining":"Comida y restaurantes","Groceries":"Supermercado","Transport & gas":"Transporte y gasolina","Bills & utilities":"Facturas y servicios","Rent / housing":"Renta / vivienda","Shopping":"Compras","Health & personal care":"Salud y cuidado personal","Entertainment":"Entretenimiento","Subscriptions":"Suscripciones","Travel":"Viajes","Lent to others":"Prestado a otros","Salary":"Salario","Freelance":"Trabajo independiente","Refund":"Reembolso","Gift":"Regalo","Loan repayment":"Devolución de préstamo","Other":"Otro","Needs a category":"Necesita categoría","Choose a category":"Elige una categoría",
+/* activity */
+"Transactions":"Transacciones","Monthly closing":"Cierre mensual","All accounts":"Todas las cuentas","No entries yet":"Aún no hay movimientos","Tap + to log an expense, transfer or card payment. Everything shows here, newest first, grouped by month.":"Toca + para registrar un gasto, transferencia o pago de tarjeta. Todo aparece aquí, lo más reciente primero, agrupado por mes.","Each month closes on its last day. Balances are worked out from your entries, so editing an old entry updates that month's closing.":"Cada mes cierra el último día. Los saldos salen de tus movimientos, así que si editas uno viejo se actualiza el cierre de ese mes.","Previous month":"Mes anterior","Next month":"Mes siguiente","Choose date":"Elegir fecha",
+/* tx form */
+"New transaction":"Nueva transacción","Edit transaction":"Editar transacción","Expense":"Gasto","Transfer":"Transferencia","Card payment":"Pago de tarjeta","Loan payment":"Pago de préstamo","Date made":"Fecha","Paid with":"Pagado con","Paid from":"Pagado desde","Destination: who you paid":"Destino: a quién pagaste","Destination account":"Cuenta de destino","Destination card":"Tarjeta de destino","Destination project":"Proyecto de destino","For a project? (optional)":"¿Para un proyecto? (opcional)","This money is for a project (optional)":"Este dinero es para un proyecto (opcional)","No project":"Sin proyecto","Not for a project":"No es para un proyecto","Choose account":"Elige una cuenta","Choose card":"Elige una tarjeta","Choose project":"Elige un proyecto","Choose who":"Elige quién","Choose loan":"Elige un préstamo","Choose":"Elegir","Received from (optional)":"Recibido de (opcional)","Who is paying you back":"Quién te está pagando","Loan or person":"Préstamo o persona","People paying me back":"Personas que me están pagando","Loans I'm paying":"Préstamos que estoy pagando","Of which interest":"De lo cual son intereses","Balances after this":"Saldos después de esto","BALANCES AFTER THIS":"SALDOS DESPUÉS DE ESTO","Balances now":"Saldos ahora","What is this payment for?":"¿Para qué es este pago?","Lent to (who owes you)":"Prestado a (quién te debe)","Move money to another of your accounts, or pick a card or loan to log a payment. Choose a project to add this money to it.":"Mueve dinero a otra de tus cuentas, o elige una tarjeta o préstamo para registrar un pago. Elige un proyecto para sumarle este dinero.","Transaction added":"Transacción agregada","Transaction updated":"Transacción actualizada","Deleted":"Eliminado","Add a short description.":"Agrega una descripción corta.","Enter an amount greater than zero.":"Escribe un monto mayor que cero.","Pick the date the transaction was made.":"Elige la fecha de la transacción.","Choose a category so you can see where your money goes.":"Elige una categoría para ver a dónde va tu dinero.","Write who you lent the money to.":"Escribe a quién le prestaste el dinero.","Write who paid you back.":"Escribe quién te pagó.","Enter who you paid (the destination).":"Escribe a quién le pagaste (el destino).","From and Destination must be different accounts.":"Origen y destino deben ser cuentas diferentes.","Interest must be a number between 0 and the payment amount.":"Los intereses deben ser un número entre 0 y el monto del pago.","Delete this entry? This can't be undone.":"¿Eliminar este movimiento? No se puede deshacer.","Cash back redemption":"Canje de cashback","Use this amount":"Usar este monto","Only the part that is not interest lowers what you still owe.":"Solo la parte que no es interés baja lo que todavía debes.","Change it to match your statement if it differs.":"Cámbialo para que coincida con tu estado de cuenta si es diferente.",
+/* accounts form */
+"New account":"Nueva cuenta","Edit account":"Editar cuenta","Choose picture":"Elegir imagen","Current balance":"Saldo actual","Amount owed right now":"Lo que debes ahora","Credit limit":"Límite de crédito","Balance as of":"Saldo al día","Use the balance your bank shows for this day. Transactions dated on or before it are already included, so they won't change it again. Everything after adjusts it.":"Usa el saldo que muestra tu banco ese día. Las transacciones de ese día o antes ya están incluidas, así que no lo vuelven a cambiar. Todo lo posterior lo ajusta.","Account added":"Cuenta agregada","Account updated":"Cuenta actualizada","Give the account a name.":"Ponle un nombre a la cuenta.","Enter the balance as a number, like 1250.00.":"Escribe el saldo como número, por ejemplo 1250.00.","Delete this account?":"¿Eliminar esta cuenta?","Deleted account":"Cuenta eliminada","That picture could not be opened. Try a PNG or JPG.":"No se pudo abrir esa imagen. Prueba con PNG o JPG.","Actual balance":"Saldo real","Balance over time":"Saldo en el tiempo",
+/* loans */
+"Money people owe you, and the loans you are paying off.":"El dinero que te deben y los préstamos que estás pagando.","Money lent to others":"Dinero prestado a otros","I still owe":"Todavía debo","Monthly payments":"Pagos mensuales","Monthly payment":"Pago mensual","Expected":"Esperado","Interest rate":"Tasa de interés","Received so far":"Recibido hasta ahora","Payment history":"Historial de pagos","No payments logged yet.":"Aún no hay pagos registrados.","Edit loan":"Editar préstamo","New loan":"Nuevo préstamo","Add loan":"Agregar préstamo","Add a loan":"Agregar un préstamo","Edit money owed to me":"Editar dinero que me deben","I owe this":"Yo lo debo","Someone owes me":"Alguien me debe","Who owes you":"Quién te debe","What it was for":"Para qué fue","Loan name":"Nombre del préstamo","Lender (optional)":"Prestamista (opcional)","Still owed":"Todavía se debe","Still owed to me":"Todavía me deben","Still owed today":"Se debe hoy","Original amount (optional)":"Monto original (opcional)","Monthly payment (optional)":"Pago mensual (opcional)","Interest rate % (optional)":"Tasa de interés % (opcional)","APR % (optional)":"APR % (opcional)","Term in months (optional)":"Plazo en meses (opcional)","Start date (optional)":"Fecha de inicio (opcional)","Due day of month (optional)":"Día de pago del mes (opcional)","Interest is charged":"Los intereses se cobran","By day (most bank and personal loans)":"Por día (la mayoría de préstamos bancarios y personales)","Once a month":"Una vez al mes","Loan added":"Préstamo agregado","Loan updated":"Préstamo actualizado","Give the loan a name.":"Ponle un nombre al préstamo.","Enter how much is still owed, like 8400.00.":"Escribe cuánto se debe todavía, por ejemplo 8400.00.","Amounts and rate must be numbers.":"Los montos y la tasa deben ser números.","Due day must be a day of the month, 1 to 31.":"El día de pago debe ser un día del mes, del 1 al 31.","Delete this loan?":"¿Eliminar este préstamo?","Deleted loan":"Préstamo eliminado","No loans to pay":"No hay préstamos por pagar","Add a car loan, student loan or personal loan. Enter what is left today and log each payment as you make it.":"Agrega un préstamo de auto, estudiantil o personal. Escribe lo que queda hoy y registra cada pago cuando lo hagas.","You have no loans yet.":"Aún no tienes préstamos.","Not repaid yet":"Aún sin pagar","Partially repaid":"Pagado en parte","Paid back":"Pagado","Paid in full":"Pagado completo","Paid off":"Liquidado","Loan paid off":"Préstamo liquidado","All paid back.":"Todo pagado.","Loan repayment received":"Devolución recibida","Next payment":"Próximo pago","Next due":"Próximo vencimiento","Due today":"Vence hoy","Due tomorrow":"Vence mañana","See every payment":"Ver todos los pagos","Payment plan":"Plan de pagos","Payments left":"Pagos restantes","Payments logged":"Pagos registrados","Paid so far":"Pagado hasta ahora","Interest paid":"Intereses pagados","Interest still to pay":"Intereses por pagar","Principal paid":"Capital pagado","Principal left":"Capital restante","Total still to pay":"Total por pagar","Where your payments go":"A dónde van tus pagos","Set payment and rate":"Agrega pago y tasa","Milestones":"Metas","When you lend money, log it as an expense with the category":"Cuando prestes dinero, regístralo como un gasto con la categoría","and write who it is for. It shows up here so you can track repayments.":"y escribe para quién es. Aparece aquí para que sigas las devoluciones.","Repaid":"Devuelto","Lent":"Prestado","Lend":"Prestar",
+/* projects */
+"New project":"Nuevo proyecto","Edit project":"Editar proyecto","Project name":"Nombre del proyecto","Saving for a goal":"Ahorrar para una meta","Ongoing fund":"Fondo continuo","Goal amount":"Monto de la meta","Create project":"Crear proyecto","Project created":"Proyecto creado","Project updated":"Proyecto actualizado","Give the project a name.":"Ponle un nombre al proyecto.","Enter the goal as a number, like 2500.":"Escribe la meta como número, por ejemplo 2500.","Enter the goal amount, like 1500.":"Escribe el monto de la meta, por ejemplo 1500.","Delete this project?":"¿Eliminar este proyecto?","Deleted project":"Proyecto eliminado","Money you always keep set aside, like an emergency or car fund. No end amount.":"Dinero que siempre tienes apartado, como un fondo de emergencia o para el auto. Sin monto final.","No projects yet":"Aún no hay proyectos","Create one for anything you are saving toward, like a trip, a new laptop or a car upgrade.":"Crea uno para cualquier cosa para la que ahorres: un viaje, una laptop nueva o mejoras al auto.","You have no projects yet.":"Aún no tienes proyectos.","Available for this project":"Disponible para este proyecto","Ongoing fund, no goal. Add one anytime with Edit project.":"Fondo continuo, sin meta. Agrega una cuando quieras con Editar proyecto.","Wish list":"Lista de deseos","Mark as bought":"Marcar como comprado","Mark as not bought":"Marcar como no comprado","Write the item name.":"Escribe el nombre del artículo.","Enter the price as a number.":"Escribe el precio como número.","Everything is bought.":"Ya compraste todo.","You have enough to buy what is left.":"Tienes suficiente para comprar lo que falta.","Where the money came from":"De dónde vino el dinero","Where the money is":"Dónde está el dinero","Purchases":"Compras","Moved between your accounts":"Movido entre tus cuentas","Paid from project money":"Pagado con dinero del proyecto","No goal set":"Sin meta","Project · no goal set":"Proyecto · sin meta","goal reached":"meta alcanzada","Top":"Alta","Medium":"Media","Low":"Baja","Top priority":"Prioridad alta","Medium priority":"Prioridad media","Low priority":"Prioridad baja","No priority yet":"Sin prioridad","Save for these first":"Ahorra primero para estos","Next in line":"Siguen en la lista","When there is room":"Cuando haya espacio","save for these first":"ahorra primero para estos","next in line":"siguen en la lista","when there is room":"cuando haya espacio","Projects by priority":"Proyectos por prioridad","What the colors mean":"Qué significan los colores","Saved as an ongoing fund":"Guardado como fondo continuo","Goal saved":"Meta guardada","Save goal":"Guardar meta","Add money":"Agregar dinero","Add money to":"Agregar dinero a",
+"✦ How smart suggestions work":"✦ Cómo funcionan las sugerencias inteligentes","✦ Smart suggestion":"✦ Sugerencia inteligente","Keep my choice":"Mantener mi elección","When you add money to a project, Pocketbook checks your other projects first. If one looks like a better place for it, a suggestion appears under the form. It checks in this order:":"Cuando agregas dinero a un proyecto, Pocketbook revisa primero tus otros proyectos. Si alguno parece un mejor lugar para ese dinero, aparece una sugerencia debajo del formulario. Revisa en este orden:","Goal already reached.":"Meta ya alcanzada.","The project you picked has hit its goal, so it suggests one that still needs money.":"El proyecto que elegiste ya llegó a su meta, así que sugiere uno que todavía necesita dinero.","Close to finishing.":"A punto de terminar.","Another project needs this much or less to reach its goal. It only suggests projects with the same or higher priority, and it offers to finish that one and send the rest to yours.":"Otro proyecto necesita esta cantidad o menos para llegar a su meta. Solo sugiere proyectos con la misma prioridad o más alta, y ofrece completarlo y enviar el resto al tuyo.","Higher priority is behind.":"Uno de más prioridad va atrasado.","A higher-priority project with a goal is under 50% funded.":"Un proyecto de más prioridad con meta tiene menos del 50%.","Higher-priority fund falling behind.":"Un fondo de más prioridad se queda atrás.","A higher-priority project with no goal would end up with less money than the one you picked.":"Un proyecto de más prioridad sin meta quedaría con menos dinero que el que elegiste.","No suggestion appears when you add to a Top project that isn't done, when you edit a transaction, or when nothing fits better. You always choose:":"No aparece ninguna sugerencia cuando agregas a un proyecto de prioridad alta que no ha terminado, cuando editas una transacción o cuando nada encaja mejor. Tú siempre decides:","saves it exactly as you entered it.":"lo guarda tal como lo escribiste.","Turn it on or off in":"Actívalas o desactívalas en","Settings → Appearance → Smart suggestions":"Configuración → Apariencia → Sugerencias inteligentes","right now)":"ahora mismo)",
+/* misc messages */
+"Couldn't save. Check your connection and try again.":"No se pudo guardar. Revisa tu conexión e inténtalo otra vez.","You're offline. That change wasn't saved, try again when you're connected.":"No tienes conexión. Ese cambio no se guardó; inténtalo cuando estés conectado.","Can't reach your data right now. Showing the last saved copy.":"No se puede llegar a tus datos ahora. Mostrando la última copia guardada.","Updated with the latest saved data":"Actualizado con los últimos datos guardados","The app didn't load completely. Check your connection and reload.":"La app no cargó por completo. Revisa tu conexión y vuelve a cargar.","You'll need your email or username and your password to log in again on this device. Your data stays saved online.":"Necesitarás tu correo o usuario y tu contraseña para volver a entrar en este dispositivo. Tus datos siguen guardados en línea.","Wrong PIN.":"PIN incorrecto.","Add credit card":"Agregar tarjeta de crédito","Add savings account":"Agregar cuenta de ahorros","Add checking or cash account":"Agregar cuenta corriente o efectivo","Lend money":"Prestar dinero","Edit":"Editar","Log repayment":"Registrar devolución","Log payment":"Registrar pago","Payment history":"Historial de pagos","Enter":"Entrar","Language":"Idioma",
+"e.g. Car loan, Personal loan":"ej. Préstamo de auto, préstamo personal","e.g. bank or person":"ej. banco o persona","e.g. 15":"ej. 15","e.g. 6.9":"ej. 6.9","e.g. 7.2":"ej. 7.2","e.g. 36":"ej. 36","Not set":"Sin definir","e.g. Chase checking, Visa":"ej. Chase corriente, Visa","e.g. Vacation fund":"ej. Fondo de vacaciones","e.g. 1500":"ej. 1500","Item, like Floor mats":"Artículo, como alfombras","Price":"Precio","Item":"Artículo","e.g. Weekly groceries":"ej. Supermercado de la semana","e.g. October statement":"ej. Estado de cuenta de octubre","e.g. Paycheck Oct 1–15":"ej. Pago del 1 al 15 de oct","e.g. Employer name":"ej. Nombre del empleador","e.g. ATM withdrawal":"ej. Retiro del cajero","e.g. Raul":"ej. Raúl","e.g. SoFi loan payment":"ej. Pago del préstamo SoFi","e.g. Monthly deposit":"ej. Depósito mensual","e.g. alfredo":"ej. alfredo","Save it for a project (optional)":"Guárdalo para un proyecto (opcional)","Tip: write the project name in the description (e.g. \"Carmencita\") and it's detected automatically.":"Consejo: escribe el nombre del proyecto en la descripción (ej. \"Carmencita\") y se detecta solo.","still owed":"todavía debe","left":"restante","in progress":"en curso","Debt-free on":"Libre de deudas el","balance":"saldo","Saldo real":"Saldo real","No goal, it's an ongoing fund":"Sin meta, es un fondo continuo","Saving for something specific? Set a goal (optional)":"¿Ahorras para algo específico? Pon una meta (opcional)","Payments":"Pagos","Expense":"Gasto","Received from":"Recibido de","Paid you":"Te pagó","Paid back to you":"Te devolvió","Starting balance":"Saldo inicial","Before Pocketbook":"Antes de Pocketbook","How it works":"Cómo funciona","ⓘ How it works":"ⓘ Cómo funciona"
+};
+const MNY="([−\\-+]?\\$[\\d,]+(?:\\.\\d+)?)";
+const ES_PAT=[
+ [new RegExp("^(\\d+)% used of "+MNY+" limit$"),"$1% usado de un límite de $2"],
+ [/^(\d+)% used$/,"$1% usado"],[/^(\d+)% of total$/,"$1% del total"],[/^(\d+)% of limit$/,"$1% del límite"],[/^(\d+)% of income$/,"$1% de los ingresos"],
+ [/^(\d+)% paid off$/,"$1% pagado"],[/^(\d+)% paid back$/,"$1% devuelto"],[/^(\d+)% of goals$/,"$1% de las metas"],[/^(\d+)% of projects$/,"$1% de los proyectos"],
+ [/^(\d+)% of card debt$/,"$1% de la deuda en tarjetas"],["add a limit","agrega un límite"],
+ [new RegExp("^(\\d+)% of "+MNY+"$"),"$1% de $2"],[new RegExp("^(\\d+)% of your "+MNY+" goal$"),"$1% de tu meta de $2"],
+ [new RegExp("^"+MNY+" to go$"),"faltan $1"],[new RegExp("^"+MNY+" for projects$"),"$1 para proyectos"],[new RegExp("^"+MNY+" free$"),"$1 libre"],
+ [new RegExp("^"+MNY+" left$"),"quedan $1"],[new RegExp("^"+MNY+" still to buy$"),"$1 por comprar"],[new RegExp("^"+MNY+" owed to you$"),"te deben $1"],
+ [/^(.+) so far$/,"$1 hasta hoy"],[/^Biggest: (.+)$/,"Mayor: $1"],
+ [new RegExp("^owed up "+MNY+"$"),"deuda sube $1"],[new RegExp("^owed down "+MNY+"$"),"deuda baja $1"],[new RegExp("^up "+MNY+"$"),"sube $1"],[new RegExp("^down "+MNY+"$"),"baja $1"],
+ [new RegExp("^spent "+MNY+"$"),"gastado $1"],[new RegExp("^Spending by category, "+MNY+" total$"),"Gastos por categoría, $1 en total"],
+ [new RegExp("^(.+): "+MNY+" \\(([\\d.]+%)\\)$"),m=>(ES[m[1]]||m[1])+": "+m[2]+" ("+m[3]+")"],
+ [new RegExp("^Lent "+MNY+"$"),"Prestado $1"],[new RegExp("^repaid "+MNY+"$"),"devuelto $1"],[/^For (.+)$/,"Por $1"],
+ [/^(.+) owes me$/,"$1 me debe"],[/^(.+) paid me back$/,"$1 ya me pagó"],
+ [new RegExp("^(.+) is paying me back\\. Still owes "+MNY+"\\.$"),"$1 me está pagando. Todavía debe $2."],
+ [/^Paid with (.+)$/,"Pagado con $1"],[/^Paid from (.+)$/,"Pagado desde $1"],[/^Income → (.+)$/,"Ingreso → $1"],[/^Repayment from (.+)$/,"Devolución de $1"],
+ [/^(.+)\/mo$/,"$1/mes"],[/^([\d.]+)% interest$/,"$1% de interés"],[/^Adds to (.+): (.+)$/,"Suma a $1: $2"],[/^Subtracts from (.+): (.+)$/,"Resta de $1: $2"],
+ [/^Open (.+)$/,"Abrir $1"],[/^Add money to (.+)$/,"Agregar dinero a $1"],[/^Remove (.+)$/,"Quitar $1"],
+ [/^✓ Good length \((\d+) characters\)$/,"✓ Buen largo ($1 caracteres)"],[/^(\d+) of 8 characters minimum$/,"$1 de 8 caracteres mínimo"],
+ [/^Wrong PIN\. (\d+) tries left\.$/,"PIN incorrecto. Te quedan $1 intentos."],[/^Wrong PIN\. 1 tries left\.$/,"PIN incorrecto. Te queda 1 intento."],
+ [/^Showing$/,"Mostrando"],[/^only$/,"solamente"],
+ [/^(\d+) expenses?$/,m=>m[1]+(m[1]==="1"?" gasto":" gastos")],
+ [/^No transactions in (.+)$/,"No hay transacciones en $1"],[/^Added to (.+)$/,"Agregado a $1"],[/^Split between (.+) and (.+)$/,"Dividido entre $1 y $2"],
+ [/^Use (.+)$/,"Usar $1"],[/^Finish (.+), rest \((.+)\) to (.+)$/,"Completar $1, el resto ($2) a $3"],[/^All (.+) to (.+)$/,"Todo $1 a $2"],
+ [/^Add (a savings account|a credit card|a checking or cash account)$/,m=>"Agregar "+({"a savings account":"una cuenta de ahorros","a credit card":"una tarjeta de crédito","a checking or cash account":"una cuenta corriente o efectivo"})[m[1]]],
+ [/^Unlock Pocketbook · (.+)$/,"Desbloquear Pocketbook · $1"],
+ [/^Designed and developed by (.+)$/,"Diseñada y desarrollada por $1"],
+ [/^(\p{Extended_Pictographic}\S*) (.+)$/u,m=>ES[m[2]]?m[1]+" "+ES[m[2]]:m[0]],
+ [new RegExp("^(\\d+)% of "+MNY+" paid off$"),"$1% de $2 pagado"],[/^(\d+) of (\d+)$/,"$1 de $2"],[new RegExp("^"+MNY+" of "+MNY+"$"),"$1 de $2"],[/^(\d+)% of your money$/,"$1% de tu dinero"],
+ [new RegExp("^Starting balance of "+MNY+" as of (.+)\\.$"),"Saldo inicial de $1 al $2."],[new RegExp("^bal "+MNY+"$"),"saldo $1"],[new RegExp("^"+MNY+" available$"),"$1 disponibles"],
+ [/^(Projected|Estimated) with (.+)\/month$/,m=>(m[1]==="Projected"?"Proyectado":"Estimado")+" con "+m[2]+"/mes"],
+ [new RegExp("^List total "+MNY+"\\. (.+)$"),m=>"Total de la lista "+m[1]+". "+(tr(m[2])||m[2])],[new RegExp("^You need "+MNY+" more to buy what is left\\.$"),"Necesitas $1 más para comprar lo que falta."],
+ [/^Filled in from your ([\d.]+)% rate\. (.+)$/,m=>"Calculado con tu tasa de "+m[1]+"%. "+(tr(m[2])||m[2])],
+ [/^Counted by day at ([\d.]+)% since your last payment\. (.+)$/,m=>"Calculado por día al "+m[1]+"% desde tu último pago. "+(tr(m[2])||m[2])],
+ [/^(Top|Medium|Low): (.+?)\.?$/,m=>ES[m[1]]+": "+(ES[m[2].charAt(0).toUpperCase()+m[2].slice(1)]||m[2]).toLowerCase()],
+ [/^(\d+)% of (?:your )?(\$[\d,.]+) goal$/,"$1% de tu meta de $2"],[/^© (\d+) (.+)\. All rights reserved\.$/,"© $1 $2. Todos los derechos reservados."]
+];
+function trOne(t){ if(Object.prototype.hasOwnProperty.call(ES,t)) return ES[t];
+  for(const [re,f] of ES_PAT){ if(typeof re==="string"){ if(t===re) return f; continue; } const m=t.match(re); if(m) return typeof f==="function"?f(m):t.replace(re,f); } return null; }
+function tr(t){ const r=trOne(t); if(r!=null) return r;
+  if(t.includes(" · ")){ let ch=false; const out=t.split(" · ").map(x=>{ const y=trOne(x.trim()); if(y!=null){ ch=true; return y; } return x; }); if(ch) return out.join(" · "); }
+  const sen=t.split(/(?<=[.!?])\s+(?=[A-Z])/); if(sen.length>1){ let ch=false; const out=sen.map(x=>{ const y=trOne(x); if(y!=null){ ch=true; return y; } return x; }); if(ch) return out.join(" "); }
+  return null; }
+const I18N_ATTRS=["placeholder","aria-label","title","label"];
+function trEl(el){ if(el.closest&&el.closest("[data-noi18n]")) return; I18N_ATTRS.forEach(a=>{ const v=el.getAttribute&&el.getAttribute(a); if(v){ const r=tr(v.trim()); if(r!=null&&r!==v) el.setAttribute(a,r); } }); }
+function trText(n){ const p=n.parentElement; if(!p||/^(SCRIPT|STYLE|TEXTAREA)$/.test(p.tagName)||p.closest("[data-noi18n]")) return; const v=n.nodeValue, t=v.trim(); if(!t||!/[A-Za-z]/.test(t)) return; const r=tr(t); if(r!=null&&r!==t) n.nodeValue=v.replace(t,r); }
+function trTree(root){ if(LANG()!=="es"||!root) return;
+  if(root.nodeType===3){ trText(root); return; } if(root.nodeType!==1) return;
+  trEl(root); root.querySelectorAll("*").forEach(trEl);
+  const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT); let n; while((n=tw.nextNode())) trText(n); }
+let I18N_OBS=null;
+function startI18n(){ document.documentElement.lang=LANG(); if(LANG()!=="es"||I18N_OBS) return; trTree(document.body);
+  I18N_OBS=new MutationObserver(ms=>{ for(const m of ms){ if(m.type==="characterData") trText(m.target); else if(m.type==="attributes") trEl(m.target); else m.addedNodes.forEach(trTree); } });
+  I18N_OBS.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:I18N_ATTRS}); }
+/* ===== end Language ===== */
+
+startI18n();
 
 const S = {authMode:(()=>{ try{ const m=sessionStorage.getItem("pb_authmode"); return /^(welcome|login|signup|forgot)$/.test(m||"")?m:"welcome"; }catch(_){ return "welcome"; } })(),db:null,col:null,uid:null,status:"loading",accounts:[],projects:[],loans:[],txns:[],openLoan:null,
   tab:"home",open:null,month:ymOf(todayStr()),acct:"all",actView:"list"};
@@ -618,11 +769,11 @@ try{ const t=localStorage.getItem("pb_tab"); if(t) S.tab=t;
 function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 function ymOf(s){return s.slice(0,7);}
 function shiftMonth(ym,n){let [y,m]=ym.split("-").map(Number);m+=n;while(m<1){m+=12;y--;}while(m>12){m-=12;y++;}return y+"-"+String(m).padStart(2,"0");}
-function monthName(ym,long){const [y,m]=ym.split("-").map(Number);return new Date(y,m-1,1).toLocaleDateString("en-US",{month:long?"long":"short",year:"numeric"});}
+function monthName(ym,long){const [y,m]=ym.split("-").map(Number);return new Date(y,m-1,1).toLocaleDateString(LOC(),{month:long?"long":"short",year:"numeric"});}
 function dayName(s){const [y,m,d]=s.split("-").map(Number);const dt=new Date(y,m-1,d);const t=todayStr();
   if(s===t) return "Today"; const yd=new Date();yd.setDate(yd.getDate()-1);
   if(dt.toDateString()===yd.toDateString()) return "Yesterday";
-  return dt.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
+  return dt.toLocaleDateString(LOC(),{weekday:"short",month:"short",day:"numeric"});}
 const fmt=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"});
 function money(n,short){const v=Math.round((n||0)*100)/100; return short&&v%1===0?fmt.format(v).replace(/\.00$/,""):fmt.format(v);}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
@@ -703,7 +854,11 @@ function txDisplay(t){
     meta=(lent? loanName(t.loan)+" → "+acctName(t.to) : (t.from?acctName(t.from):"Before Pocketbook")+" → "+loanName(t.loan))+(+t.interest?" · interest "+money(t.interest):"");
     cls=lent?"pos":"mut"; sign=lent?"+":""; }
   const badge={expense:"−",income:"+",transfer:"⇄",cardpay:"▭",loanpay:"⌂",save:"◎"}[t.type]||"•";
-  return {title,meta,amt:sign+money(a),cls,badge};
+  const c=catOf(t), lentL=t.type==="loanpay"&&loanById(t.loan)&&loanById(t.loan).dir==="lent";
+  const emo=t.type==="expense"?(CAT_EMOJI[c]||"🧾"):t.type==="income"?(CAT_EMOJI[c]||"💰"):t.type==="transfer"?(t.project?"🎯":"🔁"):t.type==="cardpay"?"💳":t.type==="loanpay"?(lentL?"🤝":"🏦"):"🎯";
+  const tint=t.type==="expense"?(CAT_COLORS[c]||"#868E96"):t.type==="income"?"#2F9E44":t.type==="cardpay"?"#7048E8":t.type==="loanpay"?(lentL?"#2F9E44":"#C2255C"):"#1C7ED6";
+  const bdg='<span class="badge tx" style="--tint:'+tint+'" aria-hidden="true">'+emo+'</span>';
+  return {title,meta,amt:sign+money(a),cls,badge,bdg};
 }
 // How one entry changes one account's signed balance.
 // An account's balance is "as of" a day. Transactions up to that day are already in it, so they are history only.
@@ -886,7 +1041,7 @@ function authView(){
     '<div class="wring" aria-hidden="true"><i></i></div>'+logo+
     '<p class="wtag">'+(se?'<b>'+esc(se.greet)+'</b><br>':'')+'Your money, your projects, all in one place.</p>'+msg+
     '<div class="wbtns"><button type="button" class="btn primary wide" data-authmode="signup">Create account</button><button type="button" class="btn wide" data-authmode="login">I already have an account</button></div>'+
-    (se&&se.id==="christmas"?'<div class="wseason" aria-hidden="true">'+se.art(true)+ART.tree(34)+'</div>':'')+'<p class="wcredit">Designed and developed by '+esc(DEV_NAME)+' · © '+Math.max(2026,new Date().getFullYear())+'</p></div>';
+    (se&&se.id==="christmas"?'<div class="wseason" aria-hidden="true">'+se.art(true)+ART.tree(34)+'</div>':'')+'<p class="wlang" data-noi18n><button type="button" data-setlang="en" aria-pressed="'+(LANG()==="en")+'">English</button><span>·</span><button type="button" data-setlang="es" aria-pressed="'+(LANG()==="es")+'">Español</button></p><p class="wcredit">Designed and developed by '+esc(DEV_NAME)+' · © '+Math.max(2026,new Date().getFullYear())+'</p></div>';
   h+=back+logo;
   if(m==="login") h+='<form id="authForm" class="authcard" novalidate><strong>Log in</strong>'+
     '<div class="field" style="margin:0"><label for="au_login">Email or username</label><input id="au_login" autocomplete="username" autocapitalize="off" spellcheck="false"></div>'+pwField("au_pin","Password","current-password")+msg+
@@ -905,6 +1060,7 @@ function authView(){
 }
 function authErr(m,ok){ S.loginMsg=m; S.loginOk=!!ok; render(); }
 function wireAuth(){
+  document.querySelectorAll("[data-setlang]").forEach(b=>b.addEventListener("click",()=>{ if(LOOK.lang!==b.dataset.setlang){ setLook("lang",b.dataset.setlang); location.reload(); } }));
   document.querySelectorAll("[data-authmode]").forEach(b=>b.addEventListener("click",()=>{ S.authMode=b.dataset.authmode; try{ sessionStorage.setItem("pb_authmode",S.authMode); }catch(_){} S.loginMsg=""; render(); }));
   const f=$("authForm"); if(!f) return;
   const am=S.status==="newpin"?"newpin":(S.authMode||"welcome"); wirePw("au_pin",(am==="signup"||am==="newpin")?"au_pin2":null);
@@ -1175,7 +1331,7 @@ async function backupNow(){
   render();
 }
 function backupLabel(n){ const m=n.match(/pocketbook-(\d{4}-\d{2}-\d{2})(?:-(\d{2})(\d{2}))?\.json/); if(!m) return n;
-  const [y,mo,da]=m[1].split("-").map(Number); let s=new Date(y,mo-1,da).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"});
+  const [y,mo,da]=m[1].split("-").map(Number); let s=new Date(y,mo-1,da).toLocaleDateString(LOC(),{weekday:"short",month:"short",day:"numeric",year:"numeric"});
   return s+(m[2]?" · "+m[2]+":"+m[3]:" · start of day"); }
 function openRestore(){
   let h=sheetHead("Restore a backup");
@@ -1235,7 +1391,7 @@ function render(){
     $("title").textContent=""; $("monthnav").hidden=true; $("addBtn").hidden=true; document.querySelector("nav.tabs").hidden=true;
     v.innerHTML=authView(); wireAuth(); return;
   }
-  $("addBtn").hidden=true; document.querySelector("nav.tabs").hidden=false;
+  $("addBtn").hidden=!(S.accounts&&S.accounts.length); document.querySelector("nav.tabs").hidden=false;
   if(S.status==="nostore"){v.innerHTML='<div class="empty"><strong>Safari is blocking storage for this page</strong><span>Open Pocketbook in a normal Safari window, not a Private window.</span></div>';return;}
   if(S.status==="nofs"){v.innerHTML='<div class="empty" style="text-align:left;justify-items:start"><strong>Open Pocketbook in Google Chrome</strong><span>This browser can\'t save into the Pocketbook folder. In Finder, right-click <b>Pocketbook.html</b>, choose <b>Open With</b>, then <b>Google Chrome</b>. To make it the default, choose <b>Get Info</b>, set <b>Open with</b> to Chrome and click <b>Change All</b>.</span></div>';return;}
   if(S.status==="connect"){v.innerHTML='<div class="empty"><strong>Open your Pocketbook folder</strong><span>Your data is kept in a file inside the Pocketbook folder, next to this app. Chrome asks you once each time you open the app.</span>'+
@@ -1258,14 +1414,14 @@ function viewAccount(a){
   let h=acctSwitcher(a,compute())+'<section class="hero"><div class="eyebrow">'+ACCT_TYPES[a.type]+(credit?" · amount owed":" · balance")+'</div>'+
     '<div class="big '+((credit? -run>0 : run<0)?"neg":"")+'">'+show(run)+'</div>'+
     ((a.asOf||a.created)?'<p class="hint" style="margin:-4px 0 12px">Starting balance of '+show(credit?-(+a.opening||0):(+a.opening||0))+' as of '+esc(fmtDate(a.asOf?pDate(a.asOf):new Date(a.created)))+'.</p>':'')+
-    '<div class="actions" style="margin:0"><button class="btn" data-editacct="'+esc(a.id)+'">Edit account</button><button class="btn primary" data-addin="'+esc(a.id)+'">+ Add transaction</button></div></section>';
+    quickActs([{pri:1,icon:"plus",label:"Add transaction",attr:'data-addin="'+esc(a.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editacct="'+esc(a.id)+'"'},{icon:"hist",label:"History",attr:'data-scrollto="accthist"'}])+'</section><span id="accthist"></span>';
   if(!mine.length) return h+'<div class="empty"><strong>No transactions in '+esc(a.name)+' yet</strong><span>Each one you add needs a date, a description and where the money went.</span></div>';
   const groups={}; sortTx(mine).forEach(t=>(groups[t.date]=groups[t.date]||[]).push(t));
   Object.keys(groups).sort().reverse().forEach(d=>{
     h+='<div class="day"><span>'+esc(dayName(d))+'</span><span>'+esc(d)+'</span></div><div class="list">'+groups[d].map(t=>{
       const x=txDisplay(t), dl=deltaFor(t,a.id,true), inBal=!counts(t,a.id);
       const amt = t.type==="save" ? '<span class="mut">'+money(t.amount)+'</span>' : '<span class="'+(inBal?"mut":(dl<0?"neg":"pos"))+'">'+(dl<0?"−":"+")+money(Math.abs(dl))+'</span>';
-      return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+x.badge+'</span><span class="main"><span class="t">'+esc(x.title)+'</span><span class="m">'+esc(x.meta)+'</span>'+fundPill(t)+'</span>'+
+      return '<button class="row" data-edittx="'+esc(t.id)+'">'+x.bdg+'<span class="main"><span class="t">'+esc(x.title)+'</span><span class="m">'+esc(x.meta)+'</span>'+fundPill(t)+'</span>'+
         '<span class="amt">'+amt+'<span class="owed">'+(inBal?"already in balance":(credit?"owed ":"bal ")+show(after[t.id]))+'</span></span></button>';
     }).join("")+'</div>';
   });
@@ -1304,10 +1460,10 @@ function viewHome(){
   if(owedAll>0||lentAll>0) items.push({attr:'data-tab-go="loans"',name:"Owed to me",value:owedAll,pct:lentAll?repAll/lentAll*100:null,col:"var(--pos)",sub:"paid back"});
   if(owe.length) items.push({attr:'data-tab-go="loans"',name:"Loans I owe",value:c.loansOwe,neg:c.loansOwe>0,pct:origTot?(origTot-leftTot)/origTot*100:null,col:"var(--pos)",sub:"paid off"});
   let h=backupNudge()+seasonLine()+'<section class="hero homehero"><div class="eyebrow">Net balance</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
-    '<p class="hint" style="margin:2px 0 4px">Everything you have plus what people owe you, minus what you owe on cards and loans.</p></section>'+
+    '<details class="hinfo"><summary>ⓘ '+L('What is this?','¿Qué es esto?')+'</summary><p>Everything you have plus what people owe you, minus what you owe on cards and loans.</p></details></section>'+
     switcher(items,"Your money").replace('class="pswitch rings"','class="pswitch rings homerings"')+
     '<div class="homegrid">';
-  h+='<div class="gb">'+acctGroups(c,true)+'<div class="actions" style="margin-top:14px"><button class="btn" data-act="newacct">+ Add account</button><button class="btn primary" data-addfor="any">+ Add transaction</button></div></div>';
+  h+='<div class="gb">'+acctGroups(c,true)+'</div>';
   const ym=ymOf(todayStr());
   h+='<div class="gc"><h2>'+esc(monthName(ym,true))+' so far <button data-closing="1">All months</button></h2>'+monthCard(monthReport(ym),true)+'</div></div>';
   return h;
@@ -1339,9 +1495,25 @@ function prioRings(c){
     return {attr:'data-prfilter="'+r[0]+'" aria-label="'+esc(r[1]+": "+list.length+" project"+(list.length===1?"":"s")+". "+PRIO_MEAN[r[0]])+'"',name:r[2],bare:true,count:list.length,value:bal,pct:gs?gh/gs*100:(all?Math.max(0,bal)/all*100:0),sub:gs?"of goals":"of projects",col:r[3],keep:true,on:S.prioFilter===r[0]}; });
   const F=S.prioFilter, fr=F&&PRIOS.find(r=>r[0]===F);
   return switcher(items,"Projects by priority").replace('class="pswitch rings"','class="pswitch rings prrings"')+
-    '<p class="prmean">'+PRIOS.map(r=>'<span style="--prc:'+r[3]+'"><b>'+r[2]+'</b> '+PRIO_MEAN[r[0]].toLowerCase()+'</span>').join("")+'</p>'+
+    '<details class="prinfo"><summary aria-label="What the colors mean" title="What the colors mean">i</summary><p class="prmean">'+PRIOS.map(r=>'<span style="--prc:'+r[3]+'"><b>'+r[2]+'</b> '+PRIO_MEAN[r[0]].toLowerCase()+'</span>').join("")+'</p></details>'+
     (fr?'<div class="prshow"><span>Showing <b style="color:'+fr[3]+'">'+fr[2]+'</b> only</span><button type="button" class="sadd" data-prfilter="'+F+'">Show all</button></div>':'');
 }
+const ICO={
+ plus:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+ pen:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
+ hist:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
+ card:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></svg>',
+ piggy:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 10.5c0-3.6-3.4-6-7.5-6S4 6.9 4 10.5c0 2 1 3.6 2.6 4.7L7 19h3l.4-1.6h2.3L13 19h3l.6-2.6c1-.6 1.8-1.4 2.2-2.4H21v-3h-2z"/><path d="M15 8.5h.01M9 6.2c1-.5 2.3-.7 3.5-.6"/></svg>',
+ bank:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/></svg>',
+ target:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>',
+ wallet:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5.5A1.5 1.5 0 0 0 17.5 4h-12A2.5 2.5 0 0 0 3 6.5v11A2.5 2.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/><path d="M3 6.5A2.5 2.5 0 0 0 5.5 9H19a1 1 0 0 1 1 1v6h-4a3 3 0 0 1 0-6"/><circle cx="16" cy="13" r=".6" fill="currentColor"/></svg>',
+ hand:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12l4-4 4 2 3-2 4 1 5 4"/><path d="M6 8v6l5 4c.8.6 2 .5 2.6-.3l3.4-4.2"/><path d="M10 10l3 3"/></svg>'
+};
+/* Section "add" buttons: square with a section icon and a small + badge (different from the round transaction button) */
+function secAdd(attr,icon,label){ return '<button type="button" class="secadd" '+attr+' aria-label="'+label+'" title="'+label+'">'+ICO[icon]+'<b aria-hidden="true">+</b></button>'; }
+/* Quick actions: round buttons with a label (primary first) */
+function quickActs(items){ return '<div class="qa">'+items.map(it=>'<button type="button" class="'+(it.pri?'pri':'')+'" '+it.attr+'><i>'+ICO[it.icon]+'</i><span>'+it.label+'</span></button>').join("")+'</div>'; }
+function helpBox(title,body){ return '<details class="tiprules help"><summary>ⓘ '+title+'</summary><div><p>'+body+'</p></div></details>'; }
 function tipRules(){
   return '<details class="tiprules"><summary>✦ How smart suggestions work</summary><div>'+
     '<p>When you add money to a project, Pocketbook checks your other projects first. If one looks like a better place for it, a suggestion appears under the form. It checks in this order:</p><ol>'+
@@ -1368,17 +1540,17 @@ function acctGroups(c,withProjects){
   let h='';
   if(cards.length){
     const u=c.limit?Math.round(c.owed/c.limit*100):null;
-    h+='<section class="grp"><h2 id="g-cards"><span>Credit cards</span><span class="h2r"><span class="gsum neg">'+money(c.owed)+(u!==null?' · '+u+'% used':'')+'</span><button data-addmenu="credit">+ Add</button></span></h2><div class="list">'+cards.map(a=>utilRow(a,c,c.owed)).join("")+'</div></section>';
+    h+='<section class="grp"><h2 id="g-cards"><span>Credit cards</span><span class="h2r"><span class="gsum neg">'+money(c.owed)+(u!==null?' · '+u+'% used':'')+'</span>'+secAdd('data-addmenu="credit"','card','Add credit card')+'</span></h2><div class="list">'+cards.map(a=>utilRow(a,c,c.owed)).join("")+'</div></section>';
   }
   const projs=withProjects?projSorted():[];
   if(sav.length||projs.length){
     h+='<section class="grp"><h2 id="g-sav">Savings</h2>';
-    if(sav.length) h+='<div class="subh"><span>Personal savings</span><span class="h2r"><span>'+money(c.personal)+'</span><button class="sadd" data-addmenu="savings">+ Add</button></span></div><div class="list">'+sav.map(a=>{ const ip=S.projects.reduce((t,p)=>t+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0); return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(ip)>=0.005?' · '+money(ip)+' for projects · '+money(c.bal[a.id]-ip)+' free':'')); }).join("")+'</div>';
-    if(projs.length) h+='<div class="subh"><span>Projects</span><span class="h2r"><span>'+money(c.aside)+'</span><button class="sadd" data-addfor="projects">+ Add money</button></span></div><div class="list">'+projs.map(p=>projRow(p,c)).join("")+'</div>';
+    if(sav.length) h+='<div class="subh"><span>Personal savings</span><span class="h2r"><span>'+money(c.personal)+'</span>'+secAdd('data-addmenu="savings"','piggy','Add savings account')+'</span></div><div class="list">'+sav.map(a=>{ const ip=S.projects.reduce((t,p)=>t+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0); return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(ip)>=0.005?' · '+money(ip)+' for projects · '+money(c.bal[a.id]-ip)+' free':'')); }).join("")+'</div>';
+    if(projs.length) h+='<div class="subh"><span>Projects</span><span class="h2r"><span>'+money(c.aside)+'</span>'+secAdd('data-act="newproj"','target','New project')+'</span></div><div class="list">'+projs.map(p=>projRow(p,c)).join("")+'</div>';
     h+='</section>';
   }
   if(day.length){
-    h+='<section class="grp"><h2 id="g-day"><span>Checking and cash</span><span class="h2r"><span class="gsum">'+money(c.daily)+'</span><button data-addmenu="day">+ Add</button></span></h2><div class="list">'+day.map(a=>{
+    h+='<section class="grp"><h2 id="g-day"><span>Checking and cash</span><span class="h2r"><span class="gsum">'+money(c.daily)+'</span>'+secAdd('data-addmenu="day"','wallet','Add checking or cash account')+'</span></h2><div class="list">'+day.map(a=>{
       const inProj=S.projects.reduce((s,p)=>s+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0);
       return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(inProj)>=0.005?' · '+money(inProj)+' for projects':''));
     }).join("")+'</div></section>';
@@ -1470,7 +1642,7 @@ function updProjHint(){
 }
 function txRow(t){
   const d=txDisplay(t);
-  return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(d.meta)+'</span>'+fundPill(t)+'</span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';
+  return '<button class="row" data-edittx="'+esc(t.id)+'">'+d.bdg+'<span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(d.meta)+'</span>'+fundPill(t)+'</span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';
 }
 
 function viewActivity(){
@@ -1558,7 +1730,7 @@ function lentSection(){
     P.push({name:loanLabel(l),why:loanReason(l),lent,repaid:Math.round(Math.max(0,lent-left)*100)/100,left,attr:'data-openloan="'+esc(l.id)+'"'}); });
   P.sort((a,b)=>b.left-a.left||a.name.localeCompare(b.name));
   const out=P.reduce((s,r)=>s+r.left,0);
-  let h='<section class="grp"><h2 id="g-lent"><span>Money lent to others</span><span class="h2r"><span class="gsum pos">'+money(out)+' owed to you</span><button data-addfor="lend">+ Lend</button></span></h2>';
+  let h='<section class="grp"><h2 id="g-lent"><span>Money lent to others</span><span class="h2r"><span class="gsum pos">'+money(out)+' owed to you</span>'+secAdd('data-addfor="lend"','hand','Lend money')+'</span></h2>';
   if(!P.length) return h+'<div class="empty">When you lend money, log it as an expense with the category <b>Lent to others</b> and write who it is for. It shows up here so you can track repayments.</div></section>';
   h+='<div class="list">'+P.map(r=>{ const st=lentStatus(r), pct=r.lent?Math.min(100,r.repaid/r.lent*100):100;
     return '<button class="row" '+r.attr+'><span class="badge lent">'+esc(initials(r.name))+'</span><span class="main"><span class="t">'+esc(r.name)+' <span class="pill st-'+st.c+'">'+st.t+'</span></span>'+
@@ -1604,7 +1776,7 @@ function openCatList(cat,ym){
   const list=sortTx(S.txns.filter(t=>t.type==="expense"&&t.date&&ymOf(t.date)===ym&&((catOf(t)||"__none")===cat)));
   const total=list.reduce((s,t)=>s+(+t.amount||0),0), name=cat==="__none"?"Needs a category":cat;
   let h=sheetHead(name+" · "+monthName(ym,true))+'<p class="hint" style="margin:0 0 10px">'+list.length+' expense'+(list.length===1?'':'s')+' · '+money(total)+'. Tap one to change its category.</p>';
-  h+=list.length?'<div class="list">'+list.map(t=>{const d=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(t.category&&!catOf(t)?'was "'+t.category+'"':(catOf(t)||"no category"))+'</span></span><span class="amt">'+money(t.amount)+'</span></button>';}).join("")+'</div>':'<div class="empty">Nothing here.</div>';
+  h+=list.length?'<div class="list">'+list.map(t=>{const d=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'">'+d.bdg+'<span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(t.category&&!catOf(t)?'was "'+t.category+'"':(catOf(t)||"no category"))+'</span></span><span class="amt">'+money(t.amount)+'</span></button>';}).join("")+'</div>':'<div class="empty">Nothing here.</div>';
   openSheet(h);
 }
 function monthCard(R,compact){
@@ -1672,7 +1844,7 @@ function viewProject(p){
   let h=switcher(all.map(q=>{ const qb=c.proj[q.id]||0, qg=+q.goal||0; const qr=prioOf(q); return {attr:'data-viewproj="'+esc(q.id)+'"',name:q.name,col:qr?qr[3]:undefined,value:qb,neg:qb<0,pct:qg?qb/qg*100:(projTot?Math.max(0,qb)/projTot*100:0),sub:qg?"of "+money(qg,true):"of projects",on:q.id===p.id}; }),"Projects")+
     '<section class="hero"><div class="eyebrow">Available for this project'+prioTag(p)+'</div><div class="big '+(bal<0?"neg":"")+'">'+money(bal)+'</div>'+
     (goal?'<div class="ubar goal" style="height:8px;margin:8px 0 4px"><i style="width:'+pct.toFixed(1)+'%"></i></div><p class="hint" style="margin:0">'+Math.round(pct)+'% of your '+money(goal)+' goal'+(bal<goal?' · '+money(goal-bal)+' to go':' · goal reached')+'</p>':(p.fund?'<p class="hint" style="margin:0">Ongoing fund, no goal. Add one anytime with Edit project.</p>':'<form class="goalf" id="goalForm" data-pid="'+esc(p.id)+'" novalidate><label for="g_amt">Saving for something specific? Set a goal (optional)</label><div class="gf"><input id="g_amt" class="amount" inputmode="decimal" placeholder="e.g. 1500"><button type="submit" class="btn primary">Save goal</button></div><button type="button" class="sadd" data-fundonly="'+esc(p.id)+'">No goal, it\'s an ongoing fund</button></form>'))+
-    '<div class="actions" style="margin-top:14px"><button class="btn" data-editproj="'+esc(p.id)+'">Edit project</button><button class="btn primary" data-saveto="'+esc(p.id)+'">+ Add money</button></div></section>';
+    quickActs([{pri:1,icon:"plus",label:"Add money",attr:'data-saveto="'+esc(p.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editproj="'+esc(p.id)+'"'},{icon:"hist",label:"History",attr:'data-projhist="'+esc(p.id)+'"'}])+'</section>';
   h+='<div class="pcols"><div class="pcol">';
   // wish list
   h+='<h2>Wish list <span class="gsum">'+(wish.length?money(wLeft)+' still to buy':'')+'</span></h2><div class="list wl">'+
@@ -1684,9 +1856,9 @@ function viewProject(p){
   const rows=(l,kind)=>l.length?'<div class="list">'+l.map(t=>{ const d=Object.assign({},txDisplay(t)); const f=ef(t);
     if(kind==="in"&&f.moved>0){ d.meta+=" · moved "+money(f.moved)+", new "+money(f.delta); t=Object.assign({},t,{amount:f.delta}); }
     if(kind==="move") t=Object.assign({},t,{amount:f.moved});
-    return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(d.meta)+'</span></span><span class="amt '+(kind==="in"?"pos":kind==="out"?"neg":"mut")+'">'+(kind==="in"?"+":kind==="out"?"−":"")+money(t.amount)+'</span></button>'; }).join("")+'</div>':'';
-  h+='<h2>Where the money came from <span class="gsum pos">'+money(sumNew(ins))+'</span></h2>'+(rows(ins,"in")||'<div class="empty">No money added yet. Transfer between your accounts with "'+esc(projKeys(p.name)[0]||p.name)+'" in the description.</div>');
-  h+='<h2>Purchases <span class="gsum">'+money(sum(buys))+'</span></h2>'+(rows(buys,"buy")||'<div class="empty">No purchases yet. Write "'+esc(projKeys(p.name)[0]||p.name)+'" in the description of an expense to see it here.</div>');
+    return '<button class="row" data-edittx="'+esc(t.id)+'">'+d.bdg+'<span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(d.meta)+'</span></span><span class="amt '+(kind==="in"?"pos":kind==="out"?"neg":"mut")+'">'+(kind==="in"?"+":kind==="out"?"−":"")+money(t.amount)+'</span></button>'; }).join("")+'</div>':'';
+  h+='<h2>Where the money came from <span class="gsum pos">'+money(sumNew(ins))+'</span></h2>'+(rows(ins,"in")||'<div class="empty">'+L('No money added yet. Transfer between your accounts with "'+esc(projKeys(p.name)[0]||p.name)+'" in the description.','Aún no has agregado dinero. Haz una transferencia entre tus cuentas con "'+esc(projKeys(p.name)[0]||p.name)+'" en la descripción.')+'</div>');
+  h+='<h2>Purchases <span class="gsum">'+money(sum(buys))+'</span></h2>'+(rows(buys,"buy")||'<div class="empty">'+L('No purchases yet. Write "'+esc(projKeys(p.name)[0]||p.name)+'" in the description of an expense to see it here.','Aún no hay compras. Escribe "'+esc(projKeys(p.name)[0]||p.name)+'" en la descripción de un gasto para verlo aquí.')+'</div>');
   if(moves.length) h+='<h2>Moved between your accounts</h2>'+rows(moves,"move");
   if(pays.length) h+='<h2>Paid from project money <span class="gsum neg">'+money(sum(pays))+'</span></h2>'+rows(pays,"out");
   const w=whereBlock(p.id); if(w) h+='<div class="mcard" style="margin-top:16px">'+w+'</div>';
@@ -1694,7 +1866,8 @@ function viewProject(p){
 }
 function viewProjects(){
   const c=compute();
-  let h='<p class="hint" style="margin:4px 0 14px">Write the project name in the description, like <b>"Carmencita"</b>. A <b>Transfer</b> adds to the project. A <b>Card payment</b> from checking subtracts from it. Card purchases don\'t change it until you pay the card. The money stays in your checking accounts; this shows how much of it is for each project.</p>';
+  let h=helpBox(L('How projects work','Cómo funcionan los proyectos'),L('Write the project name in the description, like <b>"Carmencita"</b>. A <b>Transfer</b> adds to the project. A <b>Card payment</b> from checking subtracts from it. Card purchases don\'t change it until you pay the card. The money stays in your accounts; this shows how much of it is for each project.',
+    'Escribe el nombre del proyecto en la descripción, por ejemplo <b>"Carmencita"</b>. Una <b>Transferencia</b> le suma al proyecto. Un <b>Pago de tarjeta</b> desde tu cuenta corriente le resta. Las compras con tarjeta no lo cambian hasta que pagas la tarjeta. El dinero se queda en tus cuentas; aquí ves cuánto es para cada proyecto.'));
   if(!S.projects.length) return h+'<div class="empty"><strong>No projects yet</strong><span>Create one for anything you are saving toward, like a trip, a new laptop or a car upgrade.</span><button class="btn primary" data-act="newproj">New project</button></div>';
   const card=p=>{
     const b=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,b/goal*100)):0;
@@ -1771,11 +1944,11 @@ function nextDue(l){
   const days=Math.round((d-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);
   return {date:d,days,paid};
 }
-function dueText(n){ if(!n) return ""; const ds=n.date.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+function dueText(n){ if(!n) return ""; const ds=n.date.toLocaleDateString(LOC(),{month:"short",day:"numeric"});
   if(n.days<0) return "Overdue since "+ds; if(n.days===0) return "Due today"; if(n.days===1) return "Due tomorrow"; return "Due "+ds; }
 function viewLoans(){
   const c=compute(), mine=S.loans.filter(l=>l.dir!=="lent").sort((a,b)=>(a.created||0)-(b.created||0));
-  let h='<p class="hint" style="margin:4px 0 14px">Money people owe you, and the loans you are paying off.</p>'+lentSection()+'<section class="grp"><h2><span>Loans I\'m paying</span><span class="h2r"><span class="gsum neg">'+money(c.loansOwe)+'</span><button data-act="newloan">+ Add</button></span></h2>';
+  let h='<p class="hint" style="margin:4px 0 14px">Money people owe you, and the loans you are paying off.</p>'+lentSection()+'<section class="grp"><h2><span>Loans I\'m paying</span><span class="h2r"><span class="gsum neg">'+money(c.loansOwe)+'</span>'+secAdd('data-act="newloan"','bank','Add loan')+'</span></h2>';
   if(!mine.length) return h+'<div class="empty"><strong>No loans to pay</strong><span>Add a car loan, student loan or personal loan. Enter what is left today and log each payment as you make it.</span></div></section>';
   const monthly=mine.reduce((s,l)=>s+(+l.payment||0),0);
   h+='<div class="split" style="margin-bottom:12px"><div><div class="eyebrow">I still owe</div><div class="v neg">'+money(c.loansOwe)+'</div></div><div><div class="eyebrow">Monthly payments</div><div class="v">'+money(monthly)+'</div></div></div>';
@@ -1829,7 +2002,7 @@ function splitFor(l,amount,dateIso,excludeId){
   const it=Math.min(amount,periodInterest(l,left,lastPayDate(l,when,excludeId),pDate(when)));
   return {int:it,prin:Math.round((amount-it)*100)/100};
 }
-function fmtDate(d){return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
+function fmtDate(d){return d.toLocaleDateString(LOC(),{month:"short",day:"numeric",year:"numeric"});}
 function viewLoan(l){
   const c=compute(), left=c.loan[l.id], lent=l.dir==="lent", orig=+l.original||0;
   const pays=sortTx(S.txns.filter(t=>t.loan===l.id));
@@ -1837,7 +2010,7 @@ function viewLoan(l){
   const pct=orig?Math.max(0,Math.min(100,(orig-left)/orig*100)):0, n=lent?null:nextDue(l);
   let h='<section class="hero"><div class="eyebrow">'+(lent?(l.party?esc(l.party)+(left>0?" owes me · ":" paid me back · ")+esc(l.name):"Still owed to me"):"Still owed"+(l.party?" · "+esc(l.party):""))+'</div><div class="big '+(lent?"":(left>0?"neg":""))+'">'+money(left)+'</div>';
   if(orig) h+='<div class="bar" role="img" aria-label="'+Math.round(pct)+'% paid off" style="margin-bottom:6px"><i style="width:'+pct+'%"></i></div><div class="hint" style="margin:0 0 12px">'+Math.round(pct)+'% of '+money(orig)+' paid off</div>';
-  h+='<div class="actions" style="margin:0"><button class="btn" data-editloan="'+esc(l.id)+'">Edit loan</button><button class="btn primary" data-payloan="'+esc(l.id)+'">'+(lent?"+ Log repayment":"+ Log payment")+'</button></div></section>';
+  h+=quickActs([{pri:1,icon:"plus",label:lent?"Log repayment":"Log payment",attr:'data-payloan="'+esc(l.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editloan="'+esc(l.id)+'"'},{icon:"hist",label:"History",attr:lent?'data-scrollto="loanhist"':'data-loantab="history"'}])+'</section>';
   const tab=lent?"history":(S.loanTab||"progress");
   if(!lent) h+='<div class="seg" role="tablist" aria-label="Loan views" style="margin:4px 0 14px">'+[["progress","Progress"],["plan","Plan"],["history","History"]].map(([k,t])=>'<button type="button" class="chip" role="tab" data-loantab="'+k+'" aria-pressed="'+(tab===k)+'">'+t+'</button>').join("")+'</div>';
   if(tab==="progress") return h+loanProgress(l,left,pays);
@@ -1866,7 +2039,7 @@ function viewLoan(l){
         '<div><div class="eyebrow">Total still to pay</div><div class="v">'+money(left+ti)+'</div></div></div>'+
         '<p class="hint">'+(l.method==="daily"?'Interest counted by day at '+esc(l.rate)+'% from your last payment to each due date, the way your lender charges it. Paying early or late moves the split by a few dollars.':'Estimated with '+esc(l.rate)+'% a year charged monthly on what you still owe.')+'</p>'+
         '<details class="sched"><summary>See every payment</summary><div class="tbl"><table><thead><tr><th>Date</th><th>Payment</th><th>Interest</th><th>Principal</th><th>Left</th></tr></thead><tbody>'+
-        rows.map(x=>'<tr><td>'+esc(x.date.toLocaleDateString("en-US",{month:"short",year:"numeric"}))+'</td><td>'+money(x.pay)+'</td><td>'+money(x.int)+'</td><td>'+money(x.prin)+'</td><td>'+money(x.bal)+'</td></tr>').join("")+
+        rows.map(x=>'<tr><td>'+esc(x.date.toLocaleDateString(LOC(),{month:"short",year:"numeric"}))+'</td><td>'+money(x.pay)+'</td><td>'+money(x.int)+'</td><td>'+money(x.prin)+'</td><td>'+money(x.bal)+'</td></tr>').join("")+
         '</tbody></table></div></details>';
     }
   }
@@ -1874,7 +2047,7 @@ function viewLoan(l){
   return h;
 }
 function loanHistory(pays){
-  return '<h2>Payment history</h2>'+(pays.length? '<div class="list">'+pays.map(t=>{const x=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+x.badge+'</span><span class="main"><span class="t">'+esc(x.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(x.meta)+(+t.interest?' · principal '+money((+t.amount||0)-(+t.interest||0)):'')+'</span></span><span class="amt">'+money(t.amount)+'</span></button>';}).join("")+'</div>'
+  return '<h2 id="loanhist">Payment history</h2>'+(pays.length? '<div class="list">'+pays.map(t=>{const x=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'">'+x.bdg+'<span class="main"><span class="t">'+esc(x.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(x.meta)+(+t.interest?' · principal '+money((+t.amount||0)-(+t.interest||0)):'')+'</span></span><span class="amt">'+money(t.amount)+'</span></button>';}).join("")+'</div>'
     : '<div class="empty">No payments logged yet.</div>');
 }
 function shortMoney(v){ return v>=1000?"$"+(Math.round(v/100)/10).toString().replace(/\.0$/,"")+"k":"$"+Math.round(v); }
@@ -1973,7 +2146,7 @@ function openLoanForm(l){
 /* ---------- sheets ---------- */
 /* ---------- calendar (built into the app so it opens and closes reliably in Safari) ---------- */
 let CAL=null;
-function fmtDateLong(iso){ return pDate(iso).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"}); }
+function fmtDateLong(iso){ return pDate(iso).toLocaleDateString(LOC(),{weekday:"short",month:"short",day:"numeric",year:"numeric"}); }
 function dateField(id,val,empty){ return '<input type="hidden" id="'+id+'" value="'+esc(val||"")+'"><button type="button" class="datebtn" id="'+id+'_btn" data-calfor="'+id+'" aria-expanded="false">'+(val?esc(fmtDateLong(val)):esc(empty||"Choose date"))+'</button>'; }
 function openCal(id){
   closeCal(); const btn=$(id+"_btn"); if(!btn) return;
@@ -1986,8 +2159,8 @@ function drawCal(){
   const box=$("calBox"); if(!box||!CAL) return;
   const [y,m]=CAL.ym.split("-").map(Number), first=new Date(y,m-1,1), days=new Date(y,m,0).getDate(), sel=$(CAL.for).value, t=todayStr();
   const yd=new Date(); yd.setDate(yd.getDate()-1); const yIso=dIso(yd);
-  let h='<div class="calhead"><button type="button" data-calnav="-1" aria-label="Previous month">‹</button><strong>'+esc(first.toLocaleDateString("en-US",{month:"long",year:"numeric"}))+'</strong><button type="button" data-calnav="1" aria-label="Next month">›</button></div><div class="calgrid">'+
-    ["Su","Mo","Tu","We","Th","Fr","Sa"].map(d=>'<span class="dow">'+d+'</span>').join("");
+  let h='<div class="calhead"><button type="button" data-calnav="-1" aria-label="Previous month">‹</button><strong>'+esc(first.toLocaleDateString(LOC(),{month:"long",year:"numeric"}))+'</strong><button type="button" data-calnav="1" aria-label="Next month">›</button></div><div class="calgrid">'+
+    (LANG()==="es"?["Do","Lu","Ma","Mi","Ju","Vi","Sá"]:["Su","Mo","Tu","We","Th","Fr","Sa"]).map(d=>'<span class="dow">'+d+'</span>').join("");
   for(let i=0;i<first.getDay();i++) h+='<span></span>';
   for(let d=1;d<=days;d++){ const iso=y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0"); h+='<button type="button" data-calday="'+iso+'" class="'+(iso===sel?"sel ":"")+(iso===t?"tod":"")+'"'+(iso===sel?' aria-pressed="true"':'')+'>'+d+'</button>'; }
   h+='</div><div class="calfoot"><button type="button" class="btn" data-calday="'+t+'">Today</button><button type="button" class="btn" data-calday="'+yIso+'">Yesterday</button><button type="button" class="btn" data-calclose="1">Close</button></div>';
@@ -2261,16 +2434,19 @@ function smartSuggest(pid,amt){
 }
 let TIP=null;
 function showTip(sug,doc){
-  TIP={sug,doc}; const {P,q,amt}=sug, Pn='<b>'+esc(P.name)+'</b>', Qn='<b>'+esc(q.name)+'</b>', pr=r=>{ const x=prioOf(r); return x?' ('+x[2]+')':''; };
+  TIP={sug,doc}; const {P,q,amt}=sug, Pn='<b>'+esc(P.name)+'</b>', Qn='<b>'+esc(q.name)+'</b>', es=LANG()==="es";
+  const pr=r=>{ const x=prioOf(r); return x?' ('+(es?ES[x[2]]:x[2])+')':''; }, pct=v=>Math.round(v*100)+'%';
+  const useBtn='<button type="button" class="btn primary" data-tip="all">'+L('Use ','Usar ')+esc(q.name)+'</button>';
   let msg, btns='';
-  if(sug.kind==="done"){ msg=Pn+' already reached its '+money(+P.goal)+' goal. Put this '+money(amt)+' toward '+Qn+pr(q)+' instead? It\'s at '+Math.round(sug.pct*100)+'%.';
-    btns='<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'; }
-  else if(sug.kind==="finish"){ msg='You\'re only '+money(sug.left)+' away from finishing '+Qn+'. This '+money(amt)+' would complete it.'+((+P.goal)?' '+Pn+' is at '+Math.round(sug.pct*100)+'% of its goal.':'');
-    btns=(amt>sug.left+0.004?'<button type="button" class="btn primary" data-tip="split">Finish '+esc(q.name)+', rest ('+money(amt-sug.left)+') to '+esc(P.name)+'</button><button type="button" class="btn" data-tip="all">All '+money(amt)+' to '+esc(q.name)+'</button>':'<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'); }
-  else if(sug.kind==="fund"){ msg=Qn+pr(q)+' has '+money(sug.qb)+'. After this, '+Pn+pr(P)+' would have '+money(sug.after)+', more than your higher-priority fund. Put this '+money(amt)+' toward '+esc(q.name)+' instead?';
-    btns='<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'; }
-  else { msg=Qn+pr(q)+' is only '+Math.round(sug.pct*100)+'% funded. '+Pn+(prioOf(P)?' is '+prioOf(P)[1].toLowerCase():' has no priority yet')+'. Still put '+money(amt)+' in '+esc(P.name)+'?';
-    btns='<button type="button" class="btn primary" data-tip="all">Use '+esc(q.name)+'</button>'; }
+  if(sug.kind==="done"){ msg=L(Pn+' already reached its '+money(+P.goal)+' goal. Put this '+money(amt)+' toward '+Qn+pr(q)+' instead? It\'s at '+pct(sug.pct)+'.',
+      Pn+' ya llegó a su meta de '+money(+P.goal)+'. ¿Pones estos '+money(amt)+' en '+Qn+pr(q)+'? Va en '+pct(sug.pct)+'.'); btns=useBtn; }
+  else if(sug.kind==="finish"){ msg=L('You\'re only '+money(sug.left)+' away from finishing '+Qn+'. This '+money(amt)+' would complete it.'+((+P.goal)?' '+Pn+' is at '+pct(sug.pct)+' of its goal.':''),
+      'Solo te faltan '+money(sug.left)+' para completar '+Qn+'. Estos '+money(amt)+' lo terminarían.'+((+P.goal)?' '+Pn+' va en '+pct(sug.pct)+' de su meta.':''));
+    btns=(amt>sug.left+0.004?'<button type="button" class="btn primary" data-tip="split">'+L('Finish '+esc(q.name)+', rest ('+money(amt-sug.left)+') to '+esc(P.name),'Completar '+esc(q.name)+' y el resto ('+money(amt-sug.left)+') a '+esc(P.name))+'</button><button type="button" class="btn" data-tip="all">'+L('All '+money(amt)+' to '+esc(q.name),'Todo ('+money(amt)+') a '+esc(q.name))+'</button>':useBtn); }
+  else if(sug.kind==="fund"){ msg=L(Qn+pr(q)+' has '+money(sug.qb)+'. After this, '+Pn+pr(P)+' would have '+money(sug.after)+', more than your higher-priority fund. Put this '+money(amt)+' toward '+esc(q.name)+' instead?',
+      Qn+pr(q)+' tiene '+money(sug.qb)+'. Después de esto, '+Pn+pr(P)+' tendría '+money(sug.after)+', más que tu fondo de mayor prioridad. ¿Pones estos '+money(amt)+' en '+esc(q.name)+'?'); btns=useBtn; }
+  else { const pp=prioOf(P); msg=L(Qn+pr(q)+' is only '+pct(sug.pct)+' funded. '+Pn+(pp?' is '+pp[1].toLowerCase():' has no priority yet')+'. Still put '+money(amt)+' in '+esc(P.name)+'?',
+      Qn+pr(q)+' solo tiene el '+pct(sug.pct)+'. '+Pn+(pp?' es de '+ES[pp[1]].toLowerCase():' aún no tiene prioridad')+'. ¿Igual pones '+money(amt)+' en '+esc(P.name)+'?'); btns=useBtn; }
   let box=$("tipBox"); if(!box){ box=document.createElement("div"); box.id="tipBox"; $("txForm").after(box); }
   box.innerHTML='<div class="tipcard" role="alert"><div class="tiphd">✦ Smart suggestion</div><p>'+msg+'</p><div class="tipbtns">'+btns+'<button type="button" class="btn" data-tip="keep">Keep my choice</button></div></div>';
   box.querySelectorAll("[data-tip]").forEach(b=>b.addEventListener("click",()=>tipChoose(b.dataset.tip)));
@@ -2341,7 +2517,7 @@ function openProjHistory(id){
   const p=projById(id); if(!p) return; const c=compute();
   const list=sortTx(S.txns.filter(t=>{const e=projEffect(t);return e&&e.pid===id;}));
   let h=sheetHead(p.name)+'<div class="split" style="margin-bottom:14px"><div><div class="eyebrow">Balance</div><div class="v">'+money(c.proj[id])+'</div></div><div><div class="eyebrow">Goal</div><div class="v">'+(p.goal?money(p.goal):"None")+'</div></div></div>'+(whereBlock(id)?'<div style="margin-bottom:14px">'+whereBlock(id)+'</div>':'');
-  h+= list.length? '<div class="list">'+list.map(t=>{const d=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'"><span class="badge">'+d.badge+'</span><span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(d.meta)+'</span></span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';}).join("")+'</div>'
+  h+= list.length? '<div class="list">'+list.map(t=>{const d=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'">'+d.bdg+'<span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(d.meta)+'</span></span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';}).join("")+'</div>'
     : '<div class="empty">Nothing saved yet.</div>';
   h+='<div class="actions" style="margin-top:14px"><button class="btn" data-editproj="'+esc(id)+'">Edit project</button><button class="btn primary" data-saveto="'+esc(id)+'">Add money</button></div>';
   openSheet(h);
@@ -2382,10 +2558,7 @@ document.addEventListener("click",async e=>{
   if(ds.lentperson){ openLentPerson(ds.lentperson); return; }
   if(ds.repay){ const r=lentPeople().find(x=>x.name===ds.repay); const ck=S.accounts.find(a=>a.type==="checking"); openTx(null,{type:"income",category:REPAY,borrower:ds.repay,payer:ds.repay,amount:r?r.left.toFixed(2):"",desc:"Repayment from "+ds.repay,to:ck?ck.id:""}); return; }
   if(ds.catlist){ openCatList(ds.catlist,ds.catym); return; }
-  if(ds.addmenu){ const k=ds.addmenu, T={credit:["a credit card","Add a transaction","A purchase with one of your cards"],savings:["a savings account","Add a transaction","Move money into one of your savings"],day:["a checking or cash account","Add a transaction","An expense, income or transfer"]}[k];
-    openSheet(sheetHead("Add")+'<div class="list">'+
-      '<button class="row" data-act="newacct" data-acctype="'+(k==="day"?"checking":k)+'"><span class="badge">+</span><span class="main"><span class="t">Add account</span><span class="m">Add '+T[0]+'</span></span></button>'+
-      '<button class="row" data-addfor="'+k+'"><span class="badge">⇄</span><span class="main"><span class="t">'+T[1]+'</span><span class="m">'+T[2]+'</span></span></button></div>'); return; }
+  if(ds.addmenu){ openAcct({type:ds.addmenu==="day"?"checking":ds.addmenu}); return; }
   if(ds.addfor){ closeSheet(); const k=ds.addfor, first=t=>S.accounts.find(a=>a.type===t);
     if(k==="credit") openTx(null,{type:"expense"});
     else if(k==="lend") openTx(null,{type:"expense",category:LENT});
@@ -2413,6 +2586,7 @@ document.addEventListener("click",async e=>{
   if(ds.wishtoggle){await wishUpdate(ds.wishproj,w=>w.map(x=>x.id===ds.wishtoggle?Object.assign({},x,{done:!x.done}):x));return;}
   if(ds.wishdel){await wishUpdate(ds.wishproj,w=>w.filter(x=>x.id!==ds.wishdel));return;}
   if(ds.editproj){openProj(projById(ds.editproj));return;}
+  if(ds.projhist){openProjHistory(ds.projhist);return;}
   if(ds.loandir){draft.dir=ds.loandir;document.querySelectorAll("[data-loandir]").forEach(x=>x.setAttribute("aria-pressed",x.dataset.loandir===ds.loandir));$("l_partyL").textContent=ds.loandir==="lent"?"Who owes you":"Lender (optional)"; if($("l_nameL")) $("l_nameL").textContent=ds.loandir==="lent"?"What it was for":"Loan name";return;}
   if(ds.txtype){readTxForm();draft.type=ds.txtype;if(!draft.id&&draft.ctx)placeCtx();
     if(!draft.id&&draft.type==="loanpay"){ if(!draft.loan){const ow=S.loans.filter(x=>x.dir!=="lent"); if(ow.length===1) draft.loan=ow[0].id;} if(!draft.from){const chk=S.accounts.find(a=>a.type==="checking"); if(chk) draft.from=chk.id;} loanDefaults(); }
