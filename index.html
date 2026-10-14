@@ -559,7 +559,10 @@ let LOOK=(()=>{ try{ return Object.assign({},LOOK_DEF,JSON.parse(localStorage.ge
 let LOOK_SYNCED=false;
 const MQ_DARK=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):{matches:false,addEventListener(){}};
 function curSeason(){ return LOOK.season==="off"?null:seasonFor(new Date()); }
-function isDark(){ return LOOK.mode==="dark"||(LOOK.mode==="auto"&&MQ_DARK.matches); }
+/* Auto = by the clock: Day from 7:00 AM to 7:00 PM, Night the rest */
+const DAY_FROM=7, DAY_TO=19;
+function nightNow(){ const h=new Date().getHours(); return h<DAY_FROM||h>=DAY_TO; }
+function isDark(){ return LOOK.mode==="dark"||(LOOK.mode==="auto"&&nightNow()); }
 function applyLook(){
   const m=isDark()?"dark":"light", P=(PALETTES[LOOK.pal]||PALETTES.terra)[m], se=curSeason();
   const v={...P}; if(se){ v.accent=se.acc[m]; v["accent-ink"]=m==="dark"?"#130D09":"#FFFFFF"; if(se.tint) Object.assign(v,se.tint[m]); }
@@ -578,7 +581,8 @@ function setLook(k,val){ LOOK[k]=val; try{ localStorage.setItem("pb_look",JSON.s
   applyLook(); if(typeof MODE!=="undefined"&&MODE==="cloud"&&typeof UID!=="undefined"&&UID){ STORE["meta-look"]={kind:"meta",mode:LOOK.mode,pal:LOOK.pal,season:LOOK.season,tips:LOOK.tips}; try{ persist(); }catch(_){} } }
 function syncLookFromStore(){ if(LOOK_SYNCED||typeof STORE==="undefined"||!STORE) return; const s=STORE["meta-look"]; if(!s) return; LOOK_SYNCED=true;
   LOOK={mode:s.mode||"auto",pal:PALETTES[s.pal]?s.pal:"terra",season:s.season==="off"?"off":"auto",tips:s.tips==="off"?"off":"on"}; try{ localStorage.setItem("pb_look",JSON.stringify(LOOK)); }catch(_){} applyLook(); }
-if(MQ_DARK.addEventListener) MQ_DARK.addEventListener("change",()=>{ if(LOOK.mode==="auto") applyLook(); });
+let LAST_DARK=null; const autoTick=()=>{ if(LOOK.mode!=="auto") return; const d=isDark(); if(d!==LAST_DARK){ LAST_DARK=d; applyLook(); } };
+setInterval(autoTick,60000); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) autoTick(); });
 applyLook();
 function seasonLine(){ const se=curSeason(); if(!se) return "";
   return '<div class="sline" aria-label="'+esc(se.greet)+'"><span class="sgreet">'+esc(se.greet)+'</span><span class="sart" aria-hidden="true">'+se.art(false)+'</span></div>'; }
@@ -587,7 +591,7 @@ function creditBlock(){ return '<div class="devcredit"><b>Pocketbook</b><br>Desi
 function lookBlock(){
   const se=seasonFor(new Date()), seg=(k,opts)=>'<div class="lseg" role="group">'+opts.map(([v,l])=>'<button type="button" data-look="'+k+'" data-lv="'+v+'" aria-pressed="'+(LOOK[k]===v)+'">'+l+'</button>').join("")+'</div>';
   return '<h2 style="margin-top:4px">Appearance</h2><div class="goalf" style="gap:12px;margin-bottom:14px">'+
-    '<div><label>Day or night</label>'+seg("mode",[["auto","Auto"],["light","☀︎ Day"],["dark","☾ Night"]])+'<span class="hint" style="display:block;margin:4px 0 0">Auto follows your iPhone or Mac.</span></div>'+
+    '<div><label>Day or night</label>'+seg("mode",[["auto","Auto"],["light","☀︎ Day"],["dark","☾ Night"]])+'<span class="hint" style="display:block;margin:4px 0 0">Auto: Day from 7 AM to 7 PM, Night from 7 PM to 7 AM.</span></div>'+
     '<div><label>Colors</label><div class="lpals">'+Object.entries(PALETTES).map(([k,p])=>'<button type="button" class="lpal" data-look="pal" data-lv="'+k+'" aria-pressed="'+(LOOK.pal===k)+'" title="'+esc(p.name)+'"><span class="lsw" style="background:linear-gradient(135deg,'+p.light.bg+' 0 50%,'+p.light.accent+' 50% 100%)"></span><span>'+esc(p.name)+'</span></button>').join("")+'</div></div>'+
     '<div><label>Seasonal look</label>'+seg("season",[["auto","Automatic"+(se?" · "+se.emoji+" "+se.name:"")],["off","Off (normal)"]])+'<span class="hint" style="display:block;margin:4px 0 0">Changes by itself for holidays and seasons. While it\'s on, the season\'s color replaces your palette\'s accent.</span></div>'+
     '<div><label>Smart suggestions</label>'+seg("tips",[["on","On"],["off","Off"]])+'<span class="hint" style="display:block;margin:4px 0 0">Before you add money to a project, Pocketbook may suggest one that is closer to its goal or has a higher priority. You always choose.</span></div></div>';
