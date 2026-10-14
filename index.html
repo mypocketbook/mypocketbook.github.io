@@ -22,7 +22,7 @@
 :root{
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#9AA1B2;
   --bg:#EEF1F6; --surface:#FFFFFF; --sunk:#E3E8F0; --ink:#131826; --muted:#5B6378; --line:#D5DBE6;
-  --accent:#3550D4; --accent-ink:#FFFFFF; --pos:#15803D; --neg:#C8282E; --save:#1F5FD6; --card:#7A3FC4; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235B6378' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --accent:#3550D4; --accent-ink:#FFFFFF; --pos:#11703A; --neg:#B42027; --save:#1A52BE; --card:#7A3FC4; --chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235B6378' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
   --f-body:"Figtree",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-num:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
@@ -79,7 +79,7 @@ button.row:hover{background:var(--sunk)}
 .badge.pic{background:#fff;padding:0;overflow:hidden}.badge.pic img{width:100%;height:100%;object-fit:cover;display:block}
 .iconpick{display:flex;align-items:center;gap:12px}.iconpick .badge{width:48px;height:48px}
 .topact{display:flex;gap:6px;align-items:center;flex:none}
-.iconbtn{width:38px;height:38px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:grid;place-items:center;padding:0;cursor:pointer}
+.iconbtn{width:42px;height:42px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:grid;place-items:center;padding:0;cursor:pointer}
 .iconbtn:hover{color:var(--ink);background:var(--sunk)}
 .pcols{display:grid;gap:0 24px;align-items:start}.pcol{min-width:0}
 @media (min-width:1000px){.pcols{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
@@ -177,7 +177,7 @@ html[data-theme="light"] #seasonfx i{background:#A9C4D8}
 .h2r{display:flex;align-items:baseline;gap:12px;min-width:0}
 .subh .h2r span{font-family:var(--f-num);letter-spacing:0;color:var(--save)}
 .sadd{border:0;background:none;color:var(--accent);font:inherit;font-family:var(--f-body);font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 0;cursor:pointer}
-.chp{font-style:normal;font-family:var(--f-num);font-size:12px;opacity:.8}
+.chp{font-style:normal;font-family:var(--f-num);font-size:12px}
 .ri.none .rn{color:var(--neg)} .ri.none .sw{border:1px dashed var(--muted)}
 .cats{display:grid;gap:9px}
 .crw .cl{display:flex;justify-content:space-between;gap:8px;font-size:13.5px}
@@ -222,7 +222,7 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .day{font-size:12px;font-weight:600;color:var(--muted);margin:16px 2px 6px;display:flex;justify-content:space-between}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-top:4px;scrollbar-width:none}
 .chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:500}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip[aria-pressed="true"],.chip[role="tab"][aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
 .proj{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:10px}
 .proj+.proj{margin-top:10px}
@@ -330,7 +330,7 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .fundtag{display:inline-block;margin-top:4px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--pos) 14%,var(--surface));color:var(--pos);font-variant-numeric:tabular-nums}
 .fundtag.low{background:color-mix(in srgb,var(--neg) 14%,var(--surface));color:var(--neg)}
 .badge.fundb{color:var(--save)}
-:root{--pr-top:#7048E8;--pr-mid:#0C8599;--pr-low:#9C5B9C}
+:root{--pr-top:#5F35D6;--pr-mid:#09677A;--pr-low:#8A4E8A}
 html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#D59BD5}
 .prtag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;letter-spacing:.02em;padding:2px 8px 2px 6px;border-radius:99px;color:var(--prc);background:color-mix(in srgb,var(--prc) 14%,var(--surface));white-space:nowrap;vertical-align:middle}
 .prtag::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--prc)}
@@ -361,6 +361,23 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#D59BD5}
 .qa button{border:0;background:none;display:grid;justify-items:center;gap:6px;font:700 12.5px var(--f-body);color:var(--ink);cursor:pointer;padding:0;max-width:96px;text-align:center}
 .qa i{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--surface);box-shadow:var(--shadow);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);color:var(--ink);transition:transform .12s}
 .qa button:active i{transform:scale(.93)} .qa .pri i{background:var(--accent);color:var(--accent-ink);border:0;box-shadow:0 8px 18px -8px color-mix(in srgb,var(--accent) 80%,transparent)}
+.prrow{position:relative}.prrow::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:var(--prc)}
+.prrow .prtag{background:none;padding:0 0 0 2px;font-weight:700}.prrow .prtag::before{display:none}
+/* uniform section headers: title left · total + add button right */
+#view h2{font-size:18px;font-weight:800;letter-spacing:-.02em;align-items:center}.grp>h2,.grps h2{margin:26px 2px 10px}
+.prhead{font-weight:800!important;font-size:15px!important}
+.gsum{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}.gsum.sav{color:var(--save)}.gsum.ink{color:var(--ink)}
+/* critique fixes: 44px touch area for section buttons, readable teal, one-line quick-action labels */
+.secadd::after{content:"";position:absolute;inset:-6px -4px}
+
+.gnote{font-size:12px;font-weight:600;color:var(--muted)}
+.qa button{max-width:116px}.qa span{line-height:1.2}
+.ttlwrap{display:grid;min-width:0}#hello{font-size:13px;font-weight:700;color:var(--accent);line-height:1.1;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);opacity:0;transition:opacity .4s ease;cursor:pointer}
+#splash.in{opacity:1}#splash.out{opacity:0}
+#splash .spin{display:grid;justify-items:center;text-align:center;transform:translateY(8px);transition:transform .6s cubic-bezier(.2,.8,.2,1)}#splash.in .spin{transform:none}
+#splash .sp1{margin:18px 0 0;font-size:20px;font-weight:600;color:var(--muted)}#splash .sp2{margin:2px 0 0;font-size:clamp(34px,9vw,48px);font-weight:800;letter-spacing:-.03em;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){#splash,#splash .spin{transition:none}}
 .prinfo{display:grid;justify-items:center;margin:-2px 0 8px}.prinfo summary{list-style:none;cursor:pointer;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--muted);color:var(--muted);display:grid;place-items:center;font:italic 700 14px Georgia,serif}
 .prinfo summary::-webkit-details-marker{display:none}.prinfo[open] summary{border-color:var(--accent);color:var(--accent)}.prinfo .prmean{margin:8px 0 0}
 .prshow{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted);margin:0 0 4px}
@@ -487,7 +504,7 @@ h2{font-weight:700;letter-spacing:-.015em}
   <header class="top">
     <div style="display:flex;align-items:center;gap:6px;min-width:0">
       <button type="button" id="backBtn" class="back" aria-label="Back" hidden>‹</button>
-      <h1 id="title">Overview</h1>
+      <div class="ttlwrap"><span id="hello" data-noi18n hidden></span><h1 id="title">Overview</h1></div>
     </div>
     <div class="topact" id="topact">
       <button type="button" class="iconbtn" data-act="settings" aria-label="Settings and backups" title="Settings and backups"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 4.3c.4-1.8 3-1.8 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.3 2.3a1.7 1.7 0 0 0 1.1 2.6c1.8.4 1.8 3 0 3.4a1.7 1.7 0 0 0-1.1 2.6c.9 1.5-.8 3.3-2.3 2.3a1.7 1.7 0 0 0-2.6 1.1c-.4 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.6-1.1c-1.5.9-3.3-.8-2.3-2.3a1.7 1.7 0 0 0-1.1-2.6c-1.8-.4-1.8-3 0-3.4a1.7 1.7 0 0 0 1.1-2.6c-.9-1.5.8-3.3 2.3-2.3a1.7 1.7 0 0 0 2.6-1.1z"/><circle cx="12" cy="12" r="3"/></svg></button>
@@ -535,7 +552,7 @@ const INC_CATS = ["Salary","Freelance","Refund","Gift","Loan repayment","Other"]
 
 /* ===== Look: Day/Night, color palettes, automatic seasonal themes ===== */
 const PALETTES={
-  terra:{name:"Terracotta Earth",light:{bg:"#F5EFE8",surface:"#FFFCF8",sunk:"#EADFD3",ink:"#2A1D16",muted:"#6F5E52",line:"#E2D4C6",accent:"#B5502F","accent-ink":"#FFFFFF"},
+  terra:{name:"Terracotta Earth",light:{bg:"#F5EFE8",surface:"#FFFCF8",sunk:"#EADFD3",ink:"#2A1D16",muted:"#6F5E52",line:"#E2D4C6",accent:"#A3452A","accent-ink":"#FFFFFF"},
     dark:{bg:"#15100D",surface:"#211913",sunk:"#1A130F",ink:"#F3E9DF",muted:"#B19F90",line:"#3A2C23",accent:"#E8845E","accent-ink":"#15100D"}},
   classic:{name:"Pocketbook Blue",light:{bg:"#EEF1F6",surface:"#FFFFFF",sunk:"#E3E8F0",ink:"#131826",muted:"#5B6378",line:"#D5DBE6",accent:"#3550D4","accent-ink":"#FFFFFF"},
     dark:{bg:"#0D1017",surface:"#171B26",sunk:"#10141C",ink:"#E9ECF4",muted:"#99A1B6",line:"#272D3B",accent:"#8099FF","accent-ink":"#0D1017"}},
@@ -543,9 +560,9 @@ const PALETTES={
     dark:{bg:"#0B1413",surface:"#13201E",sunk:"#0E1918",ink:"#E5F0EC",muted:"#93A9A3",line:"#22332F",accent:"#4FBFB5","accent-ink":"#0B1413"}},
   cloud:{name:"Cloud Dancer & Mocha",light:{bg:"#F0EEE9",surface:"#FBFAF7",sunk:"#E6E2DA",ink:"#2B211B",muted:"#6E6258",line:"#DDD6CB",accent:"#6B4A35","accent-ink":"#FBFAF7"},
     dark:{bg:"#16120F",surface:"#211A16",sunk:"#1A1411",ink:"#F0EEE9",muted:"#B3A79B",line:"#352A24",accent:"#D9B79A","accent-ink":"#16120F"}},
-  lavender:{name:"Soft-tech Lavender",light:{bg:"#F2F0F8",surface:"#FFFFFF",sunk:"#E6E2F2",ink:"#1C1830",muted:"#635D7D",line:"#DAD5EA",accent:"#6A5BD0","accent-ink":"#FFFFFF"},
+  lavender:{name:"Soft-tech Lavender",light:{bg:"#F2F0F8",surface:"#FFFFFF",sunk:"#E6E2F2",ink:"#1C1830",muted:"#635D7D",line:"#DAD5EA",accent:"#5B4BC4","accent-ink":"#FFFFFF"},
     dark:{bg:"#100E1B",surface:"#1B1829",sunk:"#141221",ink:"#ECE9F7",muted:"#A39DBF",line:"#2C2840",accent:"#A99BFF","accent-ink":"#100E1B"}},
-  fuchsia:{name:"Electric Fuchsia",light:{bg:"#F4F2F3",surface:"#FFFFFF",sunk:"#E9E4E7",ink:"#1A1418",muted:"#645A60",line:"#DDD4D9",accent:"#C42A7A","accent-ink":"#FFFFFF"},
+  fuchsia:{name:"Electric Fuchsia",light:{bg:"#F4F2F3",surface:"#FFFFFF",sunk:"#E9E4E7",ink:"#1A1418",muted:"#645A60",line:"#DDD4D9",accent:"#AE2369","accent-ink":"#FFFFFF"},
     dark:{bg:"#121012",surface:"#1D191C",sunk:"#171416",ink:"#F2ECEF",muted:"#A99BA3",line:"#322A30",accent:"#FF5FAE","accent-ink":"#121012"}}
 };
 /* Every spending category keeps its own color in the ring, in any palette */
@@ -585,21 +602,21 @@ const HEARTP=(x,y,s)=>'<path transform="translate('+x+' '+y+') scale('+s+')" d="
 const STARP=(x,y,s)=>'<path transform="translate('+x+' '+y+') scale('+s+')" d="M12 1.5l3.1 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.3 5.6 20.9l1.5-7.1L1.7 8.9l7.2-.8z"/>';
 const LEAFP=(x,y,s,r)=>'<path transform="translate('+x+' '+y+') rotate('+r+') scale('+s+')" d="M6 34C4 18 14 6 34 6c0 20-12 30-28 28z"/>';
 const SEASONS=[
-  {id:"newyear",name:"New Year",emoji:"🎆",from:1227,to:103,greet:"Happy New Year!",acc:{light:"#9A7400",dark:"#F2C14E"},
+  {id:"newyear",name:"New Year",emoji:"🎆",from:1227,to:103,greet:"Happy New Year!",acc:{light:"#7F5F00",dark:"#F2C14E"},
     art:k=>ART.confetti(k?54:34)+ART.star(k?28:18),wall:STARP(14,14,.9)+STARP(84,70,.6)+'<circle cx="100" cy="24" r="3"/><circle cx="34" cy="100" r="3"/>'},
-  {id:"valentine",name:"Valentine's",emoji:"💝",from:207,to:214,greet:"Happy Valentine's Day!",acc:{light:"#C2255C",dark:"#FF6B9A"},
+  {id:"valentine",name:"Valentine's",emoji:"💝",from:207,to:214,greet:"Happy Valentine's Day!",acc:{light:"#AE1F52",dark:"#FF6B9A"},
     art:k=>ART.heart(k?40:24)+ART.heart(k?26:16,"#F783AC"),wall:HEARTP(12,14,.8)+HEARTP(84,78,.6)},
-  {id:"stpatrick",name:"St. Patrick's",emoji:"☘️",from:314,to:317,greet:"Happy St. Patrick's Day!",acc:{light:"#1B7F3B",dark:"#51CF66"},
+  {id:"stpatrick",name:"St. Patrick's",emoji:"☘️",from:314,to:317,greet:"Happy St. Patrick's Day!",acc:{light:"#166A31",dark:"#51CF66"},
     art:k=>ART.clover(k?44:26),wall:'<g transform="translate(14 14) scale(.8)"><circle cx="20" cy="11" r="8"/><circle cx="11" cy="20" r="8"/><circle cx="29" cy="20" r="8"/><circle cx="20" cy="27" r="8"/></g>'},
-  {id:"spring",name:"Spring",emoji:"🌷",from:320,to:430,greet:"Happy spring!",acc:{light:"#9C36B5",dark:"#DA77F2"},
+  {id:"spring",name:"Spring",emoji:"🌷",from:320,to:430,greet:"Happy spring!",acc:{light:"#8A2EA2",dark:"#DA77F2"},
     art:k=>ART.flower(k?40:24)+ART.egg(k?28:18)+ART.flower(k?26:16,"#B197FC"),wall:'<g transform="translate(14 14) scale(.7)"><circle cx="20" cy="9" r="7"/><circle cx="31" cy="17" r="7"/><circle cx="27" cy="30" r="7"/><circle cx="13" cy="30" r="7"/><circle cx="9" cy="17" r="7"/></g><ellipse cx="100" cy="96" rx="9" ry="12"/>'},
   {id:"july4",name:"4th of July",emoji:"🎇",from:628,to:705,greet:"Happy 4th of July!",acc:{light:"#1E3A8A",dark:"#7DA2FF"},
     art:k=>ART.burst(k?46:28,"#E03131")+ART.star(k?26:16,"#1C7ED6")+ART.burst(k?32:20,"#1C7ED6"),wall:STARP(14,14,.9)+STARP(84,76,.7)},
-  {id:"summer",name:"Summer",emoji:"☀️",from:706,to:831,greet:"Enjoy the summer!",acc:{light:"#B45309",dark:"#FBBF24"},
+  {id:"summer",name:"Summer",emoji:"☀️",from:706,to:831,greet:"Enjoy the summer!",acc:{light:"#9A4507",dark:"#FBBF24"},
     art:k=>ART.sun(k?44:28)+ART.wave(k?44:28),wall:'<circle cx="30" cy="30" r="10"/><circle cx="96" cy="96" r="6"/><circle cx="110" cy="40" r="3"/>'},
-  {id:"fall",name:"Fall",emoji:"🍂",from:901,to:930,greet:"Happy fall!",acc:{light:"#B45309",dark:"#F59E0B"},
+  {id:"fall",name:"Fall",emoji:"🍂",from:901,to:930,greet:"Happy fall!",acc:{light:"#9A4507",dark:"#F59E0B"},
     art:k=>ART.leaf(k?36:22)+ART.leaf(k?26:16,"#F59F00")+ART.acorn(k?24:16),wall:LEAFP(10,10,.7,0)+LEAFP(90,80,.55,60)},
-  {id:"halloween",name:"Halloween",emoji:"🎃",from:1001,to:1031,greet:"Happy Halloween!",acc:{light:"#D9590B",dark:"#FF8A2A"},
+  {id:"halloween",name:"Halloween",emoji:"🎃",from:1001,to:1031,greet:"Happy Halloween!",acc:{light:"#A84505",dark:"#FF8A2A"},
     tint:{light:{bg:"#F3EEF6",sunk:"#E8E0EE"},dark:{bg:"#120D1A",surface:"#1C1626",sunk:"#161020",line:"#2E2540"}},
     art:k=>ART.ghost(k?40:22)+ART.pumpkin(k?56:30),wall:BATP+'<circle cx="96" cy="34" r="7"/><path d="M85 34l-7-5v10zM107 34l7-5v10z"/><path transform="translate(66 80) scale(.5)" d="M6 58V26a20 20 0 0 1 40 0v32l-6.6-5-6.6 5-6.8-5-6.8 5-6.6-5z"/><circle cx="26" cy="106" r="10"/>'},
   {id:"thanksgiving",name:"Thanksgiving",emoji:"🦃",from:1101,to:1130,greet:"Happy Thanksgiving!",acc:{light:"#9A3412",dark:"#FB923C"},
@@ -689,13 +706,13 @@ const ES={
 "New project":"Nuevo proyecto","Edit project":"Editar proyecto","Project name":"Nombre del proyecto","Saving for a goal":"Ahorrar para una meta","Ongoing fund":"Fondo continuo","Goal amount":"Monto de la meta","Create project":"Crear proyecto","Project created":"Proyecto creado","Project updated":"Proyecto actualizado","Give the project a name.":"Ponle un nombre al proyecto.","Enter the goal as a number, like 2500.":"Escribe la meta como número, por ejemplo 2500.","Enter the goal amount, like 1500.":"Escribe el monto de la meta, por ejemplo 1500.","Delete this project?":"¿Eliminar este proyecto?","Deleted project":"Proyecto eliminado","Money you always keep set aside, like an emergency or car fund. No end amount.":"Dinero que siempre tienes apartado, como un fondo de emergencia o para el auto. Sin monto final.","No projects yet":"Aún no hay proyectos","Create one for anything you are saving toward, like a trip, a new laptop or a car upgrade.":"Crea uno para cualquier cosa para la que ahorres: un viaje, una laptop nueva o mejoras al auto.","You have no projects yet.":"Aún no tienes proyectos.","Available for this project":"Disponible para este proyecto","Ongoing fund, no goal. Add one anytime with Edit project.":"Fondo continuo, sin meta. Agrega una cuando quieras con Editar proyecto.","Wish list":"Lista de deseos","Mark as bought":"Marcar como comprado","Mark as not bought":"Marcar como no comprado","Write the item name.":"Escribe el nombre del artículo.","Enter the price as a number.":"Escribe el precio como número.","Everything is bought.":"Ya compraste todo.","You have enough to buy what is left.":"Tienes suficiente para comprar lo que falta.","Where the money came from":"De dónde vino el dinero","Where the money is":"Dónde está el dinero","Purchases":"Compras","Moved between your accounts":"Movido entre tus cuentas","Paid from project money":"Pagado con dinero del proyecto","No goal set":"Sin meta","Project · no goal set":"Proyecto · sin meta","goal reached":"meta alcanzada","Top":"Alta","Medium":"Media","Low":"Baja","Top priority":"Prioridad alta","Medium priority":"Prioridad media","Low priority":"Prioridad baja","No priority yet":"Sin prioridad","Save for these first":"Ahorra primero para estos","Next in line":"Siguen en la lista","When there is room":"Cuando haya espacio","save for these first":"ahorra primero para estos","next in line":"siguen en la lista","when there is room":"cuando haya espacio","Projects by priority":"Proyectos por prioridad","What the colors mean":"Qué significan los colores","Saved as an ongoing fund":"Guardado como fondo continuo","Goal saved":"Meta guardada","Save goal":"Guardar meta","Add money":"Agregar dinero","Add money to":"Agregar dinero a",
 "✦ How smart suggestions work":"✦ Cómo funcionan las sugerencias inteligentes","✦ Smart suggestion":"✦ Sugerencia inteligente","Keep my choice":"Mantener mi elección","When you add money to a project, Pocketbook checks your other projects first. If one looks like a better place for it, a suggestion appears under the form. It checks in this order:":"Cuando agregas dinero a un proyecto, Pocketbook revisa primero tus otros proyectos. Si alguno parece un mejor lugar para ese dinero, aparece una sugerencia debajo del formulario. Revisa en este orden:","Goal already reached.":"Meta ya alcanzada.","The project you picked has hit its goal, so it suggests one that still needs money.":"El proyecto que elegiste ya llegó a su meta, así que sugiere uno que todavía necesita dinero.","Close to finishing.":"A punto de terminar.","Another project needs this much or less to reach its goal. It only suggests projects with the same or higher priority, and it offers to finish that one and send the rest to yours.":"Otro proyecto necesita esta cantidad o menos para llegar a su meta. Solo sugiere proyectos con la misma prioridad o más alta, y ofrece completarlo y enviar el resto al tuyo.","Higher priority is behind.":"Uno de más prioridad va atrasado.","A higher-priority project with a goal is under 50% funded.":"Un proyecto de más prioridad con meta tiene menos del 50%.","Higher-priority fund falling behind.":"Un fondo de más prioridad se queda atrás.","A higher-priority project with no goal would end up with less money than the one you picked.":"Un proyecto de más prioridad sin meta quedaría con menos dinero que el que elegiste.","No suggestion appears when you add to a Top project that isn't done, when you edit a transaction, or when nothing fits better. You always choose:":"No aparece ninguna sugerencia cuando agregas a un proyecto de prioridad alta que no ha terminado, cuando editas una transacción o cuando nada encaja mejor. Tú siempre decides:","saves it exactly as you entered it.":"lo guarda tal como lo escribiste.","Turn it on or off in":"Actívalas o desactívalas en","Settings → Appearance → Smart suggestions":"Configuración → Apariencia → Sugerencias inteligentes","right now)":"ahora mismo)",
 /* misc messages */
-"Couldn't save. Check your connection and try again.":"No se pudo guardar. Revisa tu conexión e inténtalo otra vez.","You're offline. That change wasn't saved, try again when you're connected.":"No tienes conexión. Ese cambio no se guardó; inténtalo cuando estés conectado.","Can't reach your data right now. Showing the last saved copy.":"No se puede llegar a tus datos ahora. Mostrando la última copia guardada.","Updated with the latest saved data":"Actualizado con los últimos datos guardados","The app didn't load completely. Check your connection and reload.":"La app no cargó por completo. Revisa tu conexión y vuelve a cargar.","You'll need your email or username and your password to log in again on this device. Your data stays saved online.":"Necesitarás tu correo o usuario y tu contraseña para volver a entrar en este dispositivo. Tus datos siguen guardados en línea.","Wrong PIN.":"PIN incorrecto.","Add credit card":"Agregar tarjeta de crédito","Add savings account":"Agregar cuenta de ahorros","Add checking or cash account":"Agregar cuenta corriente o efectivo","Lend money":"Prestar dinero","Edit":"Editar","Log repayment":"Registrar devolución","Log payment":"Registrar pago","Payment history":"Historial de pagos","Enter":"Entrar","Language":"Idioma",
+"Couldn't save. Check your connection and try again.":"No se pudo guardar. Revisa tu conexión e inténtalo otra vez.","You're offline. That change wasn't saved, try again when you're connected.":"No tienes conexión. Ese cambio no se guardó; inténtalo cuando estés conectado.","Can't reach your data right now. Showing the last saved copy.":"No se puede llegar a tus datos ahora. Mostrando la última copia guardada.","Updated with the latest saved data":"Actualizado con los últimos datos guardados","The app didn't load completely. Check your connection and reload.":"La app no cargó por completo. Revisa tu conexión y vuelve a cargar.","You'll need your email or username and your password to log in again on this device. Your data stays saved online.":"Necesitarás tu correo o usuario y tu contraseña para volver a entrar en este dispositivo. Tus datos siguen guardados en línea.","Wrong PIN.":"PIN incorrecto.","Your name or nickname":"Tu nombre o apodo","e.g. Alfredo":"ej. Alfredo","Tell us your name or nickname.":"Escribe tu nombre o apodo.","Add credit card":"Agregar tarjeta de crédito","Add savings account":"Agregar cuenta de ahorros","Add checking or cash account":"Agregar cuenta corriente o efectivo","Lend money":"Prestar dinero","Edit":"Editar","Log repayment":"Registrar devolución","Log payment":"Registrar pago","Payment history":"Historial de pagos","Enter":"Entrar","Language":"Idioma",
 "e.g. Car loan, Personal loan":"ej. Préstamo de auto, préstamo personal","e.g. bank or person":"ej. banco o persona","e.g. 15":"ej. 15","e.g. 6.9":"ej. 6.9","e.g. 7.2":"ej. 7.2","e.g. 36":"ej. 36","Not set":"Sin definir","e.g. Chase checking, Visa":"ej. Chase corriente, Visa","e.g. Vacation fund":"ej. Fondo de vacaciones","e.g. 1500":"ej. 1500","Item, like Floor mats":"Artículo, como alfombras","Price":"Precio","Item":"Artículo","e.g. Weekly groceries":"ej. Supermercado de la semana","e.g. October statement":"ej. Estado de cuenta de octubre","e.g. Paycheck Oct 1–15":"ej. Pago del 1 al 15 de oct","e.g. Employer name":"ej. Nombre del empleador","e.g. ATM withdrawal":"ej. Retiro del cajero","e.g. Raul":"ej. Raúl","e.g. SoFi loan payment":"ej. Pago del préstamo SoFi","e.g. Monthly deposit":"ej. Depósito mensual","e.g. alfredo":"ej. alfredo","Save it for a project (optional)":"Guárdalo para un proyecto (opcional)","Tip: write the project name in the description (e.g. \"Carmencita\") and it's detected automatically.":"Consejo: escribe el nombre del proyecto en la descripción (ej. \"Carmencita\") y se detecta solo.","still owed":"todavía debe","left":"restante","in progress":"en curso","Debt-free on":"Libre de deudas el","balance":"saldo","Saldo real":"Saldo real","No goal, it's an ongoing fund":"Sin meta, es un fondo continuo","Saving for something specific? Set a goal (optional)":"¿Ahorras para algo específico? Pon una meta (opcional)","Payments":"Pagos","Expense":"Gasto","Received from":"Recibido de","Paid you":"Te pagó","Paid back to you":"Te devolvió","Starting balance":"Saldo inicial","Before Pocketbook":"Antes de Pocketbook","How it works":"Cómo funciona","ⓘ How it works":"ⓘ Cómo funciona"
 };
 const MNY="([−\\-+]?\\$[\\d,]+(?:\\.\\d+)?)";
 const ES_PAT=[
  [new RegExp("^(\\d+)% used of "+MNY+" limit$"),"$1% usado de un límite de $2"],
- [/^(\d+)% used$/,"$1% usado"],[/^(\d+)% of total$/,"$1% del total"],[/^(\d+)% of limit$/,"$1% del límite"],[/^(\d+)% of income$/,"$1% de los ingresos"],
+ [/^(\d+)% used$/,"$1% usado"],[/^· (\d+)% used$/,"· $1% usado"],[/^(\d+)% of total$/,"$1% del total"],[/^(\d+)% of limit$/,"$1% del límite"],[/^(\d+)% of income$/,"$1% de los ingresos"],
  [/^(\d+)% paid off$/,"$1% pagado"],[/^(\d+)% paid back$/,"$1% devuelto"],[/^(\d+)% of goals$/,"$1% de las metas"],[/^(\d+)% of projects$/,"$1% de los proyectos"],
  [/^(\d+)% of card debt$/,"$1% de la deuda en tarjetas"],["add a limit","agrega un límite"],
  [new RegExp("^(\\d+)% of "+MNY+"$"),"$1% de $2"],[new RegExp("^(\\d+)% of your "+MNY+" goal$"),"$1% de tu meta de $2"],
@@ -949,7 +966,7 @@ async function loadMe(){
   try{ const {data}=await SB.auth.getSession(); const u=data&&data.session&&data.session.user; if(u){ S.me.email=u.email||""; } }catch(e){}
   try{ const {data}=await SB.from(UTABLE).select("username").eq("user_id",UID).maybeSingle(); if(data&&data.username) S.me.username=data.username; }catch(e){}
   // a username chosen at sign-up (before the email was confirmed) is claimed on the first login
-  try{ const pend=JSON.parse(localStorage.getItem("pb_pending_user")||"null");
+  try{ const pend=JSON.parse(localStorage.getItem("pb_pending_user")||"null"); if(pend&&pend.name&&pend.email&&S.me.email&&pend.email.toLowerCase()===S.me.email.toLowerCase()) localStorage.setItem("pb_pending_name",JSON.stringify({name:pend.name}));
     if(pend&&!S.me.username&&pend.email&&S.me.email&&pend.email.toLowerCase()===S.me.email.toLowerCase()){
       const {error}=await SB.from(UTABLE).insert({username:pend.username,user_id:UID}); if(!error) S.me.username=pend.username; localStorage.removeItem("pb_pending_user"); } }catch(e){}
 }
@@ -962,7 +979,9 @@ async function cloudReady(){
     try{ STORE=JSON.parse(localStorage.getItem("pb_cloud_cache")||"{}"); }catch(_){ STORE={}; }
     refresh(); toast("Can't reach your data right now. Showing the last saved copy."); return;
   }
-  await runSetup(); refresh(); gateAfterLogin();
+  await runSetup();
+  try{ const pend=JSON.parse(localStorage.getItem("pb_pending_name")||"null"); if(pend&&pend.name&&!userName()){ STORE["meta-profile"]={kind:"meta",name:pend.name}; await persist(); } localStorage.removeItem("pb_pending_name"); }catch(e){}
+  refresh(); gateAfterLogin();
   if(!rtChannel){ rtChannel=SB.channel("pb-items").on("postgres_changes",{event:"*",schema:"public",table:TABLE},()=>scheduleReload()).subscribe(); }
 }
 async function cloudStart(){
@@ -1048,6 +1067,7 @@ function authView(){
     '<button id="au_btn" class="btn primary wide" type="submit">Log in</button><button type="button" class="sadd" data-authmode="forgot" style="justify-self:center">Forgot your password?</button></form>'+
     '<p class="aswitch">New to Pocketbook? <button type="button" data-authmode="signup">Create an account</button></p>';
   else if(m==="signup") h+='<form id="authForm" class="authcard" novalidate><strong>Create your account</strong><span class="hint">Your own private Pocketbook. Nobody else can see your accounts.</span>'+
+    '<div class="field" style="margin:0"><label for="au_name">Your name or nickname</label><input id="au_name" autocomplete="given-name" maxlength="30" placeholder="e.g. Alfredo"></div>'+
     '<div class="field" style="margin:0"><label for="au_email">Email</label><input id="au_email" type="email" inputmode="email" autocomplete="email" autocapitalize="off"></div>'+
     '<div class="field" style="margin:0"><label for="au_user">Username</label><input id="au_user" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="3 to 20 letters, numbers, . or _"></div>'+
     pwField("au_pin","Password (at least 8 characters)","new-password",1)+pwField("au_pin2","Repeat the password","new-password",1)+msg+
@@ -1079,7 +1099,8 @@ function wireAuth(){
         S.loginMsg=""; markUnlocked(); await cloudReady(); return;
       }
       if(m==="signup"){
-        const email=g("au_email").trim(), user=g("au_user").trim().toLowerCase(), pin=g("au_pin"), pin2=g("au_pin2");
+        const name=g("au_name").trim().replace(/\s+/g," "), email=g("au_email").trim(), user=g("au_user").trim().toLowerCase(), pin=g("au_pin"), pin2=g("au_pin2");
+        if(!name) return authErr("Tell us your name or nickname.");
         if(!/^\S+@\S+\.\S+$/.test(email)) return authErr("Enter a valid email.");
         if(!USER_RE.test(user)) return authErr("Username: 3 to 20 characters, using letters, numbers, . or _");
         const pe=pwStrongErr(pin); if(pe) return authErr(pe);
@@ -1088,7 +1109,7 @@ function wireAuth(){
         try{ const {data:free}=await SB.rpc("pocketbook_username_free",{u:user}); if(free===false) return authErr("That username is taken. Try another one."); }catch(_){}
         const {data,error}=await SB.auth.signUp({email,password:pin,options:{emailRedirectTo:location.origin+location.pathname}});
         if(error) return authErr(/registered|exists/i.test(error.message)?"There's already an account with that email. Log in instead.":"Couldn't create the account: "+error.message);
-        try{ localStorage.setItem("pb_pending_user",JSON.stringify({email,username:user})); }catch(_){}
+        try{ localStorage.setItem("pb_pending_user",JSON.stringify({email,username:user,name})); }catch(_){}
         if(data&&data.session){ S.loginMsg=""; await cloudReady(); return; }
         S.authMode="login"; try{ sessionStorage.removeItem("pb_authmode"); }catch(_){} return authErr("Account created. Check your email to confirm it, then log in.",true);
       }
@@ -1374,6 +1395,8 @@ function render(){
   document.querySelectorAll("nav.tabs [data-tab]").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===S.tab?"page":"false"));
   if(S.status==="ready"){ if(S.open&&!acctById(S.open)) S.open=null; if(S.openLoan&&!loanById(S.openLoan)) S.openLoan=null; if(S.openProj&&!projById(S.openProj)) S.openProj=null; }
   const openA=S.open&&acctById(S.open), openL=!openA&&S.openLoan&&loanById(S.openLoan), openP=!openA&&!openL&&S.openProj&&projById(S.openProj);
+  const hel=$("hello"); if(hel){ const nm=userName(); hel.textContent=(nm&&S.status==="ready"&&!openA&&!S.openLoan&&!S.openProj&&S.tab==="home")?L("Hi, ","Hola, ")+nm:""; hel.hidden=!hel.textContent; }
+  setTimeout(()=>{ maybeWelcome(); maybeAskName(); },0);
   $("title").textContent= openA? openA.name : openL? loanLabel(openL) : openP? openP.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans"}[S.tab];
   $("backBtn").hidden=!(openA||openL||openP);
   $("monthnav").hidden = true;
@@ -1513,6 +1536,22 @@ const ICO={
 function secAdd(attr,icon,label){ return '<button type="button" class="secadd" '+attr+' aria-label="'+label+'" title="'+label+'">'+ICO[icon]+'<b aria-hidden="true">+</b></button>'; }
 /* Quick actions: round buttons with a label (primary first) */
 function quickActs(items){ return '<div class="qa">'+items.map(it=>'<button type="button" class="'+(it.pri?'pri':'')+'" '+it.attr+'><i>'+ICO[it.icon]+'</i><span>'+it.label+'</span></button>').join("")+'</div>'; }
+function userName(){ const m=STORE&&STORE["meta-profile"]; return m&&m.name?String(m.name):""; }
+function userGreet(){ const m=STORE&&STORE["meta-profile"]; return m&&m.greet==="f"?"f":"m"; }
+async function saveName(n,greet){ n=String(n||"").trim().replace(/\s+/g," ").slice(0,30); if(!n) return false; STORE["meta-profile"]={kind:"meta",name:n,greet:greet||userGreet()}; return await persist(); }
+/* Welcome screen: once per visit, after the app is unlocked */
+function maybeWelcome(){ if(S.status!=="ready"||!userName()) return; try{ if(sessionStorage.getItem("pb_welcomed")) return; sessionStorage.setItem("pb_welcomed","1"); }catch(_){ return; }
+  const el=document.createElement("div"); el.id="splash"; el.setAttribute("role","status"); el.setAttribute("data-noi18n","");
+  el.innerHTML='<div class="spin"><div class="wring" aria-hidden="true"><i></i></div><p class="sp1">'+esc(L("Welcome,",userGreet()==="f"?"¡Bienvenida,":"¡Bienvenido,"))+'</p><p class="sp2">'+esc(userName())+(LANG()==="es"?"!":"")+'</p></div>';
+  document.body.appendChild(el); requestAnimationFrame(()=>el.classList.add("in"));
+  setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),450); },1700); el.addEventListener("click",()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),400); }); }
+/* Ask once for a name if the account doesn't have one yet */
+function maybeAskName(){ if(S.status!=="ready"||MODE!=="cloud"||userName()||$("sheetRoot").innerHTML) return; try{ if(sessionStorage.getItem("pb_name_asked")) return; sessionStorage.setItem("pb_name_asked","1"); }catch(_){}
+  openSheet(sheetHead(L("What should we call you?","¿Cómo te llamamos?"))+'<form id="nameForm" novalidate><p class="hint" style="margin:0 0 10px">'+L("Your name or nickname shows when you open Pocketbook.","Tu nombre o apodo aparece al abrir Pocketbook.")+'</p><div class="field"><label for="nm_name">'+L("Name or nickname","Nombre o apodo")+'</label><input id="nm_name" maxlength="30" autocomplete="given-name"></div><div class="field"><label>'+L("Welcome message (Spanish)","Mensaje de bienvenida")+'</label>'+greetPick("nm","m")+'</div><div class="actions"><button type="submit" class="btn primary">'+L("Save","Guardar")+'</button></div></form>');
+  let g="m"; wireGreet("nm",v=>g=v);
+  $("nameForm").addEventListener("submit",async e=>{ e.preventDefault(); if(await saveName($("nm_name").value,g)){ closeSheet(); render(); try{ sessionStorage.removeItem("pb_welcomed"); }catch(_){} maybeWelcome(); } }); }
+function greetPick(id,cur){ return '<div class="lseg" role="group" aria-label="'+L("Welcome message","Mensaje de bienvenida")+'" data-noi18n>'+[["m","¡Bienvenido!"],["f","¡Bienvenida!"]].map(([v,t])=>'<button type="button" data-greet="'+id+'" data-gv="'+v+'" aria-pressed="'+(cur===v)+'">'+t+'</button>').join("")+'</div>'; }
+function wireGreet(id,onPick){ document.querySelectorAll('[data-greet="'+id+'"]').forEach(b=>b.addEventListener("click",()=>{ document.querySelectorAll('[data-greet="'+id+'"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b))); onPick(b.dataset.gv); })); }
 function helpBox(title,body){ return '<details class="tiprules help"><summary>ⓘ '+title+'</summary><div><p>'+body+'</p></div></details>'; }
 function tipRules(){
   return '<details class="tiprules"><summary>✦ How smart suggestions work</summary><div>'+
@@ -1527,8 +1566,8 @@ function tipRules(){
 function prioLegend(){ return '<div class="prlegend" role="note" aria-label="What the priority colors mean">'+PRIOS.map(r=>'<span style="--prc:'+r[3]+'"><i></i><b>'+r[2]+'</b> '+PRIO_MEAN[r[0]]+'</span>').join("")+'</div>'; }
 function projSorted(){ return S.projects.slice().sort((a,b)=>prioRank(a)-prioRank(b)||(a.created||0)-(b.created||0)); }
 function projRow(p,c){
-  const v=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,v/goal*100)):0;
-  return '<button class="row" data-viewproj="'+esc(p.id)+'"><span class="badge fundb">'+esc(initials(p.name))+'</span><span class="main"><span class="t">'+esc(p.name)+prioTag(p)+'</span>'+
+  const v=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,v/goal*100)):0, pr=prioOf(p);
+  return '<button class="row'+(pr?' prrow':'')+'"'+(pr?' style="--prc:'+pr[3]+'"':'')+' data-viewproj="'+esc(p.id)+'"><span class="badge fundb">'+esc(initials(p.name))+'</span><span class="main"><span class="t">'+esc(p.name)+prioTag(p)+'</span>'+
     (goal?'<span class="ubar goal"><i style="width:'+pct.toFixed(1)+'%"></i></span><span class="m">'+Math.round(pct)+'% of '+money(goal)+'</span>':'<span class="m">'+(p.fund?'Ongoing fund':'Project · no goal set')+'</span>')+
     '</span><span class="amt '+(v<0?"neg":"")+'">'+money(v)+'</span></button>';
 }
@@ -1540,17 +1579,13 @@ function acctGroups(c,withProjects){
   let h='';
   if(cards.length){
     const u=c.limit?Math.round(c.owed/c.limit*100):null;
-    h+='<section class="grp"><h2 id="g-cards"><span>Credit cards</span><span class="h2r"><span class="gsum neg">'+money(c.owed)+(u!==null?' · '+u+'% used':'')+'</span>'+secAdd('data-addmenu="credit"','card','Add credit card')+'</span></h2><div class="list">'+cards.map(a=>utilRow(a,c,c.owed)).join("")+'</div></section>';
+    h+='<section class="grp"><h2 id="g-cards"><span>Credit cards</span><span class="h2r"><span class="gsum neg">'+money(c.owed)+(u!==null?'<small class="gnote"> · '+u+'% used</small>':'')+'</span>'+secAdd('data-addmenu="credit"','card','Add credit card')+'</span></h2><div class="list">'+cards.map(a=>utilRow(a,c,c.owed)).join("")+'</div></section>';
   }
   const projs=withProjects?projSorted():[];
-  if(sav.length||projs.length){
-    h+='<section class="grp"><h2 id="g-sav">Savings</h2>';
-    if(sav.length) h+='<div class="subh"><span>Personal savings</span><span class="h2r"><span>'+money(c.personal)+'</span>'+secAdd('data-addmenu="savings"','piggy','Add savings account')+'</span></div><div class="list">'+sav.map(a=>{ const ip=S.projects.reduce((t,p)=>t+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0); return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(ip)>=0.005?' · '+money(ip)+' for projects · '+money(c.bal[a.id]-ip)+' free':'')); }).join("")+'</div>';
-    if(projs.length) h+='<div class="subh"><span>Projects</span><span class="h2r"><span>'+money(c.aside)+'</span>'+secAdd('data-act="newproj"','target','New project')+'</span></div><div class="list">'+projs.map(p=>projRow(p,c)).join("")+'</div>';
-    h+='</section>';
-  }
+  if(sav.length) h+='<section class="grp"><h2 id="g-sav"><span>Personal savings</span><span class="h2r"><span class="gsum sav">'+money(c.personal)+'</span>'+secAdd('data-addmenu="savings"','piggy','Add savings account')+'</span></h2>'+'<div class="list">'+sav.map(a=>{ const ip=S.projects.reduce((t,p)=>t+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0); return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(ip)>=0.005?' · '+money(ip)+' for projects · '+money(c.bal[a.id]-ip)+' free':'')); }).join("")+'</div>'+'</section>';
+  if(projs.length) h+='<section class="grp"><h2 id="g-proj"><span>Projects</span><span class="h2r"><span class="gsum sav">'+money(c.aside)+'</span>'+secAdd('data-act="newproj"','target','New project')+'</span></h2><div class="list">'+projs.map(p=>projRow(p,c)).join("")+'</div></section>';
   if(day.length){
-    h+='<section class="grp"><h2 id="g-day"><span>Checking and cash</span><span class="h2r"><span class="gsum">'+money(c.daily)+'</span>'+secAdd('data-addmenu="day"','wallet','Add checking or cash account')+'</span></h2><div class="list">'+day.map(a=>{
+    h+='<section class="grp"><h2 id="g-day"><span>Checking and cash</span><span class="h2r"><span class="gsum ink">'+money(c.daily)+'</span>'+secAdd('data-addmenu="day"','wallet','Add checking or cash account')+'</span></h2><div class="list">'+day.map(a=>{
       const inProj=S.projects.reduce((s,p)=>s+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0);
       return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(inProj)>=0.005?' · '+money(inProj)+' for projects':''));
     }).join("")+'</div></section>';
@@ -1730,7 +1765,7 @@ function lentSection(){
     P.push({name:loanLabel(l),why:loanReason(l),lent,repaid:Math.round(Math.max(0,lent-left)*100)/100,left,attr:'data-openloan="'+esc(l.id)+'"'}); });
   P.sort((a,b)=>b.left-a.left||a.name.localeCompare(b.name));
   const out=P.reduce((s,r)=>s+r.left,0);
-  let h='<section class="grp"><h2 id="g-lent"><span>Money lent to others</span><span class="h2r"><span class="gsum pos">'+money(out)+' owed to you</span>'+secAdd('data-addfor="lend"','hand','Lend money')+'</span></h2>';
+  let h='<section class="grp"><h2 id="g-lent"><span>Money lent to others</span><span class="h2r"><span class="gsum pos">'+money(out)+'</span>'+secAdd('data-addfor="lend"','hand','Lend money')+'</span></h2>';
   if(!P.length) return h+'<div class="empty">When you lend money, log it as an expense with the category <b>Lent to others</b> and write who it is for. It shows up here so you can track repayments.</div></section>';
   h+='<div class="list">'+P.map(r=>{ const st=lentStatus(r), pct=r.lent?Math.min(100,r.repaid/r.lent*100):100;
     return '<button class="row" '+r.attr+'><span class="badge lent">'+esc(initials(r.name))+'</span><span class="main"><span class="t">'+esc(r.name)+' <span class="pill st-'+st.c+'">'+st.t+'</span></span>'+
@@ -1872,7 +1907,7 @@ function viewProjects(){
   const card=p=>{
     const b=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,b/goal*100)):0;
     const pr=prioOf(p);
-    return '<div class="proj tap"'+(pr?' data-pr="'+pr[0]+'" style="--prc:'+pr[3]+'"':'')+' data-cardopen="'+esc(p.id)+'" role="link" tabindex="0" aria-label="Open '+esc(p.name)+'"><div class="head"><span class="name">'+esc(p.name)+'</span><span class="hr"><span class="bal">'+money(b)+'</span><button type="button" class="plus" data-saveto="'+esc(p.id)+'" aria-label="Add money to '+esc(p.name)+'" title="Add money">+</button></span></div>'+
+    return '<div class="proj tap"'+(pr?' data-pr="'+pr[0]+'" style="--prc:'+pr[3]+'"':'')+' data-cardopen="'+esc(p.id)+'" role="link" tabindex="0"><div class="head"><span class="name">'+esc(p.name)+'</span><span class="hr"><span class="bal">'+money(b)+'</span><button type="button" class="plus" data-saveto="'+esc(p.id)+'" aria-label="Add money to '+esc(p.name)+'" title="Add money">+</button></span></div>'+
       (goal?'<div class="bar" role="img" aria-label="'+Math.round(pct)+'% of goal"><i style="width:'+pct+'%"></i></div>':'')+whereBlock(p.id)+
       '<div class="foot"><span>'+(goal?Math.round(pct)+'% of '+money(goal)+(b<goal?' · '+money(goal-b)+' to go':' · goal reached'):(p.fund?'Ongoing fund':'No goal set'))+'</span>'+
       '<span class="chev2" aria-hidden="true">›</span></div></div>';
@@ -1895,13 +1930,15 @@ function daysSinceFile(){ const d=lsGet("pb_lastfile"); if(!d) return null; retu
 function accountBlock(){
   if(MODE!=="cloud") return '';
   const me=S.me||{};
-  return '<h2 style="margin-top:4px">Your account</h2><div class="list" style="margin-bottom:6px">'+
+  return '<h2 style="margin-top:4px">Your account</h2><form id="nameEdit" class="goalf" novalidate style="margin-bottom:10px"><label for="se_name">'+L("Your name or nickname","Tu nombre o apodo")+'</label><div class="gf"><input id="se_name" maxlength="30" value="'+esc(userName())+'"><button class="btn" type="submit">'+L("Save","Guardar")+'</button></div><label style="margin-top:8px">'+L("Welcome message (Spanish)","Mensaje de bienvenida")+'</label>'+greetPick("se",userGreet())+'</form><div class="list" style="margin-bottom:6px">'+
     '<div class="row" style="cursor:default"><span class="main"><span class="t">'+esc(me.username?"@"+me.username:"No username yet")+'</span><span class="m">'+esc(me.email||"")+'</span></span></div></div>'+
     (me.username?'':'<form id="userForm" class="goalf" novalidate><label for="su_user">Choose a username to log in with it</label><div class="gf"><input id="su_user" autocapitalize="off" spellcheck="false" placeholder="e.g. alfredo"><button class="btn primary" type="submit">Save</button></div></form>')+
     '<form id="pinForm" class="goalf" novalidate style="margin-top:10px;gap:10px"><strong style="font-size:14px">Change password</strong>'+pwField("sp_pin","New password (at least 8 characters)","new-password",1)+pwField("sp_pin2","Repeat the new password","new-password",1)+'<button class="btn" type="submit" style="justify-self:start">Change password</button></form>'+
     '<div class="goalf" style="margin-top:12px"><label>Quick-access PIN (4 digits)</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" data-pinset="1">'+(STORE["meta-pin"]?"Change PIN":"Set up PIN")+'</button>'+(STORE["meta-pin"]?'<button type="button" class="btn" data-pinoff="1">Turn off PIN</button>':'')+'</div></div><div id="accMsg"></div>';
 }
 function wireAccount(){
+  const nf=$("nameEdit"); if(nf){ wireGreet("se",async v=>{ if(userName()&&await saveName(userName(),v)) toast(L("Saved","Guardado")); });
+    nf.addEventListener("submit",async e=>{ e.preventDefault(); if(await saveName($("se_name").value)){ toast(L("Name saved","Nombre guardado")); render(); } }); }
   if($("sp_pin")) wirePw("sp_pin","sp_pin2");
   const msg=(t,ok)=>{ const m=$("accMsg"); if(m) m.innerHTML='<p class="'+(ok?"okmsg":"err")+'" style="margin:8px 0 0">'+esc(t)+'</p>'; };
   const uf=$("userForm"); if(uf) uf.addEventListener("submit",async e=>{ e.preventDefault(); const u=$("su_user").value.trim().toLowerCase();
@@ -2012,7 +2049,7 @@ function viewLoan(l){
   if(orig) h+='<div class="bar" role="img" aria-label="'+Math.round(pct)+'% paid off" style="margin-bottom:6px"><i style="width:'+pct+'%"></i></div><div class="hint" style="margin:0 0 12px">'+Math.round(pct)+'% of '+money(orig)+' paid off</div>';
   h+=quickActs([{pri:1,icon:"plus",label:lent?"Log repayment":"Log payment",attr:'data-payloan="'+esc(l.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editloan="'+esc(l.id)+'"'},{icon:"hist",label:"History",attr:lent?'data-scrollto="loanhist"':'data-loantab="history"'}])+'</section>';
   const tab=lent?"history":(S.loanTab||"progress");
-  if(!lent) h+='<div class="seg" role="tablist" aria-label="Loan views" style="margin:4px 0 14px">'+[["progress","Progress"],["plan","Plan"],["history","History"]].map(([k,t])=>'<button type="button" class="chip" role="tab" data-loantab="'+k+'" aria-pressed="'+(tab===k)+'">'+t+'</button>').join("")+'</div>';
+  if(!lent) h+='<div class="seg" role="tablist" aria-label="Loan views" style="margin:4px 0 14px">'+[["progress","Progress"],["plan","Plan"],["history","History"]].map(([k,t])=>'<button type="button" class="chip" role="tab" data-loantab="'+k+'" aria-selected="'+(tab===k)+'">'+t+'</button>').join("")+'</div>';
   if(tab==="progress") return h+loanProgress(l,left,pays);
   if(tab==="history"&&!lent) return h+loanHistory(pays);
   h+='<div class="kv">'+
