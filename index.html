@@ -50,6 +50,7 @@ button{cursor:pointer}
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 header.top h1{font-family:var(--f-display);font-weight:700;font-size:1.375rem;margin:0;letter-spacing:-.02em}
 header.top h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header.top.homehdr h1{font-family:var(--f-body);font-size:0.6875rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-block:6px}
 .back{border:1px solid var(--line);background:var(--surface);width:34px;height:34px;flex:none;border-radius:999px;font-size:1.375rem;line-height:1;color:var(--ink)}
 .monthnav{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px}
 .monthnav button{border:0;background:none;width:32px;height:32px;border-radius:999px;font-size:1.125rem;color:var(--muted)}
@@ -128,6 +129,14 @@ html[data-theme="light"] #seasonfx i{background:#A9C4D8}
 @keyframes pbsnow{to{transform:translateY(105vh)}}
 @media (prefers-reduced-motion:reduce){#seasonfx i{animation:none}}
 .sline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 6px}
+.wcard{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 18px;margin:2px 0 14px;box-shadow:var(--shadow)}
+.wcard .wav{width:52px;height:52px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:1.0625rem;letter-spacing:.02em;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.wcard .wtx{display:grid;gap:1px;min-width:0}
+.wcard .wg{font-size:1.3rem;font-weight:800;letter-spacing:-.03em;line-height:1.15;overflow:hidden;text-overflow:ellipsis}
+.wcard .ws{font-size:0.8125rem;color:var(--muted)}
+.wcard .wse{color:var(--accent);font-weight:700}
+.wcard .wart{margin-left:auto;flex:none;display:flex;align-items:center;gap:4px}
+@media (max-width:460px){.wcard{padding:12px 14px;gap:11px;border-radius:18px}.wcard .wav{width:46px;height:46px;font-size:0.9375rem}.wcard .wg{font-size:1.15rem}.wcard .ws{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wcard .wart{display:none}}
 .sgreet{font-weight:700;color:var(--accent);font-size:0.875rem}
 .sart{display:flex;align-items:flex-end;gap:4px}
 .lseg{display:flex;background:var(--sunk);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap;margin-top:6px}
@@ -550,7 +559,7 @@ h2{font-weight:700;letter-spacing:-.015em}
   <header class="top">
     <div style="display:flex;align-items:center;gap:6px;min-width:0">
       <button type="button" id="backBtn" class="back" aria-label="Back" hidden>‹</button>
-      <div class="ttlwrap"><span id="hello" data-noi18n hidden></span><h1 id="title">Overview</h1></div>
+      <div class="ttlwrap"><h1 id="title">Overview</h1></div>
     </div>
     <div class="topact" id="topact">
       <button type="button" class="iconbtn" data-act="settings" aria-label="Settings and backups" title="Settings and backups"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 4.3c.4-1.8 3-1.8 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.3 2.3a1.7 1.7 0 0 0 1.1 2.6c1.8.4 1.8 3 0 3.4a1.7 1.7 0 0 0-1.1 2.6c.9 1.5-.8 3.3-2.3 2.3a1.7 1.7 0 0 0-2.6 1.1c-.4 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.6-1.1c-1.5.9-3.3-.8-2.3-2.3a1.7 1.7 0 0 0-1.1-2.6c-1.8-.4-1.8-3 0-3.4a1.7 1.7 0 0 0 1.1-2.6c-.9-1.5.8-3.3 2.3-2.3a1.7 1.7 0 0 0 2.6-1.1z"/><circle cx="12" cy="12" r="3"/></svg></button>
@@ -717,6 +726,23 @@ function syncLookFromStore(){ if(LOOK_SYNCED||typeof STORE==="undefined"||!STORE
 let LAST_DARK=null; const autoTick=()=>{ if(LOOK.mode!=="auto") return; const d=isDark(); if(d!==LAST_DARK){ LAST_DARK=d; applyLook(); } };
 setInterval(autoTick,60000); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) autoTick(); });
 applyLook();
+/* A proper hello at the top of Home: who you are, what time it is, what day it is */
+function greetWord(){ const h=new Date().getHours();
+  if(h<12) return L("Good morning","Buenos días");
+  if(h<19) return L("Good afternoon","Buenas tardes");
+  return L("Good evening","Buenas noches"); }
+function initialsOf(n){ const p=String(n||"").trim().split(/\s+/).filter(Boolean);
+  if(!p.length) return "·";
+  if(p.length===1) return (p[0].length<=3?p[0]:p[0].charAt(0)).toUpperCase();
+  return (p[0].charAt(0)+p[p.length-1].charAt(0)).toUpperCase(); }
+function welcomeCard(){
+  const nm=userName(); if(!nm) return seasonLine();
+  const se=curSeason(), d=new Date().toLocaleDateString(LOC(),{weekday:"long",month:"long",day:"numeric"});
+  return '<section class="wcard"><span class="wav" aria-hidden="true">'+esc(initialsOf(nm))+'</span>'+
+    '<span class="wtx"><span class="wg" data-noi18n>'+esc(greetWord()+", "+nm)+'</span>'+
+    '<span class="ws"><span data-noi18n>'+esc(d)+'</span>'+
+    (se?' · <b class="wse">'+esc(se.greet)+'</b>':'')+'</span></span>'+
+    (se?'<span class="wart" aria-hidden="true">'+se.art(false)+'</span>':'')+'</section>'; }
 function seasonLine(){ const se=curSeason(); if(!se) return "";
   return '<div class="sline" aria-label="'+esc(se.greet)+'"><span class="sgreet">'+esc(se.greet)+'</span><span class="sart" aria-hidden="true">'+se.art(false)+'</span></div>'; }
 const DEV_NAME="Alfredo J Loyo H";
@@ -1478,7 +1504,7 @@ function render(){
   document.querySelectorAll("nav.tabs [data-tab]").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===S.tab?"page":"false"));
   if(S.status==="ready"){ if(S.open&&!acctById(S.open)) S.open=null; if(S.openLoan&&!loanById(S.openLoan)) S.openLoan=null; if(S.openProj&&!projById(S.openProj)) S.openProj=null; }
   const openA=S.open&&acctById(S.open), openL=!openA&&S.openLoan&&loanById(S.openLoan), openP=!openA&&!openL&&S.openProj&&projById(S.openProj);
-  const hel=$("hello"); if(hel){ const nm=userName(); hel.textContent=(nm&&S.status==="ready"&&!openA&&!S.openLoan&&!S.openProj&&S.tab==="home")?L("Hi, ","Hola, ")+nm:""; hel.hidden=!hel.textContent; }
+  document.querySelector("header.top").classList.toggle("homehdr", S.status==="ready"&&!openA&&!openL&&!openP&&S.tab==="home"&&!!userName());
   setTimeout(()=>{ maybeWelcome(); maybeAskName(); },0);
   $("title").textContent= openA? openA.name : openL? loanLabel(openL) : openP? openP.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans"}[S.tab];
   $("backBtn").hidden=!(openA||openL||openP);
@@ -1566,7 +1592,7 @@ function viewHome(){
   const owedAll=c.lentOut+llLeft, lentAll=lentTot+llTot, repAll=repTot+Math.max(0,llTot-llLeft);
   if(owedAll>0||lentAll>0) items.push({attr:'data-tab-go="loans"',name:"Loans to others",value:owedAll,pct:lentAll?repAll/lentAll*100:null,col:"var(--pos)",sub:"paid back"});
   if(owe.length) items.push({attr:'data-tab-go="loans"',name:"My loans",value:c.loansOwe,neg:c.loansOwe>0,pct:origTot?(origTot-leftTot)/origTot*100:null,col:"var(--pos)",sub:"paid off"});
-  let h=backupNudge()+seasonLine()+'<section class="hero homehero"><div class="eyebrow">Net worth</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
+  let h=backupNudge()+welcomeCard()+'<section class="hero homehero"><div class="eyebrow">Net worth</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
     '<details class="hinfo"><summary>ⓘ '+L('What\'s included?','¿Qué incluye?')+'</summary><p>Everything you have plus what people owe you, minus what you owe on cards and loans.</p></details></section>'+
     switcher(items,"Your money").replace('class="pswitch rings"','class="pswitch rings homerings"')+
     '<div class="homegrid">';
@@ -1624,16 +1650,18 @@ function userName(){ const m=STORE&&STORE["meta-profile"]; return m&&m.name?Stri
 function userGreet(){ const m=STORE&&STORE["meta-profile"]; return m&&m.greet==="f"?"f":"m"; }
 async function saveName(n,greet){ n=String(n||"").trim().replace(/\s+/g," ").slice(0,30); if(!n) return false; STORE["meta-profile"]={kind:"meta",name:n,greet:greet||userGreet()}; return await persist(); }
 /* Welcome screen: once per visit, after the app is unlocked */
-function maybeWelcome(){ if(S.status!=="ready"||!userName()||LANG_RELOAD) return; try{ if(sessionStorage.getItem("pb_welcomed")) return; sessionStorage.setItem("pb_welcomed","1"); }catch(_){ return; }
+let WELCOMED=false;
+function maybeWelcome(){ if(S.status!=="ready"||!userName()||LANG_RELOAD||WELCOMED) return; WELCOMED=true;
+  let back=false; try{ back=!!localStorage.getItem("pb_seen_welcome"); localStorage.setItem("pb_seen_welcome","1"); }catch(_){}
   const el=document.createElement("div"); el.id="splash"; el.setAttribute("role","status"); el.setAttribute("data-noi18n","");
-  el.innerHTML='<div class="spin"><div class="wring" aria-hidden="true"><i></i></div><p class="sp1">'+esc(L("Welcome,",userGreet()==="f"?"¡Bienvenida,":"¡Bienvenido,"))+'</p><p class="sp2">'+esc(userName())+'!</p></div>';
+  el.innerHTML='<div class="spin"><div class="wring" aria-hidden="true"><i></i></div><p class="sp1">'+esc(back?L("Welcome back,",userGreet()==="f"?"¡Bienvenida de nuevo,":"¡Bienvenido de nuevo,"):L("Welcome,",userGreet()==="f"?"¡Bienvenida,":"¡Bienvenido,"))+'</p><p class="sp2">'+esc(userName())+'!</p></div>';
   document.body.appendChild(el); requestAnimationFrame(()=>el.classList.add("in"));
   setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),450); },1700); el.addEventListener("click",()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),400); }); }
 /* Ask once for a name if the account doesn't have one yet */
 function maybeAskName(){ if(S.status!=="ready"||MODE!=="cloud"||userName()||$("sheetRoot").innerHTML) return; try{ if(sessionStorage.getItem("pb_name_asked")) return; sessionStorage.setItem("pb_name_asked","1"); }catch(_){}
   openSheet(sheetHead(L("What should we call you?","¿Cómo te llamamos?"))+'<form id="nameForm" novalidate><p class="hint" style="margin:0 0 10px">'+L("Your name or nickname shows when you open Pocketbook.","Tu nombre o apodo aparece al abrir Pocketbook.")+'</p><div class="field"><label for="nm_name">'+L("Name or nickname","Nombre o apodo")+'</label><input id="nm_name" maxlength="30" autocomplete="given-name"></div><div class="field"'+(LANG()==="es"?'':' hidden')+'><label>Mensaje de bienvenida</label>'+greetPick("nm","m")+'</div><div class="actions"><button type="submit" class="btn primary">'+L("Save","Guardar")+'</button></div></form>');
   let g="m"; wireGreet("nm",v=>g=v);
-  $("nameForm").addEventListener("submit",async e=>{ e.preventDefault(); if(await saveName($("nm_name").value,g)){ closeSheet(); render(); try{ sessionStorage.removeItem("pb_welcomed"); }catch(_){} maybeWelcome(); } }); }
+  $("nameForm").addEventListener("submit",async e=>{ e.preventDefault(); if(await saveName($("nm_name").value,g)){ closeSheet(); render(); WELCOMED=false; maybeWelcome(); } }); }
 function greetPick(id,cur){ return '<div class="lseg" role="group" aria-label="'+L("Welcome message","Mensaje de bienvenida")+'" data-noi18n>'+[["m","¡Bienvenido!"],["f","¡Bienvenida!"]].map(([v,t])=>'<button type="button" data-greet="'+id+'" data-gv="'+v+'" aria-pressed="'+(cur===v)+'">'+t+'</button>').join("")+'</div>'; }
 function wireGreet(id,onPick){ document.querySelectorAll('[data-greet="'+id+'"]').forEach(b=>b.addEventListener("click",()=>{ document.querySelectorAll('[data-greet="'+id+'"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b))); onPick(b.dataset.gv); })); }
 function helpBox(title,body){ return '<details class="tiprules help"><summary>ⓘ '+title+'</summary><div><p>'+body+'</p></div></details>'; }
