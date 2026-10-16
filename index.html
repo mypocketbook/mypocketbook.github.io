@@ -432,6 +432,10 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#D59BD5}
   .fab{right:max(24px,calc(50% - 406px))}
   .pgrid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
   .tiles{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))} .tiles .tile[style*="grid-column"]{grid-column:auto!important}
+  /* Signed out there is no header and no side bar, so the card sits in the middle of the window */
+  body.nosidebar .app{padding-block:0}
+  body.nosidebar .app>header.top{display:none}
+  body.nosidebar #view>.authwrap{min-height:100dvh;align-content:center;margin-top:0}
 }
 @media (min-width:1000px){
   body{--side:232px}
@@ -446,6 +450,10 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#D59BD5}
   .fab{right:40px;bottom:32px}
   .toast{bottom:40px;left:calc(50% + var(--side)/2)}
   .scrim{align-items:center;padding-left:var(--side)}
+  /* Sign-in and PIN screens have no side bar, so nothing should reserve its width */
+  body.nosidebar .app{margin-left:0}
+  body.nosidebar .toast{left:50%}
+  body.nosidebar .scrim{padding-left:0}
   .sheet{max-width:620px;border-radius:20px;max-height:88vh;padding-bottom:20px}
   .sheet .grab{display:none}
   .homegrid{grid-template-columns:minmax(0,5fr) minmax(0,6fr);grid-template-areas:"c b"}
@@ -1411,6 +1419,7 @@ async function pickRestore(name){
 }
 
 /* ---------- render ---------- */
+function showNav(on){ document.querySelector("nav.tabs").hidden=!on; document.body.classList.toggle("nosidebar",!on); }
 function render(){
   syncLookFromStore(); if(S.tab==="accounts") S.tab="home";
   S.funds=computeFunds();
@@ -1430,16 +1439,16 @@ function render(){
   const v=$("view");
   if(S.status==="loading"){v.innerHTML='<div class="notice">Loading your books…</div>';return;}
   if(S.status==="locked"||S.status==="setpin"){
-    $("title").textContent=""; $("monthnav").hidden=true; $("addBtn").hidden=true; $("topact").hidden=true; document.querySelector("nav.tabs").hidden=true;
+    $("title").textContent=""; $("monthnav").hidden=true; $("addBtn").hidden=true; $("topact").hidden=true; showNav(false);
     v.innerHTML = S.status==="locked" ? pinPad("Enter your PIN","Unlock Pocketbook"+(S.me&&S.me.username?" · @"+S.me.username:"")) :
       pinPad(S.pinStep===2?"Repeat your PIN":"Create a 4-digit PIN", S.pinStep===2?"Type the same 4 digits again.":"Use it to open Pocketbook quickly on this device. Your password stays the key to your account.");
     return;
   }
   if(S.status==="login"||S.status==="newpin"){
-    $("title").textContent=""; $("monthnav").hidden=true; $("addBtn").hidden=true; document.querySelector("nav.tabs").hidden=true;
+    $("title").textContent=""; $("monthnav").hidden=true; $("addBtn").hidden=true; showNav(false);
     v.innerHTML=authView(); wireAuth(); return;
   }
-  $("addBtn").hidden=!(S.accounts&&S.accounts.length); document.querySelector("nav.tabs").hidden=false;
+  $("addBtn").hidden=!(S.accounts&&S.accounts.length); showNav(true);
   if(S.status==="nostore"){v.innerHTML='<div class="empty"><strong>Safari is blocking storage for this page</strong><span>Open Pocketbook in a normal Safari window, not a Private window.</span></div>';return;}
   if(S.status==="nofs"){v.innerHTML='<div class="empty" style="text-align:left;justify-items:start"><strong>Open Pocketbook in Google Chrome</strong><span>This browser can\'t save into the Pocketbook folder. In Finder, right-click <b>Pocketbook.html</b>, choose <b>Open With</b>, then <b>Google Chrome</b>. To make it the default, choose <b>Get Info</b>, set <b>Open with</b> to Chrome and click <b>Change All</b>.</span></div>';return;}
   if(S.status==="connect"){v.innerHTML='<div class="empty"><strong>Open your Pocketbook folder</strong><span>Your data is kept in a file inside the Pocketbook folder, next to this app. Chrome asks you once each time you open the app.</span>'+
