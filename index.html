@@ -1880,6 +1880,13 @@ function acctGroups(c,withProjects){
   const sav=by("savings").sort((a,b)=>c.bal[b.id]-c.bal[a.id]);
   const day=S.accounts.filter(a=>a.type==="checking"||a.type==="cash").sort((a,b)=>c.bal[b.id]-c.bal[a.id]);
   let h='';
+  // Checking and cash first: the money actually in hand is what you look at most.
+  if(day.length){
+    h+='<section class="grp"><h2 id="g-day"><span>Checking and cash</span><span class="h2r"><span class="gsum ink">'+money(c.daily)+'</span>'+secAdd('data-addmenu="day"','wallet','Add checking or cash account')+'</span></h2><div class="list">'+day.map(a=>{
+      const inProj=S.projects.reduce((s,p)=>s+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0);
+      return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(inProj)>=0.005?' · '+money(inProj)+' for projects':''));
+    }).join("")+'</div></section>';
+  }
   if(cards.length){
     const u=c.limit?Math.round(c.owed/c.limit*100):null;
     h+='<section class="grp"><h2 id="g-cards"><span>Credit cards</span><span class="h2r"><span class="gsum neg">'+money(c.owed)+(u!==null?'<small class="gnote"> · '+u+'% used</small>':'')+'</span>'+secAdd('data-addmenu="credit"','card','Add credit card')+'</span></h2><div class="list">'+cards.map(a=>utilRow(a,c,c.owed)).join("")+'</div></section>';
@@ -1887,12 +1894,6 @@ function acctGroups(c,withProjects){
   const projs=withProjects?projSorted():[];
   if(sav.length) h+='<section class="grp"><h2 id="g-sav"><span>Personal savings</span><span class="h2r"><span class="gsum sav">'+money(c.personal)+'</span>'+secAdd('data-addmenu="savings"','piggy','Add savings account')+'</span></h2>'+'<div class="list">'+sav.map(a=>{ const ip=S.projects.reduce((t,p)=>t+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0); return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(ip)>=0.005?' · '+money(ip)+' for projects · '+money(c.bal[a.id]-ip)+' free':'')); }).join("")+'</div>'+'</section>';
   if(projs.length) h+='<section class="grp"><h2 id="g-proj"><span>Projects</span><span class="h2r"><span class="gsum sav">'+money(c.aside)+'</span>'+secAdd('data-act="newproj"','target','New project')+'</span></h2><div class="list">'+projs.map(p=>projRow(p,c)).join("")+'</div></section>';
-  if(day.length){
-    h+='<section class="grp"><h2 id="g-day"><span>Checking and cash</span><span class="h2r"><span class="gsum ink">'+money(c.daily)+'</span>'+secAdd('data-addmenu="day"','wallet','Add checking or cash account')+'</span></h2><div class="list">'+day.map(a=>{
-      const inProj=S.projects.reduce((s,p)=>s+((projWhere(p.id).find(x=>x.id===a.id)||{}).amt||0),0);
-      return plainRow(a,c,ACCT_TYPES[a.type]+(Math.abs(inProj)>=0.005?' · '+money(inProj)+' for projects':''));
-    }).join("")+'</div></section>';
-  }
   return '<div class="grps">'+h+'</div>';
 }
 
