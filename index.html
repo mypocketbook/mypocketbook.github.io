@@ -372,6 +372,49 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .kv>div{background:var(--surface);padding:10px 12px;min-width:0}
 .kv .v{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:0.9375rem}
 .pill{display:inline-block;font-size:0.6875rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--muted);margin-left:6px;vertical-align:middle}
+/* ---- the loan cost panel, calculator and suggestions ---- */
+.costbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 14px;box-shadow:var(--shadow)}
+.crate{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.crate b{font-family:var(--f-num);font-size:2rem;font-weight:600;letter-spacing:-.03em;line-height:1;color:var(--accent)}
+.crate span{color:var(--muted);font-weight:500;font-size:0.84375rem}
+.clede{margin:9px 0 0;font-size:0.9375rem}
+.clede b{font-weight:700}
+.csplit{display:flex;height:26px;border-radius:9px;overflow:hidden;margin:13px 0 7px;background:var(--sunk)}
+.csplit i{display:block;height:100%}
+.ci{background:var(--accent)} .cy{background:color-mix(in srgb,var(--ink) 30%,var(--sunk))}
+.cslab{display:flex;justify-content:space-between;gap:10px;font-size:0.78125rem;font-weight:600;flex-wrap:wrap}
+.cslab .cil{color:var(--accent)} .cslab .cyl{color:var(--ink)}
+.cslab.mut span{color:var(--muted);font-weight:500}
+.cbars{display:flex;gap:3px;align-items:flex-end;height:44px;margin:15px 0 5px}
+.cbars span{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-width:0}
+.cbars em{display:block}
+.cfoot{margin:11px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:0.8125rem;color:var(--muted)}
+.cfoot b{color:var(--ink);font-weight:700}
+.calcbox .two{margin-bottom:2px}
+.calcbox .hint{margin-top:12px}
+.wchips{margin:2px 0 0;flex-wrap:wrap;overflow:visible}
+.wout{margin-top:13px;border-top:1px solid var(--line);padding-top:12px;display:grid;gap:9px}
+.wrow{display:flex;justify-content:space-between;gap:14px;align-items:baseline;font-size:0.875rem;min-width:0}
+.wrow>span{color:var(--muted);min-width:0}
+.wrow b{font-weight:700;text-align:right;white-space:nowrap}
+.wrow b small{display:block;font-weight:500;font-size:0.71875rem;color:var(--muted)}
+.wwin{margin:2px 0 0;background:color-mix(in srgb,var(--accent) 11%,transparent);border-radius:12px;padding:10px 13px;display:grid;gap:2px}
+.wwin b{font-size:1rem;font-weight:700}
+.wwin span{font-size:0.78125rem;color:var(--muted)}
+.wbars{display:grid;gap:6px;margin-top:4px}
+.wbars div{display:flex;align-items:center;gap:9px;font-size:0.75rem;font-weight:600;color:var(--muted)}
+.wbars div>span:first-child{width:66px;flex:none}
+.wbars .t{flex:1;height:9px;border-radius:5px;background:var(--sunk);overflow:hidden;min-width:0}
+.wbars .t em{display:block;height:100%;border-radius:5px;background:color-mix(in srgb,var(--ink) 34%,var(--sunk))}
+.wbars .t.on em{background:var(--accent)}
+.wbars .n{width:52px;text-align:right;flex:none;color:var(--ink)}
+.row.sug{align-items:flex-start}
+.sugi{width:28px;height:28px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:0.8125rem;font-weight:700;
+  background:color-mix(in srgb,var(--accent) 15%,transparent);color:var(--accent)}
+.row.sug .m{white-space:normal;overflow:visible;text-overflow:clip}
+.row.sug .m b{color:var(--ink);font-weight:700}
+.row.sug .main{min-width:0}
+@media (max-width:400px){.crate b{font-size:1.75rem}.wrow b{white-space:normal}}
 .chartbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 10px 10px}
 .chartwrap{width:100%}
 /* the svg is drawn at its real pixel size, so nothing in here is scaled up */
@@ -387,8 +430,9 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .chart .dot2{fill:var(--pos);stroke:var(--surface);stroke-width:2}
 .stack{display:flex;height:14px;border-radius:99px;overflow:hidden;background:var(--sunk);gap:2px}
 .stack i{display:block;height:100%}
-.s-pp{background:var(--accent)} .s-pl{background:color-mix(in srgb,var(--accent) 35%,var(--sunk))}
-.s-ip{background:var(--neg)} .s-il{background:color-mix(in srgb,var(--neg) 35%,var(--sunk))}
+.s-pp{background:color-mix(in srgb,var(--ink) 58%,var(--sunk))} .s-pl{background:color-mix(in srgb,var(--ink) 20%,var(--sunk))}
+.s-ip{background:var(--accent)} .s-il{background:color-mix(in srgb,var(--accent) 34%,var(--sunk))}
+.s-bal{background:var(--accent)}
 .s-dash{background:repeating-linear-gradient(90deg,var(--muted) 0 5px,transparent 5px 9px)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:0.78125rem;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
@@ -817,7 +861,19 @@ const ES={
 /* home */
 "Net balance":"Balance neto","Everything you have plus what people owe you, minus what you owe on cards and loans.":"Todo lo que tienes más lo que te deben, menos lo que debes en tarjetas y préstamos.","Your money":"Tu dinero","Available":"Disponible","Cards owe":"Tarjetas","Savings":"Ahorros","Owed to me":"Me deben","Loans I owe":"Mis préstamos","All months":"Todos los meses","Net balance change so far":"Cambio del balance hasta hoy","Net balance change":"Cambio del balance","Closed at":"Cerró en","Spent":"Gastado","spent":"gastado","Income":"Ingresos","Card payments":"Pagos de tarjeta","Cash back":"Cashback","Loan payments":"Pagos de préstamos","Spending by category":"Gastos por categoría","Tap a category to see its transactions.":"Toca una categoría para ver sus transacciones.","Tap \"Needs a category\" to see those expenses and pick one for each.":"Toca \"Necesita categoría\" para ver esos gastos y elegir una para cada uno.","See these transactions":"Ver estas transacciones","Top 3 changes":"Los 3 cambios más grandes","No changes yet this month.":"Aún no hay cambios este mes.","Improved":"Mejoraron","Went the other way":"Empeoraron","Closing balances":"Saldos al cierre","Credit cards":"Tarjetas de crédito","Checking and cash":"Cuentas corrientes y efectivo","Personal savings":"Ahorros personales","Add card limits":"Agrega los límites","No limit set":"Sin límite","owed":"debe","+ Add":"+ Agregar","+ Add money":"+ Agregar dinero","+ Add account":"+ Agregar cuenta","+ Add transaction":"+ Agregar transacción","+ New transaction":"+ Nueva transacción","+ Lend":"+ Prestar","+ Log payment":"+ Registrar pago","+ Log repayment":"+ Registrar devolución","Add account":"Agregar cuenta","Add a transaction":"Agregar una transacción","Add transaction":"Agregar transacción","An expense, income or transfer":"Un gasto, ingreso o transferencia","A purchase with one of your cards":"Una compra con una de tus tarjetas","Move money into one of your savings":"Pasar dinero a uno de tus ahorros","Set up your accounts":"Configura tus cuentas","Add the places your money lives, then log what you spend, earn and move.":"Agrega dónde está tu dinero y luego registra lo que gastas, ganas y mueves.","Add Checking, Credit card and Cash":"Agregar cuenta corriente, tarjeta y efectivo","Add one account myself":"Agregar una cuenta yo mismo","Open an account to see its transactions and add new ones.":"Abre una cuenta para ver sus transacciones y agregar nuevas.",
 /* subs */
-"Subs":"Subs","Subscriptions":"Suscripciones","Nothing tracked yet":"Aún no sigues ninguna","Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.":"Agrega lo que pagas cada mes (streaming, teléfono, programas) y Pocketbook te muestra cuánto suma en un año.","Add a subscription":"Agregar una suscripción","Every month":"Cada mes","Every year":"Cada año","Found in your transactions":"Encontradas en tus transacciones","These charges repeat. Only you can say whether they are subscriptions.":"Estos cargos se repiten. Solo tú puedes decir si son suscripciones.","Not a subscription":"No es una suscripción","Track it":"Seguirla","Tracked":"Las que sigues","New subscription":"Nueva suscripción","Edit subscription":"Editar suscripción","How often":"Cada cuánto","Monthly":"Mensual","Yearly":"Anual","Subscription updated":"Suscripción actualizada","Give the subscription a name.":"Ponle un nombre a la suscripción.","Both sides are yours. Paying a card is":"Las dos cuentas son tuyas. Pagar una tarjeta es","and money going to another person is an":"y el dinero que va para otra persona es un","Card payment":"Pago de tarjeta","Expense":"Gasto","Write it down":"Regístralo","\u2713 Written down":"\u2713 Registrado","Coming up":"Pronto","Why nothing is added for you":"Por qué nada se agrega solo","No card set":"Sin tarjeta","Status":"Estado","Active":"Activa","Paused":"En pausa","Name":"Nombre","Amount":"Monto","Category":"Categoría","Charge day of the month":"Día del cobro","Charge date":"Fecha del cobro","Days until it shows on the card":"Días hasta que aparece en la tarjeta","Most cards take two or three days to post a charge.":"La mayoría de las tarjetas tardan dos o tres días en mostrar un cargo.","Charged to":"Se cobra a","Choose card or account":"Elige tarjeta o cuenta","Note (optional)":"Nota (opcional)","The charge day is a number from 1 to 31.":"El día del cobro es un número del 1 al 31.","Pick the date it is charged.":"Elige la fecha del cobro.","Days to post is a number from 0 to 14.":"Los días para aparecer son un número del 0 al 14.","Enter the amount, like 15.99.":"Escribe el monto, como 15.99.","Won't ask again":"No preguntaré otra vez",
+"Subs":"Subs","Subscriptions":"Suscripciones","Nothing tracked yet":"Aún no sigues ninguna","Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.":"Agrega lo que pagas cada mes (streaming, teléfono, programas) y Pocketbook te muestra cuánto suma en un año.","Add a subscription":"Agregar una suscripción","Every month":"Cada mes","Every year":"Cada año","Found in your transactions":"Encontradas en tus transacciones","These charges repeat. Only you can say whether they are subscriptions.":"Estos cargos se repiten. Solo tú puedes decir si son suscripciones.","Not a subscription":"No es una suscripción","Track it":"Seguirla","Tracked":"Las que sigues","New subscription":"Nueva suscripción","Edit subscription":"Editar suscripción","How often":"Cada cuánto","Monthly":"Mensual","Yearly":"Anual","Subscription updated":"Suscripción actualizada","Give the subscription a name.":"Ponle un nombre a la suscripción.",
+/* loan cost panel, what-if and suggestions */
+"What it costs you":"Lo que te cuesta","a day, every day, until it is gone":"al día, todos los días, hasta que se acabe",
+"now":"ahora","What if you paid more":"¿Y si pagaras más?","Extra each month":"Extra cada mes","One-time payment":"Pago único","Clear":"Limpiar",
+"Type an amount above to see what it would do.":"Escribe un monto arriba para ver qué pasaría.",
+"That payment is below the monthly interest, so the balance would never fall.":"Ese pago es menor que el interés del mes, así que el saldo nunca bajaría.",
+"That clears the loan outright.":"Eso liquida el préstamo de una vez.",
+"Paid off":"Liquidado","Interest you still pay":"Intereses que todavía pagas",
+"That is money that would have gone to interest.":"Ese es dinero que se habría ido en intereses.",
+"As is":"Como está","With this":"Con esto",
+"Nothing here is saved. When you actually make the payment you still write it down yourself.":"Nada de esto se guarda. Cuando de verdad hagas el pago, tú lo registras.",
+"✦ Smart suggestions":"✦ Sugerencias inteligentes","Straight off the balance.":"Directo al saldo.",
+"These are sums on your own numbers, not financial advice. Nothing is ever applied for you.":"Son cuentas con tus propios números, no asesoría financiera. Nada se aplica por ti.","Both sides are yours. Paying a card is":"Las dos cuentas son tuyas. Pagar una tarjeta es","and money going to another person is an":"y el dinero que va para otra persona es un","Card payment":"Pago de tarjeta","Expense":"Gasto","Write it down":"Regístralo","\u2713 Written down":"\u2713 Registrado","Coming up":"Pronto","Why nothing is added for you":"Por qué nada se agrega solo","No card set":"Sin tarjeta","Status":"Estado","Active":"Activa","Paused":"En pausa","Name":"Nombre","Amount":"Monto","Category":"Categoría","Charge day of the month":"Día del cobro","Charge date":"Fecha del cobro","Days until it shows on the card":"Días hasta que aparece en la tarjeta","Most cards take two or three days to post a charge.":"La mayoría de las tarjetas tardan dos o tres días en mostrar un cargo.","Charged to":"Se cobra a","Choose card or account":"Elige tarjeta o cuenta","Note (optional)":"Nota (opcional)","The charge day is a number from 1 to 31.":"El día del cobro es un número del 1 al 31.","Pick the date it is charged.":"Elige la fecha del cobro.","Days to post is a number from 0 to 14.":"Los días para aparecer son un número del 0 al 14.","Enter the amount, like 15.99.":"Escribe el monto, como 15.99.","Won't ask again":"No preguntaré otra vez",
 /* account types / categories */
 "Checking":"Cuenta corriente","Credit card":"Tarjeta de crédito","Cash":"Efectivo","Loan":"Préstamo",
 "Food & dining":"Comida y restaurantes","Groceries":"Supermercado","Transport & gas":"Transporte y gasolina","Bills & utilities":"Facturas y servicios","Rent / housing":"Renta / vivienda","Shopping":"Compras","Health & personal care":"Salud y cuidado personal","Entertainment":"Entretenimiento","Subscriptions":"Suscripciones","Travel":"Viajes","Lent to others":"Prestado a otros","Salary":"Salario","Freelance":"Trabajo independiente","Refund":"Reembolso","Gift":"Regalo","Loan repayment":"Devolución de préstamo","Other":"Otro","Needs a category":"Necesita categoría","Choose a category":"Elige una categoría",
@@ -852,6 +908,25 @@ const ES_PAT=[
  [/^· (\d+)% of limit$/,"· $1% del límite"],
  [new RegExp("^(\\d+) expenses? · "+MNY+"\\. Tap one to change its category\\.$"),m=>m[1]+(m[1]==="1"?" gasto":" gastos")+" · "+m[2]+". Toca uno para cambiar su categoría."],
  [/^(.+) a year$/,"$1 al año"],
+ [new RegExp("^"+MNY+" interest$"),"$1 de interés"],
+ [new RegExp("^"+MNY+" off the balance$"),"$1 al saldo"],
+ [/^(\d+)¢ of every dollar$/,"$1 centavos de cada dólar"],
+ [/^you pay right now is rent on the money, not the money\.$/,"que pagas ahora son alquiler del dinero, no el dinero."],
+ [/^(\d+) payments left$/,"$1 pagos restantes"],
+ [/^you pay$/,"pagas"],
+ [new RegExp("^"+MNY+" in interest$"),"$1 en intereses"],
+ [new RegExp("^on "+MNY+" —$"),"sobre $1 —"],
+ [/^(\d+)% on top of what you still owe$/,"$1% encima de lo que todavía debes"],
+ [/^Over the$/,"En los"],
+ [/^instead of (.+)$/,"en vez de $1"],
+ [/^(\d+) mo$/,"$1 m"],
+ [/^(\d+) months? sooner · (.+) you keep$/,m=>m[1]+(m[1]==="1"?" mes":" meses")+" antes · te quedas con "+m[2]],
+ [/^(\d+) months? sooner, (.+) saved\.$/,m=>m[1]+(m[1]==="1"?" mes":" meses")+" antes, "+m[2]+" ahorrados."],
+ [new RegExp("^Round the payment up to "+MNY+"$"),"Redondea el pago a $1"],
+ [new RegExp("^"+MNY+" more a month\\.$"),"$1 más al mes."],
+ [/^One fewer (.+) a month$/,"Un $1 menos al mes"],
+ [new RegExp("^You logged "+MNY+" on (.+)\\. Sending that here instead:$"),"Registraste $1 el $2. Si en vez de eso lo mandas aquí:"],
+ [new RegExp("^A one-time "+MNY+"$"),"Un pago único de $1"],
  [/^(.+) a month$/,"$1 al mes"],
  [/^Coming up: (.+)$/,"Pronto: $1"],
  [/^Now tracking (.+)$/,"Ahora sigues $1"],
@@ -1585,6 +1660,7 @@ function render(){
   v.className = (openA||openL||openP) ? "narrow" : "";
   v.innerHTML = openA ? viewAccount(openA) : openL ? viewLoan(openL) : openP ? viewProject(openP) : ({home:viewHome,activity:viewActivity,projects:viewProjects,accounts:viewAccounts,loans:viewLoans,subs:viewSubs}[S.tab])();
   if($("lchart")) drawChart(); else CHART=null;
+  wireWhatIf();
   if(openP||openA){ const ps=document.querySelector(".pswitch"), on=ps&&ps.querySelector(".lring.on,.bring.on,.ptile.on"); if(ps&&on&&ps.scrollWidth>ps.clientWidth){ const l=on.offsetLeft-ps.offsetLeft, r=l+on.offsetWidth; if(l<ps.scrollLeft||r>ps.scrollLeft+ps.clientWidth) ps.scrollLeft=Math.max(0,l-8); } }
 }
 
@@ -2419,6 +2495,8 @@ function loanProgress(l,left,pays){
     '<div><div class="eyebrow">Payments</div><div class="v">'+made+(total?' of '+total:'')+'</div></div>'+
     '<div><div class="eyebrow">Debt-free on</div><div class="v">'+(last?esc(fmtDate(last)):(left<=0?"Paid off":"Set payment and rate"))+'</div></div>'+
     '</div>';
+  const base=(+l.payment>0&&+l.rate>0&&left>0)?loanSim(l,left,0,0):null;
+  h+=loanCost(l,left,base);
   h+=loanChart(l,orig,pays,rows);
   // where the money goes
   const totInt=intPaid+intLeft, totAll=orig+totInt||1;
@@ -2428,6 +2506,7 @@ function loanProgress(l,left,pays){
     '<div class="legend"><span><i class="s-pp"></i>Principal paid <b>'+money(principalPaid)+'</b></span><span><i class="s-pl"></i>Principal left <b>'+money(left)+'</b></span>'+
     '<span><i class="s-ip"></i>Interest paid <b>'+money(intPaid)+'</b></span><span><i class="s-il"></i>Interest still to pay <b>~'+money(intLeft)+'</b></span></div>'+
     '<p class="hint">Over the whole loan you pay about <b>'+money(totInt)+'</b> in interest on '+money(orig)+'. Extra payments toward principal shrink the orange part.</p>';
+  if(!orig) h+=loanCalc(l,left,base)+loanSugs(l,left,base);
   // milestones
   if(orig){
     const ms=[25,50,75,100].map(p=>{ const target=orig*(1-p/100);
@@ -2435,9 +2514,89 @@ function loanProgress(l,left,pays){
         let bal=orig, when=null; pays.slice().reverse().forEach(t=>{ bal-=Math.max(0,(+t.amount||0)-(+t.interest||0)); if(!when&&bal<=target+0.005) when=t.date; });
         return {p,done:true,when:when?fmtDate(pDate(when)):""}; }
       const r=rows.find(x=>x.bal<=target+0.005); return {p,done:false,when:r?fmtDate(r.date):""}; });
+    h+=loanCalc(l,left,base)+loanSugs(l,left,base);
     h+='<h2>Milestones</h2><div class="list">'+ms.map(m=>'<div class="row"><span class="badge" style="'+(m.done?'color:var(--pos)':'')+'">'+(m.done?"✓":m.p+"%")+'</span><span class="main"><span class="t">'+(m.p===100?"Loan paid off":m.p+"% of the principal paid")+'</span><span class="m">'+(m.done?"Reached"+(m.when?" on "+esc(m.when):""):(m.when?"Expected "+esc(m.when):"Set a monthly payment to see when"))+'</span></span></div>').join("")+'</div>';
   }
   return h;
+}
+/* ---------- what the loan costs, what paying more would do, and a few sums ---------- */
+let LWHAT=null;  // the loan the calculator is working on
+function loanSim(l,bal,extra,lump){
+  const b=Math.max(0,bal-(lump||0));
+  if(b<=0) return {rows:[],int:0,n:0,done:true};
+  const rows=loanSchedule(Object.assign({},l,{payment:(+l.payment||0)+(extra||0)}),b);
+  if(rows===null) return null;
+  return {rows,int:rows.reduce((t,x)=>t+x.int,0),n:rows.length};
+}
+// One payment, split into the part that is rent on the money and the part that is yours.
+function loanCost(l,left,base){
+  if(!(+l.payment>0)||!(+l.rate>0)||left<=0||!base||!base.rows.length) return "";
+  const pay=+l.payment, first=base.rows[0], pc=Math.round(first.int/pay*100);
+  const daily=left*(+l.rate/100)/365;
+  const bars=base.rows.filter((_,i)=>i%Math.max(1,Math.ceil(base.rows.length/18))===0)
+    .map(x=>'<span><em class="ci" style="height:'+(x.int/pay*100).toFixed(1)+'%"></em><em class="cy" style="height:'+(x.prin/pay*100).toFixed(1)+'%"></em></span>').join("");
+  return '<h2>What it costs you</h2><section class="costbox">'+
+    '<div class="crate"><b>'+money(daily)+'</b><span>a day, every day, until it is gone</span></div>'+
+    '<p class="clede"><b>'+pc+'¢ of every dollar</b> you pay right now is rent on the money, not the money.</p>'+
+    '<div class="csplit" role="img" aria-label="'+pc+'% of the next payment is interest"><i class="ci" style="width:'+(first.int/pay*100)+'%"></i><i class="cy" style="width:'+(first.prin/pay*100)+'%"></i></div>'+
+    '<div class="cslab"><span class="cil">'+money(first.int)+' interest</span><span class="cyl">'+money(first.prin)+' off the balance</span></div>'+
+    '<div class="cbars" role="img" aria-label="The interest share shrinking over the life of the loan">'+bars+'</div>'+
+    '<div class="cslab mut"><span>now</span><span>'+esc(fmtDate(base.rows[base.rows.length-1].date))+'</span></div>'+
+    '<p class="cfoot">Over the <b>'+base.n+' payments left</b> you pay <b>'+money(base.int)+' in interest</b> on '+money(left)+' — <b>'+Math.round(base.int/left*100)+'% on top of what you still owe</b>.</p>'+
+    '</section>';
+}
+// Type what you could actually add. Nothing is written to your books.
+function loanCalc(l,left,base){
+  if(!(+l.payment>0)||!(+l.rate>0)||left<=0||!base||!base.rows.length) return "";
+  LWHAT={l,left,base};
+  return '<h2>What if you paid more</h2><section class="costbox calcbox">'+
+    '<div class="two"><div class="field"><label for="wx">Extra each month</label><input id="wx" class="amount" inputmode="decimal" placeholder="0.00" value=""></div>'+
+    '<div class="field"><label for="wl">One-time payment</label><input id="wl" class="amount" inputmode="decimal" placeholder="0.00" value=""></div></div>'+
+    '<div class="chips wchips">'+[25,50,100,200].map(v=>'<button type="button" class="chip" data-wq="'+v+'">+'+money(v,true)+'</button>').join("")+
+    '<button type="button" class="chip" data-wq="0">Clear</button></div>'+
+    '<div id="wout" class="wout" aria-live="polite"></div>'+
+    '<p class="hint">Nothing here is saved. When you actually make the payment you still write it down yourself.</p></section>';
+}
+function drawWhatIf(){
+  const box=$("wout"); if(!box||!LWHAT) return;
+  const {l,left,base}=LWHAT;
+  const ex=parseFloat(String(($("wx")||{}).value||"").replace(/[$,\s]/g,""))||0;
+  const lu=parseFloat(String(($("wl")||{}).value||"").replace(/[$,\s]/g,""))||0;
+  if(!ex&&!lu){ box.innerHTML='<p class="hint" style="margin:0">Type an amount above to see what it would do.</p>'; return; }
+  const s=loanSim(l,left,ex,lu);
+  if(!s){ box.innerHTML='<p class="err" role="alert" style="margin:0">That payment is below the monthly interest, so the balance would never fall.</p>'; return; }
+  if(s.done){ box.innerHTML='<p class="wwin"><b>That clears the loan outright.</b></p>'; return; }
+  const nSaved=base.n-s.n, iSaved=base.int-s.int;
+  box.innerHTML='<div class="wrow"><span>Paid off</span><b>'+esc(fmtDate(s.rows[s.rows.length-1].date))+'<small>instead of '+esc(fmtDate(base.rows[base.rows.length-1].date))+'</small></b></div>'+
+    '<div class="wrow"><span>Payments</span><b>'+s.n+'<small>instead of '+base.n+'</small></b></div>'+
+    '<div class="wrow"><span>Interest you still pay</span><b>'+money(s.int)+'<small>instead of '+money(base.int)+'</small></b></div>'+
+    ((nSaved>0||iSaved>0.5)?'<p class="wwin"><b>'+(nSaved>0?nSaved+(nSaved===1?" month":" months")+" sooner · ":"")+money(iSaved)+' you keep</b><span>That is money that would have gone to interest.</span></p>':'')+
+    '<div class="wbars"><div><span>As is</span><i class="t"><em style="width:100%"></em></i><span class="n">'+base.n+' mo</span></div>'+
+    '<div><span>With this</span><i class="t on"><em style="width:'+(s.n/base.n*100).toFixed(1)+'%"></em></i><span class="n">'+s.n+' mo</span></div></div>';
+}
+function wireWhatIf(){
+  if(!$("wout")) { LWHAT=null; return; }
+  ["wx","wl"].forEach(id=>{const e=$(id); if(e) e.addEventListener("input",drawWhatIf);});
+  drawWhatIf();
+}
+// Sums on your own numbers, offered, never applied.
+function loanSugs(l,left,base){
+  if(!(+l.payment>0)||!(+l.rate>0)||left<=0||!base||!base.rows.length) return "";
+  const pay=+l.payment, out=[];
+  const add=(icon,head,extra,lump,tail)=>{ const s=loanSim(l,left,extra,lump); if(!s||s.done||!s.rows.length) return;
+    const nS=base.n-s.n, iS=base.int-s.int; if(nS<1&&iS<1) return;
+    out.push('<div class="row sug"><span class="sugi" aria-hidden="true">'+icon+'</span><span class="main"><span class="t">'+head+'</span>'+
+      '<span class="m">'+(tail?tail+' ':'')+'<b>'+(nS>0?nS+(nS===1?" month":" months")+" sooner, ":"")+money(iS)+' saved.</b></span></span></div>'); };
+  const up=Math.ceil(pay/100)*100;
+  if(up>pay+1) add("↑","Round the payment up to "+money(up,true),up-pay,0,money(up-pay)+" more a month.");
+  // a real, recent expense of theirs, so the trade-off is one they recognise
+  const cut=S.txns.filter(t=>t.type==="expense"&&catOf(t)==="Food & dining"&&(+t.amount||0)>=15)
+    .sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+  if(cut) add("◷","One fewer "+esc(cut.payee||cut.desc||"takeout")+" a month",Math.round(+cut.amount),0,"You logged "+money(+cut.amount)+" on "+esc(dayName(cut.date))+". Sending that here instead:");
+  add("◉","A one-time "+money(Math.min(2000,Math.max(500,Math.round(left*0.1/100)*100)),true),0,Math.min(2000,Math.max(500,Math.round(left*0.1/100)*100)),"Straight off the balance.");
+  if(!out.length) return "";
+  return '<h2>✦ Smart suggestions</h2><div class="list">'+out.join("")+'</div>'+
+    '<p class="hint">These are sums on your own numbers, not financial advice. Nothing is ever applied for you.</p>';
 }
 let CHART=null;   // the data for the balance chart; drawn at real pixel size after the view mounts
 function loanChart(l,orig,pays,rows){
@@ -2451,7 +2610,7 @@ function loanChart(l,orig,pays,rows){
   CHART={pts,proj,orig,bal,today,start,payment:+l.payment||0,
     t0:start.getTime(), t1:Math.max(today.getTime()+86400000*30,(proj[proj.length-1]||{d:today}).d.getTime())};
   return '<h2>Balance over time</h2><div class="chartbox"><div class="chartwrap" id="lchart"></div>'+
-    '<div class="legend"><span><i class="s-pp"></i>Actual balance</span>'+
+    '<div class="legend"><span><i class="s-bal"></i>Actual balance</span>'+
     (rows.length?'<span><i class="s-dash"></i>Projected with '+money(l.payment)+'/month</span>':'')+'</div></div>';
 }
 // Drawn at the box's real width so one SVG unit is one screen pixel: text and
@@ -2963,6 +3122,7 @@ document.addEventListener("click",async e=>{
   if(ds.wishtoggle){await wishUpdate(ds.wishproj,w=>w.map(x=>x.id===ds.wishtoggle?Object.assign({},x,{done:!x.done}):x));return;}
   if(ds.wishdel){await wishUpdate(ds.wishproj,w=>w.filter(x=>x.id!==ds.wishdel));return;}
   if(ds.editproj){openProj(projById(ds.editproj));return;}
+  if(ds.wq!==undefined){ const x=$("wx"); if(x){ x.value = ds.wq==="0" ? "" : ds.wq; if(ds.wq==="0"&&$("wl")) $("wl").value=""; drawWhatIf(); } return; }
   if(ds.newsub){ openSub(null); return; }
   if(ds.sublog){ const sb=(S.subs||[]).find(x=>x.id===ds.sublog);
     if(sb) openTx(null,{type:"expense",payee:sb.name,desc:sb.name,from:sb.account||"",category:sb.category||"Subscriptions"}); return; }
