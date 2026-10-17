@@ -258,6 +258,18 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .btn.tiny{margin-left:auto;padding:5px 11px;font-size:0.75rem;border-radius:999px}
 .sublist .subrow{border-bottom:0}
 .sublist .subwrap+.subwrap{border-top:1px solid var(--line)}
+/* ---- splitting one transaction across projects ---- */
+.splitf{display:grid;gap:0}
+.splitrows{display:grid;gap:8px;margin-top:2px}
+.sprow{display:flex;align-items:center;gap:12px;min-width:0}
+.sprow .spn{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sprow .spm{position:relative;flex:none;width:132px}
+.sprow .spm i{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-style:normal;color:var(--muted);font-weight:600}
+.sprow .spm input{width:100%;padding-left:25px;text-align:right}
+.splitsum{margin:11px 0 0;font-size:0.8125rem;font-weight:600;color:var(--muted)}
+.splitsum.ok{color:var(--pos)} .splitsum.over{color:var(--neg)}
+.splitline{margin:10px 0 12px}
+@media (max-width:420px){.sprow .spm{width:112px}}
 .linkb{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--accent);text-decoration:underline;
   text-underline-offset:2px;cursor:pointer}
 .subprev{margin:-6px 0 12px;font-size:0.8125rem;color:var(--muted);min-height:1px}
@@ -862,6 +874,10 @@ const ES={
 "Net balance":"Balance neto","Everything you have plus what people owe you, minus what you owe on cards and loans.":"Todo lo que tienes más lo que te deben, menos lo que debes en tarjetas y préstamos.","Your money":"Tu dinero","Available":"Disponible","Cards owe":"Tarjetas","Savings":"Ahorros","Owed to me":"Me deben","Loans I owe":"Mis préstamos","All months":"Todos los meses","Net balance change so far":"Cambio del balance hasta hoy","Net balance change":"Cambio del balance","Closed at":"Cerró en","Spent":"Gastado","spent":"gastado","Income":"Ingresos","Card payments":"Pagos de tarjeta","Cash back":"Cashback","Loan payments":"Pagos de préstamos","Spending by category":"Gastos por categoría","Tap a category to see its transactions.":"Toca una categoría para ver sus transacciones.","Tap \"Needs a category\" to see those expenses and pick one for each.":"Toca \"Necesita categoría\" para ver esos gastos y elegir una para cada uno.","See these transactions":"Ver estas transacciones","Top 3 changes":"Los 3 cambios más grandes","No changes yet this month.":"Aún no hay cambios este mes.","Improved":"Mejoraron","Went the other way":"Empeoraron","Closing balances":"Saldos al cierre","Credit cards":"Tarjetas de crédito","Checking and cash":"Cuentas corrientes y efectivo","Personal savings":"Ahorros personales","Add card limits":"Agrega los límites","No limit set":"Sin límite","owed":"debe","+ Add":"+ Agregar","+ Add money":"+ Agregar dinero","+ Add account":"+ Agregar cuenta","+ Add transaction":"+ Agregar transacción","+ New transaction":"+ Nueva transacción","+ Lend":"+ Prestar","+ Log payment":"+ Registrar pago","+ Log repayment":"+ Registrar devolución","Add account":"Agregar cuenta","Add a transaction":"Agregar una transacción","Add transaction":"Agregar transacción","An expense, income or transfer":"Un gasto, ingreso o transferencia","A purchase with one of your cards":"Una compra con una de tus tarjetas","Move money into one of your savings":"Pasar dinero a uno de tus ahorros","Set up your accounts":"Configura tus cuentas","Add the places your money lives, then log what you spend, earn and move.":"Agrega dónde está tu dinero y luego registra lo que gastas, ganas y mueves.","Add Checking, Credit card and Cash":"Agregar cuenta corriente, tarjeta y efectivo","Add one account myself":"Agregar una cuenta yo mismo","Open an account to see its transactions and add new ones.":"Abre una cuenta para ver sus transacciones y agregar nuevas.",
 /* subs */
 "Subs":"Subs","Subscriptions":"Suscripciones","Nothing tracked yet":"Aún no sigues ninguna","Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.":"Agrega lo que pagas cada mes (streaming, teléfono, programas) y Pocketbook te muestra cuánto suma en un año.","Add a subscription":"Agregar una suscripción","Every month":"Cada mes","Every year":"Cada año","Found in your transactions":"Encontradas en tus transacciones","These charges repeat. Only you can say whether they are subscriptions.":"Estos cargos se repiten. Solo tú puedes decir si son suscripciones.","Not a subscription":"No es una suscripción","Track it":"Seguirla","Tracked":"Las que sigues","New subscription":"Nueva suscripción","Edit subscription":"Editar suscripción","How often":"Cada cuánto","Monthly":"Mensual","Yearly":"Anual","Subscription updated":"Suscripción actualizada","Give the subscription a name.":"Ponle un nombre a la suscripción.",
+/* split across projects */
+"Split it across projects":"Repártelo entre varios proyectos","Use a single project instead":"Usar un solo proyecto",
+"Enter the amount above, then divide it.":"Escribe el monto arriba y luego repártelo.",
+"Saved to projects":"Guardado en varios proyectos",
 /* loan cost panel, what-if and suggestions */
 "What it costs you":"Lo que te cuesta","a day, every day, until it is gone":"al día, todos los días, hasta que se acabe",
 "now":"ahora","What if you paid more":"¿Y si pagaras más?","Extra each month":"Extra cada mes","One-time payment":"Pago único","Clear":"Limpiar",
@@ -908,6 +924,10 @@ const ES_PAT=[
  [/^· (\d+)% of limit$/,"· $1% del límite"],
  [new RegExp("^(\\d+) expenses? · "+MNY+"\\. Tap one to change its category\\.$"),m=>m[1]+(m[1]==="1"?" gasto":" gastos")+" · "+m[2]+". Toca uno para cambiar su categoría."],
  [/^(.+) a year$/,"$1 al año"],
+ [new RegExp("^✓ "+MNY+" of "+MNY+" assigned$"),"✓ $1 de $2 repartidos"],
+ [new RegExp("^"+MNY+" left to assign$"),"Faltan $1 por repartir"],
+ [new RegExp("^"+MNY+" more than the amount$"),"$1 más que el monto"],
+ [/^(\d+) projects$/,"$1 proyectos"],
  [new RegExp("^"+MNY+" interest$"),"$1 de interés"],
  [new RegExp("^"+MNY+" off the balance$"),"$1 al saldo"],
  [/^(\d+)¢ of every dollar$/,"$1 centavos de cada dólar"],
@@ -1097,6 +1117,7 @@ function txDisplay(t){
   else if(t.type==="income"){title=desc||t.category||"Income";meta=(t.payer||"Income")+" → "+acctName(t.to);sign="+";cls="pos";}
   else if(t.type==="transfer"){title=desc||"Transfer";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
   else if(t.type==="cardpay"){title=desc||"Card payment";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
+  else if(t.type==="save"&&isSplit(t)){title=desc||"Saved to projects";meta=acctName(t.from)+" → "+txParts(t).length+" projects";cls="pos";sign="+";}
   else if(t.type==="save"){title=desc||("Saved to "+projName(t.project));meta=acctName(t.from)+" → "+projName(t.project)+" (project)";cls="pos";sign="+";}
   else if(t.type==="loanpay"){ const l=loanById(t.loan), lent=l&&l.dir==="lent";
     title=desc||(lent?"Loan repayment received":"Loan payment");
@@ -1992,13 +2013,27 @@ function acctRows(c,editable){
 // Which project a transaction belongs to: the one you picked, or the one named in the description ("Carmencita" -> Carmencita's Fund).
 // Transfers, income and Save-to-project add. Card and loan payments from checking subtract (that is when the money really leaves).
 // Card purchases don't change it (it is subtracted when you pay the card). Purchases paid straight from checking or cash subtract.
+// A transaction can be split across projects: t.parts = [{pid,amt}]. Everything
+// else still carries a single t.project, so txParts speaks for both.
+function txParts(t){
+  if(Array.isArray(t.parts)&&t.parts.length){
+    const ps=t.parts.filter(x=>x&&x.pid&&projById(x.pid)&&Math.abs(+x.amt||0)>=0.005)
+      .map(x=>({pid:x.pid,amt:Math.round((+x.amt||0)*100)/100}));
+    if(ps.length) return ps;
+  }
+  const e=projEffect(t); return e?[{pid:e.pid,amt:Math.round((+t.amount||0)*100)/100}]:[];
+}
+function txPids(t){ return txParts(t).map(x=>x.pid); }
+function isSplit(t){ return Array.isArray(t.parts)&&t.parts.filter(x=>x&&x.pid).length>1; }
+function projSignOf(t){
+  if(t.type==="save"||t.type==="income"||t.type==="transfer") return 1;
+  if(t.type==="cardpay"||t.type==="loanpay") return (t.from===CASHBACK)?0:-1;
+  if(t.type==="expense"){ const a=acctById(t.from); return (a&&a.type==="credit")?0:-1; }
+  return 0;
+}
 function projEffect(t){
   const pid=(t.project&&projById(t.project))?t.project:((projectFor(t.desc)||{}).id); if(!pid) return null;
-  let sign=0;
-  if(t.type==="save"||t.type==="income"||t.type==="transfer") sign=1;
-  else if(t.type==="cardpay"||t.type==="loanpay") sign=(t.from===CASHBACK)?0:-1;
-  else if(t.type==="expense"){ const a=acctById(t.from); sign=(a&&a.type==="credit")?0:-1; }
-  return {pid,sign};
+  return {pid,sign:projSignOf(t)};
 }
 // Which account holds the project money that moved: transfers/income land in the destination; Save-to-project stays in the source;
 // payments and purchases leave from the source.
@@ -2010,11 +2045,16 @@ function projLedger(upTo){
   const key=upTo||"all"; if(LEDGER[key]) return LEDGER[key];
   const asc=S.txns.filter(t=>!upTo||!t.date||t.date<=upTo).sort((x,y)=>(x.date||"").localeCompare(y.date||"")||(x.created||0)-(y.created||0));
   const total={}, where={}, eff={}, r2=v=>Math.round(v*100)/100;
-  asc.forEach(t=>{ const e=projEffect(t); if(!e||!e.pid) return; const pid=e.pid, amt=+t.amount||0, W=where[pid]||(where[pid]={});
-    let delta=0, moved=0;
-    if(t.type==="transfer"&&e.sign>0&&t.from){ const held=Math.max(0,W[t.from]||0); moved=Math.min(amt,held); delta=amt-moved; W[t.from]=r2((W[t.from]||0)-moved); if(t.to) W[t.to]=r2((W[t.to]||0)+amt); }
-    else { delta=e.sign*amt; const ac=projAcct(t,e.sign); if(ac&&delta) W[ac]=r2((W[ac]||0)+delta); }
-    total[pid]=r2((total[pid]||0)+delta); eff[t.id]={pid,delta:r2(delta),moved:r2(moved),bal:total[pid],sign:delta>0?1:delta<0?-1:0}; });
+  asc.forEach(t=>{
+    const parts=txParts(t); if(!parts.length) return;
+    const sign=projSignOf(t); const byPid={}; let tDelta=0, tMoved=0, last=null;
+    parts.forEach(pt=>{ const pid=pt.pid, amt=Math.abs(pt.amt), W=where[pid]||(where[pid]={});
+      let delta=0, moved=0;
+      if(t.type==="transfer"&&sign>0&&t.from){ const held=Math.max(0,W[t.from]||0); moved=Math.min(amt,held); delta=amt-moved; W[t.from]=r2((W[t.from]||0)-moved); if(t.to) W[t.to]=r2((W[t.to]||0)+amt); }
+      else { delta=sign*amt; const ac=projAcct(t,sign); if(ac&&delta) W[ac]=r2((W[ac]||0)+delta); }
+      total[pid]=r2((total[pid]||0)+delta); tDelta+=delta; tMoved+=moved;
+      last=byPid[pid]={pid,delta:r2(delta),moved:r2(moved),bal:total[pid],sign:delta>0?1:delta<0?-1:0}; });
+    eff[t.id]=Object.assign({},last,{byPid,n:parts.length,delta:r2(tDelta),moved:r2(tMoved)}); });
   return (LEDGER[key]={total,where,eff});
 }
 function projWhere(pid){
@@ -2028,11 +2068,13 @@ function whereBlock(pid){
 function projSign(t){ const e=projEffect(t); return e?e.sign:null; }
 function computeFunds(){
   const L=projLedger(), after={};
-  Object.keys(L.eff).forEach(id=>{ const f=L.eff[id]; after[id]={id:f.pid,bal:f.bal,sign:f.sign,moved:f.moved}; });
+  Object.keys(L.eff).forEach(id=>{ const f=L.eff[id]; after[id]={id:f.pid,bal:f.bal,sign:f.sign,moved:f.moved,n:f.n||1,byPid:f.byPid}; });
   return {bal:L.total,after};
 }
 function fundPill(t){
   const f=S.funds&&S.funds.after[t.id]; if(!f) return "";
+  if(f.n>1&&f.byPid){ return Object.keys(f.byPid).map(pid=>{ const x=f.byPid[pid];
+    return '<span class="fundtag'+(x.bal<0?" low":"")+'">'+(x.sign>0?"+ ":x.sign<0?"− ":"")+esc(projName(pid))+' '+money(Math.abs(x.delta)+Math.abs(x.moved))+' · '+money(x.bal)+' available</span>'; }).join(""); }
   const mv=f.moved>0?(f.sign>0?' (moved '+money(f.moved)+' + new)':' (moved)'):'';
   return '<span class="fundtag'+(f.bal<0?" low":"")+'">'+(f.moved>0&&f.sign<=0?"⇄ ":f.sign>0?"+ ":f.sign<0?"− ":"")+esc(projName(f.id))+mv+' · '+money(f.bal)+' available</span>';
 }
@@ -2051,7 +2093,37 @@ function projectFor(desc){
   S.projects.forEach(p=>{ const ks=projKeys(p.name); if(ks.length&&ks.every(k=>d.includes(" "+k+" ")||d.includes(" "+k))){ const sc=ks.join("").length; if(sc>score){score=sc;best=p;} } });
   return best;
 }
-function projField(t,label,empty){ return S.projects.length?'<div class="field"><label for="f_proj">'+label+'</label><select id="f_proj">'+opts(S.projects.map(p=>({v:p.id,l:p.name})),t.project,empty)+'</select></div><p class="hint" id="projHint" style="margin:-6px 0 12px"></p>':''; }
+function projField(t,label,empty){
+  if(!S.projects.length) return '';
+  if(S.projects.length>1&&t.split) return splitField(t,label);
+  return '<div class="field"><label for="f_proj">'+label+'</label><select id="f_proj">'+opts(S.projects.map(p=>({v:p.id,l:p.name})),t.project,empty)+'</select></div>'+
+    (S.projects.length>1?'<p class="hint splitline" id="splitLink"'+(t.project?'':' hidden')+'><button type="button" class="linkb" data-splitmode="on">Split it across projects</button></p>':'')+
+    '<p class="hint" id="projHint" style="margin:-6px 0 12px"></p>';
+}
+// One transaction, divided between projects. The parts must add up to the amount.
+function splitField(t,label){
+  const have={}; (t.parts||[]).forEach(p=>{ if(p&&p.pid) have[p.pid]=p.amt; });
+  return '<div class="field splitf"><label>'+label+'</label>'+
+    '<div class="splitrows">'+S.projects.map(p=>'<div class="sprow"><span class="spn">'+esc(p.name)+'</span>'+
+      '<span class="spm"><i>$</i><input id="sp_'+esc(p.id)+'" class="amount" inputmode="decimal" placeholder="0.00" data-sp="'+esc(p.id)+'" value="'+(have[p.id]!==undefined&&have[p.id]!==""?esc(have[p.id]):"")+'" aria-label="'+esc(p.name)+'"></span></div>').join("")+
+    '</div><p class="splitsum" id="splitSum" aria-live="polite"></p>'+
+    '<p class="hint splitline"><button type="button" class="linkb" data-splitmode="off">Use a single project instead</button></p></div>';
+}
+function readSplit(){
+  const out=[]; document.querySelectorAll("[data-sp]").forEach(el=>{
+    const v=parseFloat(String(el.value).replace(/[$,\s]/g,""));
+    if(!isNaN(v)&&Math.abs(v)>=0.005) out.push({pid:el.dataset.sp,amt:Math.round(v*100)/100}); });
+  return out;
+}
+function updSplitSum(){
+  const box=$("splitSum"); if(!box) return;
+  const total=parseFloat(String(($("f_amount")||{}).value||"").replace(/[$,\s]/g,""))||0;
+  const parts=readSplit(), got=parts.reduce((s,p)=>s+p.amt,0), left=Math.round((total-got)*100)/100;
+  if(!total){ box.className="splitsum"; box.textContent=L("Enter the amount above, then divide it.","Escribe el monto arriba y luego repártelo."); return; }
+  if(Math.abs(left)<0.005){ box.className="splitsum ok"; box.textContent="✓ "+money(got)+" of "+money(total)+" assigned"; }
+  else if(left>0){ box.className="splitsum"; box.textContent=money(left)+" left to assign"; }
+  else { box.className="splitsum over"; box.textContent=money(-left)+" more than the amount"; }
+}
 function updProjHint(){
   const hn=$("projHint"); if(!hn) return;
   const d=$("f_desc"), fp=$("f_proj"), fr=$("f_from");
@@ -2262,10 +2334,11 @@ async function wishUpdate(pid,fn){
 }
 function viewProject(p){
   const c=compute(), bal=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,bal/goal*100)):0;
-  const mine=sortTx(S.txns.filter(t=>{const e=projEffect(t);return e&&e.pid===p.id;}));
-  const LE=projLedger().eff, ef=t=>LE[t.id]||{delta:0,moved:0};
+  const mine=sortTx(S.txns.filter(t=>txPids(t).indexOf(p.id)>=0));
+  const LE=projLedger().eff, ef=t=>((LE[t.id]||{}).byPid||{})[p.id]||{delta:0,moved:0};
   const ins=mine.filter(t=>ef(t).delta>0), moves=mine.filter(t=>ef(t).moved>0&&ef(t).delta<=0), buys=mine.filter(t=>t.type==="expense"), pays=mine.filter(t=>ef(t).delta<0&&t.type!=="expense");
-  const sum=l=>l.reduce((s,t)=>s+(+t.amount||0),0), sumNew=l=>l.reduce((s,t)=>s+Math.max(0,ef(t).delta),0);
+  const share=t=>{const pt=txParts(t).find(x=>x.pid===p.id);return pt?Math.abs(pt.amt):(+t.amount||0);};
+  const sum=l=>l.reduce((s,t)=>s+share(t),0), sumNew=l=>l.reduce((s,t)=>s+Math.max(0,ef(t).delta),0);
   const wish=p.wish||[], wTotal=wish.reduce((s,w)=>s+(+w.price||0),0), wLeft=wish.filter(w=>!w.done).reduce((s,w)=>s+(+w.price||0),0);
   const all=projSorted();
   const projTot=all.reduce((t,q)=>t+Math.max(0,c.proj[q.id]||0),0);
@@ -2802,7 +2875,7 @@ function updRepayHint(){
 }
 function openTx(tx,preset){
   if(!S.accounts.length){toast("Add an account first.");S.tab="home";S.open=null;render();return;}
-  draft = tx? Object.assign({},tx,{desc:tx.desc||tx.note||""}) : Object.assign({type:"expense",date:todayStr(),amount:"",from:"",to:"",category:"",project:"",desc:"",payee:"",payer:""},preset||{});
+  draft = tx? Object.assign({},tx,{desc:tx.desc||tx.note||"",split:isSplit(tx)}) : Object.assign({type:"expense",date:todayStr(),amount:"",from:"",to:"",category:"",project:"",desc:"",payee:"",payer:""},preset||{});
   if(!tx&&!(preset&&preset.type)){
     const a=draft.ctx&&acctById(draft.ctx);
     if(a&&a.type==="checking") draft.type="cardpay";
@@ -2889,8 +2962,10 @@ function renderTx(errMsg){
   const fl=$("f_loan"); if(fl) fl.addEventListener("change",()=>{readTxForm();draft.intAuto=true;loanDefaults();renderTx();});
   // typing a project's name at the start of the description picks that project
   const fdesc=$("f_desc"), fp=$("f_proj");
-  if(fdesc&&fp) fdesc.addEventListener("input",()=>{ const p=projectFor(fdesc.value); if(p&&fp.value!==p.id){ fp.value=p.id; fp.classList.add("flash"); setTimeout(()=>fp.classList.remove("flash"),700); } updProjHint(); });
+  if(fdesc&&fp) fdesc.addEventListener("input",()=>{ const p=projectFor(fdesc.value); if(p&&fp.value!==p.id){ fp.value=p.id; fp.classList.add("flash"); setTimeout(()=>fp.classList.remove("flash"),700); } const sl0=$("splitLink"); if(sl0) sl0.hidden=!fp.value; updProjHint(); });
   ["f_proj","f_from","f_amount"].forEach(id=>{ const el=$(id); if(el) el.addEventListener(el.tagName==="SELECT"?"change":"input",updProjHint); });
+  // "Split it across projects" only shows once a project is chosen
+  const sl=$("splitLink"); if(sl&&fp){ const showSplit=()=>{ sl.hidden=!fp.value; }; fp.addEventListener("change",showSplit); showSplit(); }
   ["f_amount","f_from","f_to","f_loan","f_int","f_date"].forEach(id=>{ const el=$(id); if(el){ el.addEventListener("input",updTxPrev); el.addEventListener("change",updTxPrev); } }); updTxPrev();
   const fcat=$("f_cat"), bf=$("f_borrowerF");
   if(fcat&&bf){ const sync=()=>{ const on=(draft.type==="expense"&&fcat.value===LENT)||(draft.type==="income"&&fcat.value===REPAY); bf.hidden=!on;
@@ -2904,6 +2979,8 @@ function renderTx(errMsg){
     ["f_desc","f_payer"].forEach(id=>{const el=$(id); if(el) el.addEventListener("input",auto);}); fcat.addEventListener("change",auto);
     const bi=$("f_borrower"); if(bi) bi.addEventListener("input",()=>{bi.dataset.typed="1";}); }
   updProjHint();
+  if($("splitSum")){ document.querySelectorAll("[data-sp]").forEach(el=>el.addEventListener("input",updSplitSum));
+    const fam=$("f_amount"); if(fam) fam.addEventListener("input",updSplitSum); updSplitSum(); }
   const fi=$("f_int"), fa=$("f_amount");
   if(fi) fi.addEventListener("input",()=>{draft.intAuto=false;});
   if(fi&&fa) fa.addEventListener("input",()=>{ if(!draft.intAuto) return; const l=loanById($("f_loan")&&$("f_loan").value); const a=parseFloat(fa.value.replace(/[$,\s]/g,""));
@@ -2927,6 +3004,7 @@ function readTxForm(){
   const g=id=>{const el=$(id);return el?el.value.trim():undefined;};
   const map={amount:"f_amount",date:"f_date",desc:"f_desc",from:"f_from",to:"f_to",category:"f_cat",project:"f_proj",payee:"f_payee",payer:"f_payer",loan:"f_loan",interest:"f_int",borrower:"f_borrower"};
   for(const k in map){const v=g(map[k]); if(v!==undefined) draft[k]=v;}
+  if(document.querySelector("[data-sp]")) draft.parts=readSplit();
 }
 async function submitTx(e){
   e.preventDefault(); readTxForm(); const t=draft;
@@ -2947,10 +3025,19 @@ async function submitTx(e){
     to:["income","transfer","cardpay"].includes(t.type)?t.to:"",
     payee:t.type==="expense"?t.payee:"", payer:t.type==="income"?(t.payer||""):"",
     category:["expense","income"].includes(t.type)?(t.category||""):"",
-    project:["save","expense","transfer","income","cardpay"].includes(t.type)?(t.project||""):"",
+    project:["save","expense","transfer","income","cardpay"].includes(t.type)?(t.split?"":(t.project||"")):"",
     borrower:((t.type==="expense"&&t.category===LENT)||(t.type==="income"&&t.category===REPAY))?String(t.borrower||"").trim():""};
+  if(t.split&&["save","expense","transfer","income","cardpay"].includes(t.type)){
+    const parts=(t.parts||[]).filter(p=>p&&p.pid&&projById(p.pid)&&Math.abs(+p.amt||0)>=0.005);
+    if(!parts.length) return renderTx(L("Give at least one project an amount, or switch back to a single project.","Dale un monto a por lo menos un proyecto, o vuelve a un solo proyecto."));
+    const got=Math.round(parts.reduce((x,p)=>x+(+p.amt||0),0)*100)/100, want=Math.round(amt*100)/100;
+    if(Math.abs(got-want)>=0.005) return renderTx(got<want
+      ? L("The split is "+money(want-got)+" short of "+money(want)+".","Al reparto le faltan "+money(want-got)+" para llegar a "+money(want)+".")
+      : L("The split is "+money(got-want)+" more than "+money(want)+".","El reparto pasa por "+money(got-want)+" de "+money(want)+"."));
+    doc.parts=parts.map(p=>({pid:p.pid,amt:Math.round((+p.amt||0)*100)/100}));
+  }
   if(t.type==="loanpay"){ doc.loan=t.loan; doc.from=lentLoan?"":t.from; doc.to=lentLoan?t.to:""; doc.interest=Math.round(intr*100)/100; }
-  const ef=!t.id&&!t._tipDone?projEffect(doc):null;
+  const ef=(!t.id&&!t._tipDone&&!doc.parts)?projEffect(doc):null;
   if(ef&&ef.sign>0){ const sug=smartSuggest(ef.pid,doc.amount); if(sug) return showTip(sug,doc); }
   if(await save(t.id,doc)){closeSheet();toast(t.id?"Transaction updated":"Transaction added"); if(!S.open) S.month=ymOf(doc.date); render();}
 }
@@ -3062,7 +3149,7 @@ function openProjHistory(id){
 function askDelete(){
   const d=draft; let msg, blocked=false;
   if(d.kind==="account"){const n=S.txns.filter(t=>t.from===d.id||t.to===d.id).length; if(n){blocked=true;msg="This account has "+n+" transaction"+(n===1?"":"s")+". Delete or move "+(n===1?"it":"them")+" first.";} else msg="Delete this account?";}
-  else if(d.kind==="project"){const n=S.txns.filter(t=>t.project===d.id).length; if(n){blocked=true;msg="This project has "+n+" transaction"+(n===1?"":"s")+". Delete "+(n===1?"it":"them")+" first.";} else msg="Delete this project?";}
+  else if(d.kind==="project"){const n=S.txns.filter(t=>txPids(t).indexOf(d.id)>=0).length; if(n){blocked=true;msg="This project has "+n+" transaction"+(n===1?"":"s")+". Delete "+(n===1?"it":"them")+" first.";} else msg="Delete this project?";}
   else if(d.kind==="loan"){const n=S.txns.filter(t=>t.loan===d.id).length; if(n){blocked=true;msg="This loan has "+n+" payment"+(n===1?"":"s")+". Delete "+(n===1?"it":"them")+" first.";} else msg="Delete this loan?";}
   else msg="Delete this transaction? This can't be undone.";
   $("delBox").innerHTML='<div class="confirm"><span>'+esc(msg)+'</span>'+(blocked?'':'<div class="actions" style="margin:0"><button type="button" class="btn" data-act="canceldel">Keep it</button><button type="button" class="btn primary" style="background:var(--neg);border-color:var(--neg)" data-act="dodel">Delete</button></div>')+'</div>';
@@ -3123,6 +3210,11 @@ document.addEventListener("click",async e=>{
   if(ds.wishdel){await wishUpdate(ds.wishproj,w=>w.filter(x=>x.id!==ds.wishdel));return;}
   if(ds.editproj){openProj(projById(ds.editproj));return;}
   if(ds.wq!==undefined){ const x=$("wx"); if(x){ x.value = ds.wq==="0" ? "" : ds.wq; if(ds.wq==="0"&&$("wl")) $("wl").value=""; drawWhatIf(); } return; }
+  if(ds.splitmode){ readTxForm();
+    if(ds.splitmode==="on"){ draft.split=true;
+      if(!(draft.parts||[]).length&&draft.project) draft.parts=[{pid:draft.project,amt:parseFloat(String(draft.amount).replace(/[$,\s]/g,""))||""}]; }
+    else { draft.split=false; const p=(draft.parts||[])[0]; if(p&&!draft.project) draft.project=p.pid; draft.parts=[]; }
+    renderTx(); return; }
   if(ds.newsub){ openSub(null); return; }
   if(ds.sublog){ const sb=(S.subs||[]).find(x=>x.id===ds.sublog);
     if(sb) openTx(null,{type:"expense",payee:sb.name,desc:sb.name,from:sb.account||"",category:sb.category||"Subscriptions"}); return; }
