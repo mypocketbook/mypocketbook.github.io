@@ -258,6 +258,13 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .btn.tiny{margin-left:auto;padding:5px 11px;font-size:0.75rem;border-radius:999px}
 .sublist .subrow{border-bottom:0}
 .sublist .subwrap+.subwrap{border-top:1px solid var(--line)}
+/* ---- jump out of a detail screen to another part of the app ---- */
+.jumpbar{display:flex;align-items:center;gap:10px;margin:2px 0 14px;min-width:0}
+.jumpbar .jl{flex:none;font-size:0.6875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.jumpbar .chips{flex:1;min-width:0;margin-top:0}
+.jumpbar .chip{font-weight:600}
+.jumpbar .chip:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:420px){.jumpbar{gap:8px}.jumpbar .jl{display:none}}
 /* ---- splitting one transaction across projects ---- */
 .splitf{display:grid;gap:0}
 .splitrows{display:grid;gap:8px;margin-top:2px}
@@ -873,7 +880,7 @@ const ES={
 /* home */
 "Net balance":"Balance neto","Everything you have plus what people owe you, minus what you owe on cards and loans.":"Todo lo que tienes más lo que te deben, menos lo que debes en tarjetas y préstamos.","Your money":"Tu dinero","Available":"Disponible","Cards owe":"Tarjetas","Savings":"Ahorros","Owed to me":"Me deben","Loans I owe":"Mis préstamos","All months":"Todos los meses","Net balance change so far":"Cambio del balance hasta hoy","Net balance change":"Cambio del balance","Closed at":"Cerró en","Spent":"Gastado","spent":"gastado","Income":"Ingresos","Card payments":"Pagos de tarjeta","Cash back":"Cashback","Loan payments":"Pagos de préstamos","Spending by category":"Gastos por categoría","Tap a category to see its transactions.":"Toca una categoría para ver sus transacciones.","Tap \"Needs a category\" to see those expenses and pick one for each.":"Toca \"Necesita categoría\" para ver esos gastos y elegir una para cada uno.","See these transactions":"Ver estas transacciones","Top 3 changes":"Los 3 cambios más grandes","No changes yet this month.":"Aún no hay cambios este mes.","Improved":"Mejoraron","Went the other way":"Empeoraron","Closing balances":"Saldos al cierre","Credit cards":"Tarjetas de crédito","Checking and cash":"Cuentas corrientes y efectivo","Personal savings":"Ahorros personales","Add card limits":"Agrega los límites","No limit set":"Sin límite","owed":"debe","+ Add":"+ Agregar","+ Add money":"+ Agregar dinero","+ Add account":"+ Agregar cuenta","+ Add transaction":"+ Agregar transacción","+ New transaction":"+ Nueva transacción","+ Lend":"+ Prestar","+ Log payment":"+ Registrar pago","+ Log repayment":"+ Registrar devolución","Add account":"Agregar cuenta","Add a transaction":"Agregar una transacción","Add transaction":"Agregar transacción","An expense, income or transfer":"Un gasto, ingreso o transferencia","A purchase with one of your cards":"Una compra con una de tus tarjetas","Move money into one of your savings":"Pasar dinero a uno de tus ahorros","Set up your accounts":"Configura tus cuentas","Add the places your money lives, then log what you spend, earn and move.":"Agrega dónde está tu dinero y luego registra lo que gastas, ganas y mueves.","Add Checking, Credit card and Cash":"Agregar cuenta corriente, tarjeta y efectivo","Add one account myself":"Agregar una cuenta yo mismo","Open an account to see its transactions and add new ones.":"Abre una cuenta para ver sus transacciones y agregar nuevas.",
 /* subs */
-"Subs":"Subs","Subscriptions":"Suscripciones","Nothing tracked yet":"Aún no sigues ninguna","Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.":"Agrega lo que pagas cada mes (streaming, teléfono, programas) y Pocketbook te muestra cuánto suma en un año.","Add a subscription":"Agregar una suscripción","Every month":"Cada mes","Every year":"Cada año","Found in your transactions":"Encontradas en tus transacciones","These charges repeat. Only you can say whether they are subscriptions.":"Estos cargos se repiten. Solo tú puedes decir si son suscripciones.","Not a subscription":"No es una suscripción","Track it":"Seguirla","Tracked":"Las que sigues","New subscription":"Nueva suscripción","Edit subscription":"Editar suscripción","How often":"Cada cuánto","Monthly":"Mensual","Yearly":"Anual","Subscription updated":"Suscripción actualizada","Give the subscription a name.":"Ponle un nombre a la suscripción.",
+"Subs":"Subs","Subscriptions":"Suscripciones","Nothing tracked yet":"Aún no sigues ninguna","Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.":"Agrega lo que pagas cada mes (streaming, teléfono, programas) y Pocketbook te muestra cuánto suma en un año.","Add a subscription":"Agregar una suscripción","Every month":"Cada mes","Every year":"Cada año","Found in your transactions":"Encontradas en tus transacciones","These charges repeat. Only you can say whether they are subscriptions.":"Estos cargos se repiten. Solo tú puedes decir si son suscripciones.","Not a subscription":"No es una suscripción","Track it":"Seguirla","Tracked":"Las que sigues","New subscription":"Nueva suscripción","Edit subscription":"Editar suscripción","How often":"Cada cuánto","Monthly":"Mensual","Yearly":"Anual","Subscription updated":"Suscripción actualizada","Give the subscription a name.":"Ponle un nombre a la suscripción.","Go to":"Ir a","Go to another section":"Ir a otra sección","Savings":"Ahorros","still owed":"todavía debo","owed to me":"me deben","paid off":"pagado",
 /* split across projects */
 "Split it across projects":"Repártelo entre varios proyectos","Use a single project instead":"Usar un solo proyecto",
 "Enter the amount above, then divide it.":"Escribe el monto arriba y luego repártelo.",
@@ -1693,7 +1700,7 @@ function viewAccount(a){
   let run=credit?-(+a.opening||0):(+a.opening||0); const after={};
   asc.forEach(t=>{run+=deltaFor(t,a.id);after[t.id]=run;});
   const show=v=>credit?money(-v):money(v);
-  let h=acctSwitcher(a,compute())+'<section class="hero"><div class="eyebrow">'+ACCT_TYPES[a.type]+(credit?" · amount owed":" · balance")+'</div>'+
+  let h=acctSwitcher(a,compute())+jumpBar(credit?"cards":(a.type==="savings"?"sav":"day"))+'<section class="hero"><div class="eyebrow">'+ACCT_TYPES[a.type]+(credit?" · amount owed":" · balance")+'</div>'+
     '<div class="big '+((credit? -run>0 : run<0)?"neg":"")+'">'+show(run)+'</div>'+
     ((a.asOf||a.created)?'<p class="hint" style="margin:-4px 0 12px">Starting balance of '+show(credit?-(+a.opening||0):(+a.opening||0))+' as of '+esc(fmtDate(a.asOf?pDate(a.asOf):new Date(a.created)))+'.</p>':'')+
     quickActs([{pri:1,icon:"plus",label:"Add transaction",attr:'data-addin="'+esc(a.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editacct="'+esc(a.id)+'"'},{icon:"hist",label:"History",attr:'data-scrollto="accthist"'}])+'</section><span id="accthist"></span>';
@@ -2316,6 +2323,32 @@ function switcher(items,label){
       '<span class="bn">'+esc(it.name)+'</span><span class="bv'+(it.neg?' neg':'')+'">'+money(it.value)+'</span>'+
       '<span class="bp">'+esc(it.sub||"")+'</span></button>'; }).join("")+'</div>';
 }
+// Inside an account, a project or a loan, the ring row only moves you between
+// things of the same kind. This is the way across to everything else.
+function jumpBar(here){
+  const has=t=>S.accounts.some(a=>a.type===t), out=[];
+  if(here!=="day"&&(has("checking")||has("cash"))) out.push(["home:g-day","Checking and cash"]);
+  if(here!=="cards"&&has("credit")) out.push(["home:g-cards","Credit cards"]);
+  if(here!=="sav"&&has("savings")) out.push(["home:g-sav","Savings"]);
+  if(here!=="proj"&&S.projects.length) out.push(["projects:","Projects"]);
+  if(here!=="loans"&&S.loans.length) out.push(["loans:","Loans"]);
+  if(here!=="subs"&&(S.subs||[]).length) out.push(["subs:","Subscriptions"]);
+  if(!out.length) return "";
+  return '<nav class="jumpbar" aria-label="Go to another section"><span class="jl">Go to</span>'+
+    '<span class="chips">'+out.map(x=>'<button type="button" class="chip" data-jump="'+esc(x[0])+'">'+esc(x[1])+'</button>').join("")+'</span></nav>';
+}
+// Between loans, the same way the rings move you between accounts or projects.
+function loanSwitcher(l,c){
+  const all=S.loans.filter(x=>(x.dir==="lent")===(l.dir==="lent"));
+  if(all.length<2) return "";
+  const lent=l.dir==="lent";
+  const tot=all.reduce((s,x)=>s+Math.max(0,c.loan[x.id]||0),0);
+  return switcher(all.sort((x,y)=>(c.loan[y.id]||0)-(c.loan[x.id]||0)).map(x=>{
+    const left=c.loan[x.id]||0, orig=+x.original||0, pc=orig?Math.max(0,Math.min(100,(orig-left)/orig*100)):(tot?Math.max(0,left)/tot*100:0);
+    return {attr:'data-openloan="'+esc(x.id)+'"',name:x.name,value:left,neg:!lent&&left>0,pct:pc,
+      col:lent?"var(--pos)":"var(--accent)",sub:lent?"owed to me":"still owed",on:x.id===l.id}; }),
+    lent?"Money lent to others":"My loans");
+}
 function acctSwitcher(a,c){
   if(a.type==="credit"){
     const cards=S.accounts.filter(x=>x.type==="credit").sort((x,y)=>(-c.bal[y.id])-(-c.bal[x.id])||x.name.localeCompare(y.name));
@@ -2342,7 +2375,7 @@ function viewProject(p){
   const wish=p.wish||[], wTotal=wish.reduce((s,w)=>s+(+w.price||0),0), wLeft=wish.filter(w=>!w.done).reduce((s,w)=>s+(+w.price||0),0);
   const all=projSorted();
   const projTot=all.reduce((t,q)=>t+Math.max(0,c.proj[q.id]||0),0);
-  let h=switcher(all.map(q=>{ const qb=c.proj[q.id]||0, qg=+q.goal||0; const qr=prioOf(q); return {attr:'data-viewproj="'+esc(q.id)+'"',name:q.name,col:qr?qr[3]:undefined,value:qb,neg:qb<0,pct:qg?qb/qg*100:(projTot?Math.max(0,qb)/projTot*100:0),sub:qg?"of "+money(qg,true):"of projects",on:q.id===p.id}; }),"Projects")+
+  let h=switcher(all.map(q=>{ const qb=c.proj[q.id]||0, qg=+q.goal||0; const qr=prioOf(q); return {attr:'data-viewproj="'+esc(q.id)+'"',name:q.name,col:qr?qr[3]:undefined,value:qb,neg:qb<0,pct:qg?qb/qg*100:(projTot?Math.max(0,qb)/projTot*100:0),sub:qg?"of "+money(qg,true):"of projects",on:q.id===p.id}; }),"Projects")+jumpBar("proj")+
     '<section class="hero"><div class="eyebrow">Available for this project'+prioTag(p)+'</div><div class="big '+(bal<0?"neg":"")+'">'+money(bal)+'</div>'+
     (goal?'<div class="ubar goal" style="height:8px;margin:8px 0 4px"><i style="width:'+pct.toFixed(1)+'%"></i></div><p class="hint" style="margin:0">'+Math.round(pct)+'% of your '+money(goal)+' goal'+(bal<goal?' · '+money(goal-bal)+' to go':' · goal reached')+'</p>':(p.fund?'<p class="hint" style="margin:0">Ongoing fund, no goal. Add one anytime with Edit project.</p>':'<form class="goalf" id="goalForm" data-pid="'+esc(p.id)+'" novalidate><label for="g_amt">Saving for something specific? Set a goal (optional)</label><div class="gf"><input id="g_amt" class="amount" inputmode="decimal" placeholder="e.g. 1500"><button type="submit" class="btn primary">Save goal</button></div><button type="button" class="sadd" data-fundonly="'+esc(p.id)+'">No goal, it\'s an ongoing fund</button></form>'))+
     quickActs([{pri:1,icon:"plus",label:"Add money",attr:'data-saveto="'+esc(p.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editproj="'+esc(p.id)+'"'},{icon:"hist",label:"History",attr:'data-projhist="'+esc(p.id)+'"'}])+'</section>';
@@ -2511,7 +2544,7 @@ function viewLoan(l){
   const pays=sortTx(S.txns.filter(t=>t.loan===l.id));
   const paid=pays.reduce((s,t)=>s+(+t.amount||0),0), intPaid=pays.reduce((s,t)=>s+(+t.interest||0),0);
   const pct=orig?Math.max(0,Math.min(100,(orig-left)/orig*100)):0, n=lent?null:nextDue(l);
-  let h='<section class="hero"><div class="eyebrow">'+(lent?(l.party?esc(l.party)+(left>0?" owes me · ":" paid me back · ")+esc(l.name):"Still owed to me"):"Still owed"+(l.party?" · "+esc(l.party):""))+'</div><div class="big '+(lent?"":(left>0?"neg":""))+'">'+money(left)+'</div>';
+  let h=loanSwitcher(l,c)+jumpBar("loans")+'<section class="hero"><div class="eyebrow">'+(lent?(l.party?esc(l.party)+(left>0?" owes me · ":" paid me back · ")+esc(l.name):"Still owed to me"):"Still owed"+(l.party?" · "+esc(l.party):""))+'</div><div class="big '+(lent?"":(left>0?"neg":""))+'">'+money(left)+'</div>';
   if(orig) h+='<div class="bar" role="img" aria-label="'+Math.round(pct)+'% paid off" style="margin-bottom:6px"><i style="width:'+pct+'%"></i></div><div class="hint" style="margin:0 0 12px">'+Math.round(pct)+'% of '+money(orig)+' paid off</div>';
   h+=quickActs([{pri:1,icon:"plus",label:lent?"Log payment received":"Log payment",attr:'data-payloan="'+esc(l.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editloan="'+esc(l.id)+'"'},{icon:"hist",label:"History",attr:lent?'data-scrollto="loanhist"':'data-loantab="history"'}])+'</section>';
   const tab=lent?"history":(S.loanTab||"progress");
@@ -3193,6 +3226,10 @@ document.addEventListener("click",async e=>{
   if(ds.prfilter){ S.prioFilter=S.prioFilter===ds.prfilter?"":ds.prfilter; render(); return; }
   if(ds.scrollto){const el=$(ds.scrollto); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); return;}
   if(ds.tabGo){S.open=null;S.openLoan=null;S.openProj=null;S.tab=ds.tabGo;render();window.scrollTo(0,0);return;}
+  if(ds.jump){ const bits=ds.jump.split(":"), tab=bits[0], anchor=bits[1];
+    S.open=null;S.openLoan=null;S.openProj=null;S.tab=tab;render();window.scrollTo(0,0);
+    if(anchor) setTimeout(()=>{ const el=$(anchor); if(el) el.scrollIntoView({behavior:"smooth",block:"start"}); },60);
+    return; }
   if(ds.filteracct){S.acct=ds.filteracct;S.tab="activity";S.open=null;render();return;}
   if(ds.openloan){S.openLoan=ds.openloan;S.open=null;S.openProj=null;render();window.scrollTo(0,0);return;}
   if(ds.editloan){openLoanForm(loanById(ds.editloan));return;}
