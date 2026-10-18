@@ -484,6 +484,8 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .calfoot{display:flex;gap:6px;margin-top:8px}
 .calfoot .btn{flex:1;padding:8px}
 .fundtag{display:inline-block;margin-top:4px;font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--pos) 14%,var(--surface));color:var(--pos);font-variant-numeric:tabular-nums}
+.waittag{display:inline-block;margin:4px 0 0 6px;font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--ink);font-variant-numeric:tabular-nums}
+.cardbox{margin-top:4px}
 .fundtag.low{background:color-mix(in srgb,var(--neg) 14%,var(--surface));color:var(--neg)}
 .badge.fundb{color:var(--save)}
 :root{--pr-top:#5F35D6;--pr-mid:#09677A;--pr-low:#8A4E8A}
@@ -1738,7 +1740,7 @@ function viewAccount(a){
     h+='<div class="day"><span>'+esc(dayName(d))+'</span><span>'+esc(d)+'</span></div><div class="list">'+groups[d].map(t=>{
       const x=txDisplay(t), dl=deltaFor(t,a.id,true), inBal=!counts(t,a.id);
       const amt = t.type==="save" ? '<span class="mut">'+money(t.amount)+'</span>' : '<span class="'+(inBal?"mut":(dl<0?"neg":"pos"))+'">'+(dl<0?"−":"+")+money(Math.abs(dl))+'</span>';
-      return '<button class="row" data-edittx="'+esc(t.id)+'">'+x.bdg+'<span class="main"><span class="t">'+esc(x.title)+'</span><span class="m">'+esc(x.meta)+'</span>'+fundPill(t)+'</span>'+
+      return '<button class="row" data-edittx="'+esc(t.id)+'">'+x.bdg+'<span class="main"><span class="t">'+esc(x.title)+'</span><span class="m">'+esc(x.meta)+'</span>'+fundPill(t)+waitTag(t)+'</span>'+
         '<span class="amt">'+amt+'<span class="owed">'+(inBal?"already in balance":(credit?"owed ":"bal ")+show(after[t.id]))+'</span></span></button>';
     }).join("")+'</div>';
   });
@@ -1924,7 +1926,7 @@ function viewHome(){
   const owedAll=c.lentOut+llLeft, lentAll=lentTot+llTot, repAll=repTot+Math.max(0,llTot-llLeft);
   if(owedAll>0||lentAll>0) items.push({attr:'data-tab-go="loans"',mode:"drain",name:"Loans to others",value:owedAll,pct:lentAll?(lentAll-repAll)/lentAll*100:null,col:"var(--save)",sub:"still owed to me"});
   if(owe.length) items.push({attr:'data-tab-go="loans"',mode:"drain",name:"My loans",value:c.loansOwe,neg:c.loansOwe>0,pct:origTot?leftTot/origTot*100:null,col:"var(--accent)",sub:"still owed"});
-  let h=backupNudge()+welcomeCard()+'<section class="hero homehero"><div class="eyebrow">Net worth</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
+  let h=backupNudge()+welcomeCard()+cardNudge()+'<section class="hero homehero"><div class="eyebrow">Net worth</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
     '<details class="hinfo"><summary>ⓘ '+L('What\'s included?','¿Qué incluye?')+'</summary><p>Everything you have plus what people owe you, minus what you owe on cards and loans.</p></details></section>'+
     switcher(items,"Your money").replace('class="pswitch rings"','class="pswitch rings homerings"')+
     '<div class="homegrid">';
@@ -2118,6 +2120,38 @@ function fundPill(t){
   const mv=f.moved>0?(f.sign>0?' (moved '+money(f.moved)+' + new)':' (moved)'):'';
   return '<span class="fundtag'+(f.bal<0?" low":"")+'">'+(f.moved>0&&f.sign<=0?"⇄ ":f.sign>0?"+ ":f.sign<0?"− ":"")+esc(projName(f.id))+mv+' · '+money(f.bal)+' available</span>';
 }
+/* ---------- a card purchase for a project: the fund drops when you pay the card, so Pocketbook asks ---------- */
+function cardWaiting(pid){ return S.txns.filter(t=>t.type==="expense"&&t.cardWait&&!t.cardPaid&&(!pid||txPids(t).indexOf(pid)>=0)).sort((a,b)=>(b.date||"").localeCompare(a.date||"")); }
+function cardSnoozed(id){ try{ return localStorage.getItem("pb_cs_"+id)===todayStr(); }catch(_){ return false; } }
+function waitTag(t){ return (t.type==="expense"&&t.cardWait&&!t.cardPaid)?'<span class="waittag" data-cardask="'+esc(t.id)+'">'+L("Waiting for card payment","Esperando el pago de la tarjeta")+'</span>':""; }
+function cardBox(list){
+  if(!list.length) return "";
+  return '<section class="cardbox"><h2>'+L("Waiting on the card","Esperando la tarjeta")+'</h2><p class="hint" style="margin:-4px 0 10px">'+L("These were charged to your card. The project keeps its money until you pay the card.","Estas se cargaron a tu tarjeta. El proyecto conserva su dinero hasta que pagues la tarjeta.")+'</p><div class="list">'+
+    list.map(t=>'<div class="row subcand"><span class="main"><span class="t">'+esc(t.desc||t.payee||"")+'</span><span class="m">'+money(+t.amount||0)+' \u00b7 '+esc(acctName(t.from)||"")+' \u00b7 '+esc(t.date||"")+'</span></span><span class="candbtns"><button type="button" class="btn primary" data-cardask="'+esc(t.id)+'">'+L("Did you pay it?","¿Ya la pagaste?")+'</button></span></div>').join("")+'</div></section>';
+}
+function cardNudge(){
+  const w=cardWaiting().filter(t=>!cardSnoozed(t.id)).slice(0,2); if(!w.length) return "";
+  return w.map(t=>{ const names=txParts(t).map(x=>projName(x.pid)).join(", ");
+    return '<div class="confirm" style="margin:6px 0 4px;background:var(--surface);border-color:var(--line)"><span>'+L("Did you pay the card for ","¿Ya pagaste la tarjeta de ")+'<b>'+esc(t.desc||t.payee||"")+'</b> ('+money(+t.amount||0)+')? '+L(esc(names)+" keeps its money until you do.",esc(names)+" conserva su dinero hasta que lo hagas.")+'</span><div class="actions" style="margin:0"><button type="button" class="btn primary" data-cardask="'+esc(t.id)+'">'+L("Did you pay it?","¿Ya la pagaste?")+'</button></div></div>'; }).join("");
+}
+function askCard(id){
+  const t=S.txns.find(x=>x.id===id); if(!t) return;
+  const names=txParts(t).map(x=>projName(x.pid)).join(", ");
+  openSheet(sheetHead(L("Did you pay the card?","¿Ya pagaste la tarjeta?"))+
+    '<p>'+L("<b>"+esc(t.desc||t.payee||"")+"</b> \u00b7 "+money(+t.amount||0)+" on "+esc(acctName(t.from)||"your card")+", for <b>"+esc(names)+"</b>.",
+            "<b>"+esc(t.desc||t.payee||"")+"</b> \u00b7 "+money(+t.amount||0)+" en "+esc(acctName(t.from)||"tu tarjeta")+", para <b>"+esc(names)+"</b>.")+'</p>'+
+    '<p class="hint">'+L(esc(names)+" keeps its money until you pay the card. When you say yes, the card payment opens already filled in, and that is when the fund goes down.",
+            esc(names)+" conserva su dinero hasta que pagues la tarjeta. Si dices que sí, se abre el pago de la tarjeta ya lleno, y ahí es cuando baja el fondo.")+'</p>'+
+    '<div class="actions"><button type="button" class="btn" data-cardlater="'+esc(id)+'">'+L("Not yet","Todavía no")+'</button><button type="button" class="btn primary" data-cardpay="'+esc(id)+'">'+L("Yes, record the payment","Sí, registrar el pago")+'</button></div>');
+}
+function payCardFor(id){
+  const t=S.txns.find(x=>x.id===id); if(!t) return;
+  const lastPay=S.txns.filter(x=>x.type==="cardpay"&&x.from&&acctById(x.from)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+  const chk=(lastPay&&lastPay.from)||(S.accounts.find(a=>a.type==="checking")||{}).id||"";
+  const pre={type:"cardpay",from:chk,to:t.from,amount:String(t.amount),desc:L("Card payment","Pago de tarjeta")+" \u00b7 "+(t.desc||t.payee||""),settles:t.id};
+  if(isSplit(t)){ pre.split=true; pre.parts=t.parts.map(x=>({pid:x.pid,amt:x.amt})); } else { const pt=txParts(t)[0]; if(pt) pre.project=pt.pid; }
+  openTx(null,pre);
+}
 function fundsBlock(){
   if(!S.projects.length) return "";
   const c=compute();
@@ -2174,7 +2208,7 @@ function updProjHint(){
 }
 function txRow(t){
   const d=txDisplay(t);
-  return '<button class="row" data-edittx="'+esc(t.id)+'">'+d.bdg+'<span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(d.meta)+'</span>'+fundPill(t)+'</span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';
+  return '<button class="row" data-edittx="'+esc(t.id)+'">'+d.bdg+'<span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(d.meta)+'</span>'+fundPill(t)+waitTag(t)+'</span><span class="amt '+d.cls+'">'+d.amt+'</span></button>';
 }
 
 function viewActivity(){
@@ -2450,6 +2484,7 @@ function viewProject(p){
     '<section class="hero"><div class="eyebrow">Available for this project'+prioTag(p)+'</div><div class="big '+(bal<0?"neg":"")+'">'+money(bal)+'</div>'+
     (goal?'<div class="ubar goal" style="height:8px;margin:8px 0 4px"><i style="width:'+pct.toFixed(1)+'%"></i></div><p class="hint" style="margin:0">'+Math.round(pct)+'% of your '+money(goal)+' goal'+(bal<goal?' · '+money(goal-bal)+' to go':' · goal reached')+'</p>':(p.fund?'<p class="hint" style="margin:0">Ongoing fund, no goal. Add one anytime with Edit project.</p>':'<form class="goalf" id="goalForm" data-pid="'+esc(p.id)+'" novalidate><label for="g_amt">Saving for something specific? Set a goal (optional)</label><div class="gf"><input id="g_amt" class="amount" inputmode="decimal" placeholder="e.g. 1500"><button type="submit" class="btn primary">Save goal</button></div><button type="button" class="sadd" data-fundonly="'+esc(p.id)+'">No goal, it\'s an ongoing fund</button></form>'))+
     quickActs([{pri:1,icon:"plus",label:"Add money",attr:'data-saveto="'+esc(p.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editproj="'+esc(p.id)+'"'},{icon:"hist",label:"History",attr:'data-projhist="'+esc(p.id)+'"'}])+'</section>';
+  h+=cardBox(cardWaiting(p.id));
   h+='<div class="pcols"><div class="pcol">';
   // wish list
   h+='<h2>Wish list <span class="gsum">'+(wish.length?money(wLeft)+' still to buy':'')+'</span></h2><div class="list wl">'+
@@ -3009,6 +3044,7 @@ function renderTx(errMsg){
   const order = ["expense","income","transfer","cardpay","loanpay","save"].filter(k=>k!=="save"||t.type==="save"); // "Save to project" is now a Transfer with a project
   h+='<div class="seg" role="group" aria-label="Transaction type">'+order.map(k=>'<button type="button" class="chip" data-txtype="'+k+'" aria-pressed="'+(t.type===k)+'">'+TYPES[k].label+'</button>').join("")+'</div>';
   if(TYPE_HINT[t.type]) h+='<p class="hint typehint">'+TYPE_HINT[t.type]+'</p>';
+  if(t.id&&t.type==="expense"&&t.cardWait&&!t.cardPaid) h+='<p class="hint">'+L("Waiting for the card payment. ","Esperando el pago de la tarjeta. ")+'<button type="button" class="linkb" data-cardask="'+esc(t.id)+'">'+L("Did you pay the card?","¿Ya pagaste la tarjeta?")+'</button></p>';
   h+='<form id="txForm" novalidate>';
   h+='<div class="two"><div class="field"><label for="f_date">Date made</label>'+dateField("f_date",t.date)+'</div>'+
      '<div class="field"><label for="f_amount">Amount</label><div class="calcwrap"><input id="f_amount" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount)+'"><button type="button" class="calcbtn" data-calcfor="f_amount" aria-label="Open calculator" title="Calculator"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7h7M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h.01M15.5 18h.01"/></svg></button></div></div></div>';
@@ -3142,9 +3178,11 @@ async function submitTx(e){
     doc.parts=parts.map(p=>({pid:p.pid,amt:Math.round((+p.amt||0)*100)/100}));
   }
   if(t.type==="loanpay"){ doc.loan=t.loan; doc.from=lentLoan?"":t.from; doc.to=lentLoan?t.to:""; doc.interest=Math.round(intr*100)/100; }
+  if(t.type==="expense"){ const ac=acctById(doc.from), old=t.id&&STORE[t.id];
+    if(ac&&ac.type==="credit"&&txParts(doc).length){ if(!t.id) doc.cardWait=true; else if(old&&old.cardWait){ doc.cardWait=true; if(old.cardPaid){ doc.cardPaid=old.cardPaid; doc.cardPaidOn=old.cardPaidOn; } } } }
   const ef=(!t.id&&!t._tipDone&&!doc.parts)?projEffect(doc):null;
   if(ef&&ef.sign>0){ const sug=smartSuggest(ef.pid,doc.amount); if(sug) return showTip(sug,doc); }
-  if(await save(t.id,doc)){closeSheet();toast(t.id?"Transaction updated":"Transaction added"); if(!S.open) S.month=ymOf(doc.date); render();}
+  if(await save(t.id,doc)){ if(t.settles&&STORE[t.settles]) await save(t.settles,Object.assign({},STORE[t.settles],{cardPaid:true,cardPaidOn:doc.date})); closeSheet();toast(t.id?"Transaction updated":"Transaction added"); if(!S.open) S.month=ymOf(doc.date); render();}
 }
 /* ===== Smart suggestions: a gentle second look before money goes into a project ===== */
 function smartSuggest(pid,amt){
@@ -3268,6 +3306,7 @@ function askDelete(){
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
+  const cq=e.target.closest("[data-cardask]"); if(cq){ e.stopPropagation(); e.preventDefault(); askCard(cq.dataset.cardask); return; }
   const ck=e.target.closest("[data-ck]"); if(ck){ e.stopPropagation(); calcKey(ck.dataset.ck); return; }
   const cb=e.target.closest("[data-calcfor]"); if(cb){ e.stopPropagation(); if(CALC&&CALC.for===cb.dataset.calcfor) closeCalc(); else openCalc(cb.dataset.calcfor); return; }
   if(CALC&&!e.target.closest(".calcpop")) closeCalc();
@@ -3330,6 +3369,8 @@ document.addEventListener("click",async e=>{
       if(!(draft.parts||[]).length&&draft.project) draft.parts=[{pid:draft.project,amt:parseFloat(String(draft.amount).replace(/[$,\s]/g,""))||""}]; }
     else { draft.split=false; const p=(draft.parts||[])[0]; if(p&&!draft.project) draft.project=p.pid; draft.parts=[]; }
     renderTx(); return; }
+  if(ds.cardpay){ payCardFor(ds.cardpay); return; }
+  if(ds.cardlater){ try{ localStorage.setItem("pb_cs_"+ds.cardlater,todayStr()); }catch(_){} closeSheet(); render(); return; }
   if(ds.newsub){ openSub(null); return; }
   if(ds.sublog){ const sb=(S.subs||[]).find(x=>x.id===ds.sublog);
     if(sb) openTx(null,{type:"expense",payee:sb.name,desc:sb.name,from:sb.account||"",category:sb.category||"Subscriptions"}); return; }
