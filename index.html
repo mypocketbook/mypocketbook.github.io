@@ -81,7 +81,7 @@ button.row:hover{background:var(--sunk)}
 .badge{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-weight:700;font-size:0.8125rem;background:var(--sunk);color:var(--muted)}
 .badge.pic{background:#fff;padding:0;overflow:hidden}.badge.pic img{width:100%;height:100%;object-fit:cover;display:block}
 .iconpick{display:flex;align-items:center;gap:12px}.iconpick .badge{width:48px;height:48px}
-.topact{display:flex;gap:6px;align-items:center;flex:none}
+.topact{display:flex;gap:6px;align-items:center;flex:none;position:relative}
 .iconbtn{width:42px;height:42px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:grid;place-items:center;padding:0;cursor:pointer}
 .iconbtn:hover{color:var(--ink);background:var(--sunk)}
 .pcols{display:grid;gap:0 24px;align-items:start}.pcol{min-width:0}
@@ -678,6 +678,7 @@ h2{font-weight:700;letter-spacing:-.015em}
       <div class="ttlwrap"><h1 id="title">Overview</h1></div>
     </div>
     <div class="topact" id="topact">
+      <button type="button" class="iconbtn" id="calcTopBtn" data-calcfor="__top" aria-label="Calculator" title="Calculator" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7.5h7M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01"/></svg></button>
       <button type="button" class="iconbtn" data-act="settings" aria-label="Settings and backups" title="Settings and backups"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 4.3c.4-1.8 3-1.8 3.4 0a1.7 1.7 0 0 0 2.6 1.1c1.5-.9 3.3.8 2.3 2.3a1.7 1.7 0 0 0 1.1 2.6c1.8.4 1.8 3 0 3.4a1.7 1.7 0 0 0-1.1 2.6c.9 1.5-.8 3.3-2.3 2.3a1.7 1.7 0 0 0-2.6 1.1c-.4 1.8-3 1.8-3.4 0a1.7 1.7 0 0 0-2.6-1.1c-1.5.9-3.3-.8-2.3-2.3a1.7 1.7 0 0 0-1.1-2.6c-1.8-.4-1.8-3 0-3.4a1.7 1.7 0 0 0 1.1-2.6c-.9-1.5.8-3.3 2.3-2.3a1.7 1.7 0 0 0 2.6-1.1z"/><circle cx="12" cy="12" r="3"/></svg></button>
       <button type="button" class="iconbtn" id="logoutBtn" data-act="asksignout" aria-label="Log out" title="Log out"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2"/><path d="M9 12h12l-3-3m0 6l3-3"/></svg></button>
     </div>
@@ -1686,6 +1687,7 @@ function render(){
   setTimeout(()=>{ maybeWelcome(); maybeAskName(); },0);
   $("title").textContent= openA? openA.name : openL? loanLabel(openL) : openP? openP.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans",subs:"Subscriptions"}[S.tab];
   $("backBtn").hidden=!(openA||openL||openP);
+  $("calcTopBtn").hidden=!(S.status==="ready"&&openA); if($("calcTopBtn").hidden) closeCalc();
   $("monthnav").hidden = true;
   $("topact").hidden = S.status!=="ready"; $("logoutBtn").hidden = MODE!=="cloud";
   $("monthLabel").textContent=monthName(S.month);
@@ -2899,12 +2901,12 @@ function calcEval(expr){
   return isFinite(r)?Math.round(r*100)/100:null;
 }
 function openCalc(id){
-  const inp=$(id); if(!inp) return; const wrap=inp.parentElement;
+  const inp=$(id), top=id==="__top"; if(!inp&&!top) return; const wrap=top?$("topact"):inp.parentElement;
   closeCalc();
-  const cur=String(inp.value||"").replace(/[$,\s]/g,"");
+  const cur=String(inp?inp.value||"":"").replace(/[$,\s]/g,"");
   CALC={for:id,expr:(parseFloat(cur)>0?cur:"")};
   const keys=[["C","clear"],["⌫","back"],["%","pct"],["÷","/"],["7"],["8"],["9"],["×","*"],["4"],["5"],["6"],["−","-"],["1"],["2"],["3"],["+","+"],["0"],["."],["=","eq"]];
-  const pop=document.createElement("div"); pop.className="calcpop"; pop.setAttribute("role","dialog"); pop.setAttribute("aria-label","Calculator");
+  const pop=document.createElement("div"); pop.className="calcpop"; pop.setAttribute("role","dialog"); pop.setAttribute("aria-label","Calculator"); if(top) pop.style.top="calc(100% + 10px)";
   pop.innerHTML='<div class="cdisp"><div class="cexpr" id="cExpr"></div><div class="cres" id="cRes">0</div></div><div class="ckeys">'+
     keys.map(k=>'<button type="button" class="ck'+(["/","*","-","+"].includes(k[1])?" op":"")+(k[1]==="eq"?" eq":"")+(["clear","back","pct"].includes(k[1])?" fn":"")+'" data-ck="'+esc(k[1]||k[0])+'">'+k[0]+'</button>').join("")+
     '</div><button type="button" class="btn primary wide cuse" data-ck="use">Use this amount</button>';
@@ -2923,6 +2925,7 @@ function calcKey(k){
   else if(k==="eq"){ const r=calcEval(e); if(r!==null) e=String(r); }
   else if(k==="pct"){ // last number becomes a percent of what came before (100+15% = 115)
     const m=e.match(/^(.*?)([-+*/]?)(\d*\.?\d+)$/); if(m){ const base=m[1]?calcEval(m[1]):null, n=parseFloat(m[3]); e=m[1]+m[2]+String(Math.round(((base!==null&&"+-".includes(m[2])&&m[2])?base*n/100:n/100)*10000)/10000); } }
+  else if(k==="use"&&CALC.for==="__top"){ const r=calcEval(e); closeCalc(); if(r!==null&&r!==0&&S.open) openTx(null,{ctx:S.open,amount:Math.abs(r).toFixed(2)}); return; }
   else if(k==="use"){ const r=calcEval(e); const inp=$(CALC.for); if(r!==null&&inp){ inp.value=Math.abs(r).toFixed(2); inp.dispatchEvent(new Event("input",{bubbles:true})); } closeCalc(); if(inp) inp.focus(); return; }
   else if("+-*/".includes(k)){ if(!e&&k!=="-") return; if("+-*/".includes(last)) e=e.slice(0,-1); e+=k; }
   else if(k==="."){ const seg=e.split(/[-+*/]/).pop(); if(seg.includes(".")) return; e+=(seg===""?"0.":"."); }
