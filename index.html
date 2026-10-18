@@ -484,6 +484,20 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .calfoot{display:flex;gap:6px;margin-top:8px}
 .calfoot .btn{flex:1;padding:8px}
 .fundtag{display:inline-block;margin-top:4px;font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--pos) 14%,var(--surface));color:var(--pos);font-variant-numeric:tabular-nums}
+.subq-meta{margin:-6px 0 14px;color:var(--muted);font-size:0.875rem}
+.subq-h{font-size:0.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:26px 0 4px}
+.prow2{padding:12px 0;border-top:1px solid var(--line)}
+.prow2 .pinfo{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;align-items:baseline}
+.prow2 .pinfo b{font-weight:600}.prow2 .pinfo span{font-family:var(--f-num);color:var(--muted);font-size:0.875rem}
+.ladder{display:grid;grid-template-columns:repeat(var(--n,6),1fr);gap:6px}
+.step{min-height:46px;border-radius:10px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);font-size:0.75rem;font-weight:600;cursor:pointer;display:grid;place-items:center;align-content:center;gap:1px;line-height:1.1;padding:4px 0;font-family:inherit}
+.step .sm{font-size:0.875rem;min-height:1em}
+.step.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.step.cur{outline:2px solid var(--accent);outline-offset:2px}
+.subq-sum{margin:12px 0 0;font-size:0.875rem;color:var(--muted)}.subq-sum b{color:var(--ink);font-weight:600}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) 96px 34px;gap:8px;margin-bottom:8px}
+.prow input{height:42px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:0.9375rem;color:var(--ink);min-width:0;font-family:inherit}
+.srow2{display:flex;gap:18px;margin:2px 0 6px}
 .waittag{display:inline-block;margin:4px 0 0 6px;font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--ink);font-variant-numeric:tabular-nums}
 .cardbox{margin-top:4px}
 .fundtag.low{background:color-mix(in srgb,var(--neg) 14%,var(--surface));color:var(--neg)}
@@ -1763,8 +1777,16 @@ function backupNudge(){
 /* ---------- subscriptions: what you are committed to, and what it costs in a year ---------- */
 const SUB_CYCLE={monthly:{en:"Monthly",es:"Mensual",per:12},yearly:{en:"Yearly",es:"Anual",per:1}};
 function cycleName(c){ const k=SUB_CYCLE[c]||SUB_CYCLE.monthly; return LANG()==="es"?k.es:k.en; }
-function subMonthly(s){ const a=+s.amount||0; return s.cycle==="yearly"?a/12:a; }
-function subYearly(s){ const a=+s.amount||0; return s.cycle==="yearly"?a:a*12; }
+function subOthers(s){ return (s.people||[]).reduce((t,x)=>t+(+x.share||0),0); }
+function subMine(s){ return Math.max(0,Math.round(((+s.amount||0)-subOthers(s))*100)/100); }
+function subMonthly(s){ const a=subMine(s); return s.cycle==="yearly"?a/12:a; }
+function subYearly(s){ const a=subMine(s); return s.cycle==="yearly"?a:a*12; }
+/* The ladder: one step per month (or year) for each person who chips in, so you can see who paid you back. */
+function subSteps(s){ const out=[], d=new Date(); d.setDate(1);
+  if(s.cycle==="yearly"){ for(let i=2;i>=0;i--) out.push({key:String(d.getFullYear()-i),label:String(d.getFullYear()-i),cur:i===0}); return out; }
+  for(let i=5;i>=0;i--){ const x=new Date(d.getFullYear(),d.getMonth()-i,1); out.push({key:x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0"),label:x.toLocaleDateString(LOC(),{month:"short"}),cur:i===0}); }
+  return out; }
+function subPaidNow(s){ const k=subSteps(s).slice(-1)[0].key; const ids=(s.paid&&s.paid[k])||[]; return (s.people||[]).filter(x=>ids.indexOf(x.id)>=0); }
 function dim(y,m){ return new Date(y,m+1,0).getDate(); }
 // The day the service charges you. Monthly keeps a day of the month, yearly keeps a date.
 function subCharge(s,from){
@@ -1828,7 +1850,8 @@ function viewSubs(){
   if(S.subs.length){
     h+='<section class="subtot"><div><span class="eyebrow">Every month</span><b>'+money(T.mo)+'</b></div>'+
        '<div class="yr"><span class="eyebrow">Every year</span><b>'+money(T.yr)+'</b></div>'+
-       '<span class="subn">'+T.n+' active</span></section>';
+       '<span class="subn">'+T.n+' active</span></section>'+
+       (subsActive().some(s=>(s.people||[]).length)?'<p class="hint" style="margin:-4px 0 12px">'+L("Totals count only your part of shared subscriptions.","Los totales cuentan solo tu parte de las suscripciones compartidas.")+'</p>':'');
     const due=subsActive().filter(s=>!subLogged(s)&&daysUntil(subCharge(s))>=0&&daysUntil(subCharge(s))<=7);
     if(due.length) h+='<p class="subnext">Coming up: '+due.map(u=>esc(u.name)+' <b>'+money(+u.amount||0)+'</b> '+dueWord(daysUntil(subCharge(u)))).join(' \u00b7 ')+'</p>';
   }
@@ -1840,11 +1863,11 @@ function viewSubs(){
   }
   if(S.subs.length){
     const rows=s=>{ const d=subCharge(s), n=daysUntil(d), paused=s.status==="paused", done=!paused&&subLogged(s);
-      const when=esc(fmtDate(d))+" \u00b7 "+dueWord(n);
+      const when=esc(fmtDate(d))+" \u00b7 "+dueWord(n)+((s.people||[]).length&&!paused?" \u00b7 "+L(subPaidNow(s).length+"/"+s.people.length+" paid",subPaidNow(s).length+"/"+s.people.length+" pagaron"):"");
       return '<div class="subwrap'+(paused?" off":"")+'"><button class="row subrow" data-opensub="'+esc(s.id)+'">'+
         '<span class="subico" aria-hidden="true">'+ICO.repeat+'</span>'+
         '<span class="main"><span class="t">'+esc(s.name)+'</span><span class="m">'+(paused?'<span class="pausepill">'+L("Paused","En pausa")+'</span> ':'')+cycleName(s.cycle)+' \u00b7 '+esc(acctName(s.account)||L("No card set","Sin tarjeta"))+'</span></span>'+
-        '<span class="subamt"><span class="amt">'+money(+s.amount||0)+'</span><span class="owed">'+(s.cycle==="yearly"?money(subMonthly(s))+' a month':money(subYearly(s))+' a year')+'</span></span></button>'+
+        '<span class="subamt"><span class="amt">'+money(+s.amount||0)+'</span><span class="owed">'+((s.people||[]).length?L("you pay "+money(subMine(s)),"tu parte "+money(subMine(s))):(s.cycle==="yearly"?money(subMonthly(s))+' a month':money(subYearly(s))+' a year'))+'</span></span></button>'+
         (paused?'':'<span class="subfoot"><span class="when">'+when+'</span>'+
           (done?'<span class="okmark">\u2713 Written down</span>':n<=2?'<button type="button" class="btn tiny" data-sublog="'+esc(s.id)+'">Write it down</button>':'')+'</span>')+
         '</div>'; };
@@ -1855,6 +1878,26 @@ function viewSubs(){
         "Una suscripci\u00f3n se cobra un d\u00eda y aparece en tu tarjeta unos d\u00edas despu\u00e9s: Pocketbook guarda las dos fechas para que sepas cu\u00e1ndo esperarla. Nunca registra el cargo por ti. Eso lo haces t\u00fa, en el momento en que llega, porque ese es el segundo en que de verdad sientes salir el dinero."));
   }
   return h;
+}
+function openSubQuick(s){
+  if(!s) return; if(s.status==="paused"){ openSub(s); return; }
+  const done=subLogged(s), people=s.people||[], steps=subSteps(s), cur=steps[steps.length-1].key, paidIds=(s.paid&&s.paid[cur])||[];
+  let h=sheetHead(s.name)+'<p class="subq-meta">'+money(+s.amount||0)+' \u00b7 '+cycleName(s.cycle)+' \u00b7 '+esc(acctName(s.account)||L("No card set","Sin tarjeta"))+' \u00b7 '+esc(fmtDate(subCharge(s)))+'</p>'+
+    '<button type="button" class="btn primary wide" data-sublog="'+esc(s.id)+'">'+(done?L("Write it down again","Registrar otra vez"):L("Register payment","Registrar pago"))+'</button>'+
+    (done?'<p class="hint" style="margin:8px 0 0">\u2713 '+L("Already written down this cycle.","Ya registrada en este ciclo.")+'</p>':'');
+  if(people.length){
+    const left=people.filter(x=>paidIds.indexOf(x.id)<0), owe=left.reduce((t,x)=>t+(+x.share||0),0);
+    h+='<h3 class="subq-h">'+L("Who pays you back","Quién te devuelve")+'</h3>'+people.map(x=>{
+      const ids=k=>((s.paid&&s.paid[k])||[]).indexOf(x.id)>=0;
+      return '<div class="prow2"><div class="pinfo"><b>'+esc(x.name)+'</b><span>'+money(+x.share||0)+'</span></div><div class="ladder" style="--n:'+steps.length+'" role="group" aria-label="'+esc(x.name)+'">'+
+        steps.map(st=>'<button type="button" class="step'+(ids(st.key)?' on':'')+(st.cur?' cur':'')+'" aria-pressed="'+ids(st.key)+'" aria-label="'+esc(x.name+' \u00b7 '+st.label)+'" data-substep="'+esc(s.id)+'" data-spid="'+esc(x.id)+'" data-skey="'+esc(st.key)+'"><span>'+esc(st.label)+'</span><span class="sm" aria-hidden="true">'+(ids(st.key)?'\u2713':'')+'</span></button>').join("")+'</div></div>'; }).join("")+
+      '<p class="subq-sum">'+(left.length
+        ? L("<b>"+paidIds.length+" of "+people.length+"</b> paid this "+(s.cycle==="yearly"?"year":"month")+" \u00b7 <b>"+money(owe)+"</b> still to collect \u00b7 you pay <b>"+money(subMine(s))+"</b>",
+            "<b>"+paidIds.length+" de "+people.length+"</b> pagaron este "+(s.cycle==="yearly"?"a\u00f1o":"mes")+" \u00b7 faltan por cobrar <b>"+money(owe)+"</b> \u00b7 tu parte es <b>"+money(subMine(s))+"</b>")
+        : L("Everyone has paid this "+(s.cycle==="yearly"?"year":"month")+". You pay <b>"+money(subMine(s))+"</b>.","Todos pagaron este "+(s.cycle==="yearly"?"a\u00f1o":"mes")+". Tu parte es <b>"+money(subMine(s))+"</b>."))+'</p>';
+  } else h+='<p class="hint" style="margin-top:14px">'+L("Split with other people? Add them in Edit and put each person's part.","\u00bfLa compartes con otras personas? Agr\u00e9galas en Editar y pon la parte de cada una.")+'</p>';
+  h+='<div class="actions"><button type="button" class="btn" data-editsub="'+esc(s.id)+'">'+L("Edit","Editar")+'</button></div>';
+  openSheet(h);
 }
 function openSub(x){
   const edit=!!x; const s=x||{name:"",amount:"",cycle:"monthly",day:String(new Date().getDate()),lag:3,account:"",category:"Subscriptions",status:"active",note:""};
@@ -1869,6 +1912,7 @@ function openSub(x){
     '<div class="field" id="s_anchF"'+(yearly?'':' hidden')+'><label for="s_anch">'+L("Charge date","Fecha del cobro")+'</label>'+dateField("s_anch",s.anchor||todayStr())+'</div>'+
     '<div class="field"><label for="s_lag">'+L("Days until it shows on the card","Días hasta que aparece en la tarjeta")+'</label><input id="s_lag" inputmode="numeric" maxlength="2" value="'+esc(s.lag==null?3:s.lag)+'"><span class="hint">'+L("Most cards take two or three days to post a charge.","La mayoría de las tarjetas tardan dos o tres días en mostrar un cargo.")+'</span></div>'+
     '<div class="field"><label for="s_acct">'+L("Charged to","Se cobra a")+'</label><select id="s_acct">'+opts(acctOpts(),s.account,L("Choose card or account","Elige tarjeta o cuenta"))+'</select></div>'+
+    '<div class="field" id="s_people"><label>'+L("Shared with (optional)","Compartida con (opcional)")+'</label><span class="hint">'+L("People who pay you back part of it. The bank still charges you the full amount.","Personas que te pagan una parte. El banco te cobra el monto completo igual.")+'</span><div id="s_plist"></div><div class="srow2"><button type="button" class="linkb" id="s_addp">+ '+L("Add a person","Agregar persona")+'</button><button type="button" class="linkb" id="s_even">'+L("Split evenly","Dividir parejo")+'</button></div><p class="subprev" id="s_mine" aria-live="polite"></p></div>'+
     '<div class="field"><label for="s_cat">'+L("Category","Categoría")+'</label><select id="s_cat">'+opts(EXP_CATS.map(c=>({v:c,l:c})),s.category||"Subscriptions",L("Choose a category","Elige una categoría"))+'</select></div>'+
     '<div class="field"><label for="s_note">'+L("Note (optional)","Nota (opcional)")+'</label><input id="s_note" maxlength="80" value="'+esc(s.note||"")+'"></div>'+
     (edit?'<div class="field"><label>'+L("Status","Estado")+'</label><div class="seg" role="group"><button type="button" class="chip" data-sst="active" aria-pressed="'+(s.status!=="paused")+'">'+L("Active","Activa")+'</button><button type="button" class="chip" data-sst="paused" aria-pressed="'+(s.status==="paused")+'">'+L("Paused","En pausa")+'</button></div></div>':'')+
@@ -1883,6 +1927,16 @@ function openSub(x){
     box.textContent = cyc==="yearly" ? L("That is "+money(a/12)+" a month.","Son "+money(a/12)+" al mes.")
                                      : L("That is "+money(a*12)+" a year.","Son "+money(a*12)+" al año."); };
   $("s_amount").addEventListener("input",prev); prev();
+  let ppl=(s.people||[]).map(x=>({id:x.id,name:x.name,share:x.share}));
+  const amtNow=()=>parseFloat(String($("s_amount").value).replace(/[$,\s]/g,""))||0;
+  const mineTxt=()=>{ const box=$("s_mine"); if(!ppl.length){ box.textContent=""; box.classList.remove("on"); return; } const tot=ppl.reduce((t,x)=>t+(parseFloat(String(x.share).replace(/[$,\s]/g,""))||0),0), a=amtNow();
+    box.classList.add("on"); box.textContent = (a&&tot>a+0.004) ? L("The shares add up to "+money(tot)+", more than the "+money(a)+" charge.","Las partes suman "+money(tot)+", m\u00e1s que el cobro de "+money(a)+".") : L("Your part: "+money(Math.max(0,a-tot))+(a?" of "+money(a):""),"Tu parte: "+money(Math.max(0,a-tot))+(a?" de "+money(a):"")); };
+  const drawP=()=>{ $("s_plist").innerHTML=ppl.map((x,i)=>'<div class="prow"><input class="pn" data-pi="'+i+'" aria-label="'+L("Name","Nombre")+'" maxlength="24" placeholder="'+L("Name","Nombre")+'" value="'+esc(x.name)+'"><input class="ps" data-pi="'+i+'" aria-label="'+L("Their part","Su parte")+'" inputmode="decimal" placeholder="0.00" value="'+esc(x.share==null?"":x.share)+'"><button type="button" class="wdel" data-pdel="'+i+'" aria-label="'+L("Remove","Quitar")+'">\u00d7</button></div>').join(""); mineTxt(); };
+  $("s_plist").addEventListener("input",e=>{ const i=+e.target.dataset.pi; if(isNaN(i)||!ppl[i]) return; if(e.target.classList.contains("pn")) ppl[i].name=e.target.value; else ppl[i].share=e.target.value; mineTxt(); });
+  $("s_plist").addEventListener("click",e=>{ const d=e.target.closest("[data-pdel]"); if(!d) return; ppl.splice(+d.dataset.pdel,1); drawP(); });
+  $("s_addp").addEventListener("click",()=>{ ppl.push({id:"p"+Math.random().toString(36).slice(2,8),name:"",share:""}); drawP(); const l=$("s_plist").querySelectorAll(".pn"); if(l.length) l[l.length-1].focus(); });
+  $("s_even").addEventListener("click",()=>{ const a=amtNow(); if(!ppl.length||!a) return; const each=Math.floor(a/(ppl.length+1)*100)/100; ppl.forEach(x=>{ x.share=each.toFixed(2); }); drawP(); });
+  $("s_amount").addEventListener("input",mineTxt); drawP();
   document.querySelectorAll("[data-scyc]").forEach(bt=>bt.addEventListener("click",()=>{ cyc=bt.dataset.scyc;
     document.querySelectorAll("[data-scyc]").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.scyc===cyc)));
     $("s_dayF").hidden=cyc==="yearly"; $("s_anchF").hidden=cyc!=="yearly"; prev(); }));
@@ -1897,7 +1951,11 @@ function openSub(x){
     if(cyc==="monthly"&&(isNaN(day)||day<1||day>31)) return err(L("The charge day is a number from 1 to 31.","El día del cobro es un número del 1 al 31."));
     if(cyc==="yearly"&&!anchor) return err(L("Pick the date it is charged.","Elige la fecha del cobro."));
     if(isNaN(lag)||lag<0||lag>14) return err(L("Days to post is a number from 0 to 14.","Los días para aparecer son un número del 0 al 14."));
-    const doc={kind:"sub",name,amount:Math.round(amt*100)/100,cycle:cyc,lag,account:$("s_acct").value,category:$("s_cat").value,
+    const named=ppl.filter(x=>String(x.name||"").trim()||String(x.share||"").trim());
+    for(const x of named){ const v=parseFloat(String(x.share).replace(/[$,\s]/g,"")); if(!String(x.name||"").trim()) return err(L("Each person needs a name.","Cada persona necesita un nombre.")); if(isNaN(v)||v<=0) return err(L("Put "+x.name+"'s part, like 5.00.","Pon la parte de "+x.name+", como 5.00.")); }
+    const people=named.map(x=>({id:x.id,name:String(x.name).trim(),share:Math.round(parseFloat(String(x.share).replace(/[$,\s]/g,""))*100)/100}));
+    if(people.reduce((t,x)=>t+x.share,0)>amt+0.004) return err(L("The shares add up to more than the "+money(amt)+" charge.","Las partes suman m\u00e1s que el cobro de "+money(amt)+"."));
+    const doc={kind:"sub",name,amount:Math.round(amt*100)/100,cycle:cyc,lag,people,account:$("s_acct").value,category:$("s_cat").value,
       note:$("s_note").value.trim(),status:st,created:s.created||Date.now()};
     if(cyc==="yearly") doc.anchor=anchor; else doc.day=day;
     if(await save(s.id,Object.assign({},(s.id&&STORE[s.id])||{},doc))){ closeSheet(); toast(edit?L("Subscription updated","Suscripción actualizada"):L("Now tracking "+name,"Ahora sigues "+name)); }
@@ -3373,8 +3431,12 @@ document.addEventListener("click",async e=>{
   if(ds.cardlater){ try{ localStorage.setItem("pb_cs_"+ds.cardlater,todayStr()); }catch(_){} closeSheet(); render(); return; }
   if(ds.newsub){ openSub(null); return; }
   if(ds.sublog){ const sb=(S.subs||[]).find(x=>x.id===ds.sublog);
-    if(sb) openTx(null,{type:"expense",payee:sb.name,desc:sb.name,from:sb.account||"",category:sb.category||"Subscriptions"}); return; }
-  if(ds.opensub){ openSub((S.subs||[]).find(x=>x.id===ds.opensub)); return; }
+    if(sb) openTx(null,{type:"expense",payee:sb.name,desc:sb.name,amount:String(+sb.amount||""),from:sb.account||"",category:sb.category||"Subscriptions"}); return; }
+  if(ds.opensub){ openSubQuick((S.subs||[]).find(x=>x.id===ds.opensub)); return; }
+  if(ds.editsub){ openSub((S.subs||[]).find(x=>x.id===ds.editsub)); return; }
+  if(ds.substep){ const sb=(S.subs||[]).find(x=>x.id===ds.substep); if(!sb) return; const paid=Object.assign({},sb.paid||{}), arr=(paid[ds.skey]||[]).slice(), i=arr.indexOf(ds.spid);
+    if(i>=0) arr.splice(i,1); else arr.push(ds.spid); paid[ds.skey]=arr;
+    if(await save(sb.id,Object.assign({},STORE[sb.id],{paid}))) openSubQuick((S.subs||[]).find(x=>x.id===sb.id)); return; }
   if(ds.subtrack){ const c=subCandidates().find(x=>x.key===ds.subtrack); if(c) openSub({name:c.name,amount:String(c.amount),cycle:"monthly",day:String(c.day),lag:3,account:c.account,category:c.category,status:"active"}); return; }
   if(ds.subskip){ const m=STORE["meta-subskip"]||{kind:"meta",list:[]}; const list=(m.list||[]).concat([ds.subskip]);
     STORE["meta-subskip"]=Object.assign({},m,{kind:"meta",list}); if(await persist()){ refresh(); toast(L("Won't ask again","No preguntaré otra vez")); } return; }
