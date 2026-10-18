@@ -258,6 +258,17 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .btn.tiny{margin-left:auto;padding:5px 11px;font-size:0.75rem;border-radius:999px}
 .sublist .subrow{border-bottom:0}
 .sublist .subwrap+.subwrap{border-top:1px solid var(--line)}
+/* ---- a ring only where there is a 100%; otherwise the circle is just identity ---- */
+.lring.plain .lgr{background:none;border:0}
+.lgr.abadge{display:grid;place-items:center}
+.lgr.abadge .badge,.lgr.abadge img{width:100%;height:100%;border-radius:50%;font-size:1.0625rem}
+.lgr.abadge .ini{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:1.0625rem;
+  letter-spacing:-.01em;background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent)}
+.lring.on .lgr.abadge .ini{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.gpace{margin:2px 0 12px;font-size:0.8125rem;color:var(--muted)}
+.gpace b{color:var(--ink);font-weight:700}
+.gpace.done{color:var(--pos);font-weight:700}
+.gpace.over{color:var(--neg);font-weight:600}
 /* ---- jump out of a detail screen to another part of the app ---- */
 .jumpbar{display:flex;align-items:center;gap:10px;margin:2px 0 14px;min-width:0}
 .jumpbar .jl{flex:none;font-size:0.6875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
@@ -880,7 +891,13 @@ const ES={
 /* home */
 "Net balance":"Balance neto","Everything you have plus what people owe you, minus what you owe on cards and loans.":"Todo lo que tienes más lo que te deben, menos lo que debes en tarjetas y préstamos.","Your money":"Tu dinero","Available":"Disponible","Cards owe":"Tarjetas","Savings":"Ahorros","Owed to me":"Me deben","Loans I owe":"Mis préstamos","All months":"Todos los meses","Net balance change so far":"Cambio del balance hasta hoy","Net balance change":"Cambio del balance","Closed at":"Cerró en","Spent":"Gastado","spent":"gastado","Income":"Ingresos","Card payments":"Pagos de tarjeta","Cash back":"Cashback","Loan payments":"Pagos de préstamos","Spending by category":"Gastos por categoría","Tap a category to see its transactions.":"Toca una categoría para ver sus transacciones.","Tap \"Needs a category\" to see those expenses and pick one for each.":"Toca \"Necesita categoría\" para ver esos gastos y elegir una para cada uno.","See these transactions":"Ver estas transacciones","Top 3 changes":"Los 3 cambios más grandes","No changes yet this month.":"Aún no hay cambios este mes.","Improved":"Mejoraron","Went the other way":"Empeoraron","Closing balances":"Saldos al cierre","Credit cards":"Tarjetas de crédito","Checking and cash":"Cuentas corrientes y efectivo","Personal savings":"Ahorros personales","Add card limits":"Agrega los límites","No limit set":"Sin límite","owed":"debe","+ Add":"+ Agregar","+ Add money":"+ Agregar dinero","+ Add account":"+ Agregar cuenta","+ Add transaction":"+ Agregar transacción","+ New transaction":"+ Nueva transacción","+ Lend":"+ Prestar","+ Log payment":"+ Registrar pago","+ Log repayment":"+ Registrar devolución","Add account":"Agregar cuenta","Add a transaction":"Agregar una transacción","Add transaction":"Agregar transacción","An expense, income or transfer":"Un gasto, ingreso o transferencia","A purchase with one of your cards":"Una compra con una de tus tarjetas","Move money into one of your savings":"Pasar dinero a uno de tus ahorros","Set up your accounts":"Configura tus cuentas","Add the places your money lives, then log what you spend, earn and move.":"Agrega dónde está tu dinero y luego registra lo que gastas, ganas y mueves.","Add Checking, Credit card and Cash":"Agregar cuenta corriente, tarjeta y efectivo","Add one account myself":"Agregar una cuenta yo mismo","Open an account to see its transactions and add new ones.":"Abre una cuenta para ver sus transacciones y agregar nuevas.",
 /* subs */
-"Subs":"Subs","Subscriptions":"Suscripciones","Nothing tracked yet":"Aún no sigues ninguna","Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.":"Agrega lo que pagas cada mes (streaming, teléfono, programas) y Pocketbook te muestra cuánto suma en un año.","Add a subscription":"Agregar una suscripción","Every month":"Cada mes","Every year":"Cada año","Found in your transactions":"Encontradas en tus transacciones","These charges repeat. Only you can say whether they are subscriptions.":"Estos cargos se repiten. Solo tú puedes decir si son suscripciones.","Not a subscription":"No es una suscripción","Track it":"Seguirla","Tracked":"Las que sigues","New subscription":"Nueva suscripción","Edit subscription":"Editar suscripción","How often":"Cada cuánto","Monthly":"Mensual","Yearly":"Anual","Subscription updated":"Suscripción actualizada","Give the subscription a name.":"Ponle un nombre a la suscripción.","Go to":"Ir a","Go to another section":"Ir a otra sección","Savings":"Ahorros","still owed":"todavía debo","owed to me":"me deben","paid off":"pagado",
+"Subs":"Subs","Subscriptions":"Suscripciones","Nothing tracked yet":"Aún no sigues ninguna","Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.":"Agrega lo que pagas cada mes (streaming, teléfono, programas) y Pocketbook te muestra cuánto suma en un año.","Add a subscription":"Agregar una suscripción","Every month":"Cada mes","Every year":"Cada año","Found in your transactions":"Encontradas en tus transacciones","These charges repeat. Only you can say whether they are subscriptions.":"Estos cargos se repiten. Solo tú puedes decir si son suscripciones.","Not a subscription":"No es una suscripción","Track it":"Seguirla","Tracked":"Las que sigues","New subscription":"Nueva suscripción","Edit subscription":"Editar suscripción","How often":"Cada cuánto","Monthly":"Mensual","Yearly":"Anual","Subscription updated":"Suscripción actualizada","Give the subscription a name.":"Ponle un nombre a la suscripción.",
+/* metas en cuentas y anillos que se vacían */
+"Saving toward (optional)":"Ahorrando hacia (opcional)","By when (optional)":"¿Para cuándo? (opcional)",
+"With a date, Pocketbook works out how much a month it takes. Leave both empty and the account is just a balance.":"Con una fecha, Pocketbook calcula cuánto al mes hace falta. Deja los dos vacíos y la cuenta es solo un saldo.",
+"Enter the goal as a number, like 10000.":"Escribe la meta como número, por ejemplo 10000.",
+"✓ Goal reached":"✓ Meta alcanzada","set a date":"ponle fecha","still owed":"todavía debo","still owed to me":"todavía me deben",
+"Add card limits":"Agrega los límites","e.g. 10000":"ej. 10000","Go to":"Ir a","Go to another section":"Ir a otra sección","Savings":"Ahorros","still owed":"todavía debo","owed to me":"me deben","paid off":"pagado",
 /* split across projects */
 "Split it across projects":"Repártelo entre varios proyectos","Use a single project instead":"Usar un solo proyecto",
 "Enter the amount above, then divide it.":"Escribe el monto arriba y luego repártelo.",
@@ -931,6 +948,12 @@ const ES_PAT=[
  [/^· (\d+)% of limit$/,"· $1% del límite"],
  [new RegExp("^(\\d+) expenses? · "+MNY+"\\. Tap one to change its category\\.$"),m=>m[1]+(m[1]==="1"?" gasto":" gastos")+" · "+m[2]+". Toca uno para cambiar su categoría."],
  [/^(.+) a year$/,"$1 al año"],
+ [new RegExp("^"+MNY+" to go in (\\d+) months?$"),m=>m[1]+" por juntar en "+m[2]+(m[2]==="1"?" mes":" meses")],
+ [new RegExp("^"+MNY+" to go · $"),"$1 por juntar · "],
+ [new RegExp("^"+MNY+" to go, and the date has arrived$"),"$1 por juntar, y la fecha ya llegó"],
+ [/^a month$/,"al mes"],
+ [new RegExp("^of "+MNY+" limit$"),"de $1 de límite"],
+ [new RegExp("^(\\d+)% of your "+MNY+" goal$"),"$1% de tu meta de $2"],
  [new RegExp("^✓ "+MNY+" of "+MNY+" assigned$"),"✓ $1 de $2 repartidos"],
  [new RegExp("^"+MNY+" left to assign$"),"Faltan $1 por repartir"],
  [new RegExp("^"+MNY+" more than the amount$"),"$1 más que el monto"],
@@ -1700,8 +1723,10 @@ function viewAccount(a){
   let run=credit?-(+a.opening||0):(+a.opening||0); const after={};
   asc.forEach(t=>{run+=deltaFor(t,a.id);after[t.id]=run;});
   const show=v=>credit?money(-v):money(v);
+  const _g=acctGoal(a), _bal=compute().bal[a.id];
   let h=acctSwitcher(a,compute())+jumpBar(credit?"cards":(a.type==="savings"?"sav":"day"))+'<section class="hero"><div class="eyebrow">'+ACCT_TYPES[a.type]+(credit?" · amount owed":" · balance")+'</div>'+
     '<div class="big '+((credit? -run>0 : run<0)?"neg":"")+'">'+show(run)+'</div>'+
+    (_g?'<div class="ubar goal" style="height:8px;margin:10px 0 2px"><i style="width:'+Math.min(100,Math.max(0,_bal)/_g.goal*100).toFixed(1)+'%"></i></div><p class="hint" style="margin:0 0 2px">'+Math.round(Math.min(100,Math.max(0,_bal)/_g.goal*100))+'% of your '+money(_g.goal)+' goal'+(_g.date?' · '+esc(fmtDate(pDate(_g.date))):'')+'</p>'+goalPace(a,_bal):'')+
     ((a.asOf||a.created)?'<p class="hint" style="margin:-4px 0 12px">Starting balance of '+show(credit?-(+a.opening||0):(+a.opening||0))+' as of '+esc(fmtDate(a.asOf?pDate(a.asOf):new Date(a.created)))+'.</p>':'')+
     quickActs([{pri:1,icon:"plus",label:"Add transaction",attr:'data-addin="'+esc(a.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editacct="'+esc(a.id)+'"'},{icon:"hist",label:"History",attr:'data-scrollto="accthist"'}])+'</section><span id="accthist"></span>';
   if(!mine.length) return h+'<div class="empty"><strong>No transactions in '+esc(a.name)+' yet</strong><span>Each one you add needs a date, a description and where the money went.</span></div>';
@@ -1884,13 +1909,13 @@ function viewHome(){
   const util=c.limit?c.owed/c.limit*100:null;
   const items=[
     {attr:'data-scrollto="g-day"',name:"Available",value:c.available,neg:c.available<0,pct:share(c.available),col:"var(--pos)",sub:"of total"},
-    {attr:'data-scrollto="g-cards"',name:"Cards owe",value:c.owed,neg:c.owed>0,pct:util,col:util==null?"var(--muted)":util>=50?"var(--neg)":util>=30?"#D9A400":"var(--pos)",sub:util==null?"Add card limits":"of limit"},
+    {attr:'data-scrollto="g-cards"',mode:"gauge",name:"Cards owe",value:c.owed,neg:c.owed>0,pct:util,sub:util==null?"Add card limits":"of limit"},
     {attr:sv.length===1?'data-openacct="'+esc(sv[0].id)+'"':'data-scrollto="g-sav"',name:"Savings",value:c.personal,pct:share(c.personal),col:"var(--save)",sub:"of total"},
     {attr:'data-tab-go="projects"',name:"Projects",value:c.aside,pct:goalSum?goalHave/goalSum*100:share(c.aside),col:"var(--save)",sub:goalSum?"of goals":"of total"}];
   const lentLoans=S.loans.filter(l=>l.dir==="lent"), llTot=lentLoans.reduce((t,l)=>t+Math.max(+l.balance||0,+l.original||0),0), llLeft=lentLoans.reduce((t,l)=>t+Math.max(0,c.loan[l.id]||0),0);
   const owedAll=c.lentOut+llLeft, lentAll=lentTot+llTot, repAll=repTot+Math.max(0,llTot-llLeft);
-  if(owedAll>0||lentAll>0) items.push({attr:'data-tab-go="loans"',name:"Loans to others",value:owedAll,pct:lentAll?repAll/lentAll*100:null,col:"var(--pos)",sub:"paid back"});
-  if(owe.length) items.push({attr:'data-tab-go="loans"',name:"My loans",value:c.loansOwe,neg:c.loansOwe>0,pct:origTot?(origTot-leftTot)/origTot*100:null,col:"var(--pos)",sub:"paid off"});
+  if(owedAll>0||lentAll>0) items.push({attr:'data-tab-go="loans"',mode:"drain",name:"Loans to others",value:owedAll,pct:lentAll?(lentAll-repAll)/lentAll*100:null,col:"var(--save)",sub:"still owed to me"});
+  if(owe.length) items.push({attr:'data-tab-go="loans"',mode:"drain",name:"My loans",value:c.loansOwe,neg:c.loansOwe>0,pct:origTot?leftTot/origTot*100:null,col:"var(--accent)",sub:"still owed"});
   let h=backupNudge()+welcomeCard()+'<section class="hero homehero"><div class="eyebrow">Net worth</div><div class="big '+(c.net<0?"neg":"")+'">'+money(c.net)+'</div>'+
     '<details class="hinfo"><summary>ⓘ '+L('What\'s included?','¿Qué incluye?')+'</summary><p>Everything you have plus what people owe you, minus what you owe on cards and loans.</p></details></section>'+
     switcher(items,"Your money").replace('class="pswitch rings"','class="pswitch rings homerings"')+
@@ -2307,19 +2332,38 @@ function ringSvg(pct,col){ const r=21, C=2*Math.PI*r, v=pct==null?0:Math.max(0,M
   return '<svg class="pring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true"><circle cx="26" cy="26" r="'+r+'" fill="none" stroke="var(--sunk)" stroke-width="5"/>'+
     (v>0?'<circle cx="26" cy="26" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+(C*v/100).toFixed(2)+' '+C.toFixed(2)+'" transform="rotate(-90 26 26)"/>':'')+
     '<text x="26" y="30" text-anchor="middle" class="prt">'+(pct==null?'–':Math.round(pct)+'%')+'</text></svg>'; }
+/* A ring means progress, so it only belongs where a 100% exists.
+   fill  — grows toward a goal      (projects, savings with a goal)
+   drain — starts full and empties  (loans owed, card balances)
+   gauge — a ceiling to stay under  (credit limit; high is bad)
+   badge — no goal at all           (checking, cash, savings with no goal) */
 function switcher(items,label){
   if(items.length<2) return '';
-  const R=64, C=2*Math.PI*R, r2=35, C2=2*Math.PI*r2;
-  return '<div class="pswitch rings" role="tablist" aria-label="'+esc(label)+'">'+items.map(it=>{ const v=it.pct==null?0:Math.max(0,Math.min(100,it.pct)), col=it.on&&!it.keep?"var(--accent)":(it.col||"var(--pos)");
+  const R=64, C=2*Math.PI*R, r2=35, C2=2*Math.PI*r2, GA=0.75;
+  return '<div class="pswitch rings" role="tablist" aria-label="'+esc(label)+'">'+items.map(it=>{
+    const mode=it.mode||"fill", v=it.pct==null?0:Math.max(0,Math.min(100,it.pct));
+    const col=it.on&&!it.keep?"var(--accent)":(it.col||"var(--pos)");
     const ttl=' role="tab" '+it.attr+' aria-selected="'+(!!it.on)+'" title="'+esc(it.bare?it.name:it.name+" · "+money(it.value))+'">';
     // the number rings on the projects page keep their big number inside the circle
     if(it.bare) return '<button class="bring'+(it.on?' on':'')+'"'+(it.keep?' style="--accent:'+it.col+'"':'')+ttl+
       '<svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="'+R+'" class="trk"/>'+(v>0?'<circle cx="75" cy="75" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+(C*v/100).toFixed(2)+' '+C.toFixed(2)+'" transform="rotate(-90 75 75)"/>':'')+'</svg>'+
       '<span class="bin"><span class="bnum">'+(it.count!=null?it.count:esc(it.name))+'</span></span></button>';
-    // everywhere else: the circle keeps the percentage, the words go underneath where they fit
-    return '<button class="lring'+(it.on?' on':'')+'"'+(it.keep?' style="--accent:'+it.col+'"':'')+ttl+
-      '<span class="lgr"><svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="'+r2+'" class="trk"/>'+(v>0?'<circle cx="40" cy="40" r="'+r2+'" fill="none" stroke="'+col+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+(C2*v/100).toFixed(2)+' '+C2.toFixed(2)+'" transform="rotate(-90 40 40)"/>':'')+'</svg>'+
-      '<span class="lpc">'+(it.pct==null?"–":Math.round(it.pct)+"%")+'</span></span>'+
+    let inner;
+    if(mode==="badge"){
+      inner='<span class="lgr abadge">'+(it.badge||'<span class="ini">'+esc(initials(it.name))+'</span>')+'</span>';
+    } else if(mode==="gauge"){
+      const g=it.pct==null?"var(--muted)":v>=70?"var(--neg)":v>=30?"#D9A400":"var(--pos)";
+      inner='<span class="lgr"><svg viewBox="0 0 80 80" aria-hidden="true">'+
+        '<circle cx="40" cy="40" r="'+r2+'" fill="none" stroke="var(--sunk)" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+(C2*GA).toFixed(2)+' '+C2.toFixed(2)+'" transform="rotate(135 40 40)"/>'+
+        (v>0?'<circle cx="40" cy="40" r="'+r2+'" fill="none" stroke="'+g+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+(C2*GA*v/100).toFixed(2)+' '+C2.toFixed(2)+'" transform="rotate(135 40 40)"/>':'')+
+        '</svg><span class="lpc">'+(it.pct==null?"–":Math.round(v)+"%")+'</span></span>';
+    } else {
+      // fill and drain draw the same way; drain is simply handed the share that is LEFT
+      inner='<span class="lgr"><svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="'+r2+'" class="trk"/>'+
+        (v>0?'<circle cx="40" cy="40" r="'+r2+'" fill="none" stroke="'+col+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+(C2*v/100).toFixed(2)+' '+C2.toFixed(2)+'" transform="rotate(-90 40 40)"/>':'')+
+        '</svg><span class="lpc">'+(it.pct==null?"–":Math.round(v)+"%")+'</span></span>';
+    }
+    return '<button class="lring'+(it.on?' on':'')+(mode==="badge"?' plain':'')+'"'+(it.keep?' style="--accent:'+it.col+'"':'')+ttl+inner+
       '<span class="bn">'+esc(it.name)+'</span><span class="bv'+(it.neg?' neg':'')+'">'+money(it.value)+'</span>'+
       '<span class="bp">'+esc(it.sub||"")+'</span></button>'; }).join("")+'</div>';
 }
@@ -2344,20 +2388,39 @@ function loanSwitcher(l,c){
   const lent=l.dir==="lent";
   const tot=all.reduce((s,x)=>s+Math.max(0,c.loan[x.id]||0),0);
   return switcher(all.sort((x,y)=>(c.loan[y.id]||0)-(c.loan[x.id]||0)).map(x=>{
-    const left=c.loan[x.id]||0, orig=+x.original||0, pc=orig?Math.max(0,Math.min(100,(orig-left)/orig*100)):(tot?Math.max(0,left)/tot*100:0);
-    return {attr:'data-openloan="'+esc(x.id)+'"',name:x.name,value:left,neg:!lent&&left>0,pct:pc,
-      col:lent?"var(--pos)":"var(--accent)",sub:lent?"owed to me":"still owed",on:x.id===l.id}; }),
+    const left=c.loan[x.id]||0, orig=+x.original||0;
+    // the ring shows what is LEFT, so every payment takes a bite out of it
+    const pc=orig?Math.max(0,Math.min(100,left/orig*100)):(tot?Math.max(0,left)/tot*100:0);
+    return {attr:'data-openloan="'+esc(x.id)+'"',mode:"drain",name:x.name,value:left,neg:!lent&&left>0,pct:orig?pc:null,
+      col:lent?"var(--save)":"var(--accent)",sub:lent?"still owed to me":"still owed",on:x.id===l.id}; }),
     lent?"Money lent to others":"My loans");
+}
+// A savings account with a goal behaves like a project: it fills up.
+function acctGoal(a){ const g=+((a||{}).goal)||0; return g>0?{goal:g,date:(a||{}).goalDate||""}:null; }
+function monthsUntil(iso){ if(!iso) return null; const d=pDate(iso), t=pDate(todayStr());
+  return Math.max(0,(d.getFullYear()-t.getFullYear())*12+(d.getMonth()-t.getMonth())); }
+// Plain arithmetic: what is left, over the months that are left. Nothing guessed from history.
+function goalPace(a,bal){
+  const g=acctGoal(a); if(!g) return "";
+  const left=Math.max(0,g.goal-Math.max(0,bal));
+  if(left<=0.005) return '<p class="gpace done">✓ Goal reached</p>';
+  if(!g.date) return '<p class="gpace">'+money(left)+' to go · <button type="button" class="linkb" data-editacct="'+esc(a.id)+'">set a date</button></p>';
+  const mo=monthsUntil(g.date);
+  if(mo<=0) return '<p class="gpace over">'+money(left)+' to go, and the date has arrived</p>';
+  return '<p class="gpace">'+money(left)+' to go in '+mo+(mo===1?' month':' months')+' — <b>'+money(left/mo)+'</b> a month</p>';
 }
 function acctSwitcher(a,c){
   if(a.type==="credit"){
     const cards=S.accounts.filter(x=>x.type==="credit").sort((x,y)=>(-c.bal[y.id])-(-c.bal[x.id])||x.name.localeCompare(y.name));
     return switcher(cards.map(x=>{ const owed=Math.max(0,-c.bal[x.id]), lim=+x.limit||0, pc=lim?owed/lim*100:null;
-      return {attr:'data-openacct="'+esc(x.id)+'"',name:x.name,value:owed,neg:owed>0,pct:pc,col:pc==null?"var(--muted)":pc>=50?"var(--neg)":pc>=30?"#D9A400":"var(--pos)",sub:lim?"of "+money(lim,true):"No limit set",on:x.id===a.id}; }),"Credit cards");
+      return {attr:'data-openacct="'+esc(x.id)+'"',mode:"gauge",name:x.name,value:owed,neg:owed>0,pct:pc,sub:lim?"of "+money(lim,true)+" limit":"No limit set",on:x.id===a.id}; }),"Credit cards");
   }
   const list=S.accounts.filter(x=>x.type!=="credit").sort((x,y)=>c.bal[y.id]-c.bal[x.id]);
-  const tot=list.reduce((s,x)=>s+Math.max(0,c.bal[x.id]),0);
-  return switcher(list.map(x=>({attr:'data-openacct="'+esc(x.id)+'"',name:x.name,value:c.bal[x.id],neg:c.bal[x.id]<0,pct:tot?Math.max(0,c.bal[x.id])/tot*100:0,col:x.type==="savings"?"var(--save)":"var(--pos)",sub:"of your money",on:x.id===a.id})),"Accounts");
+  return switcher(list.map(x=>{ const g=acctGoal(x), bal=c.bal[x.id];
+    if(g) return {attr:'data-openacct="'+esc(x.id)+'"',mode:"fill",name:x.name,value:bal,neg:bal<0,
+      pct:Math.min(100,Math.max(0,bal)/g.goal*100),col:"var(--save)",sub:"of "+money(g.goal,true),on:x.id===a.id};
+    return {attr:'data-openacct="'+esc(x.id)+'"',mode:"badge",name:x.name,value:bal,neg:bal<0,pct:null,
+      badge:acctBadge(x),sub:ACCT_TYPES[x.type],on:x.id===a.id}; }),"Accounts");
 }
 /* ---------- project page: money in, purchases, and a wish list ---------- */
 async function wishUpdate(pid,fn){
@@ -3125,6 +3188,9 @@ function openAcct(a){
     '<div class="field"><label for="a_type">Type</label><select id="a_type">'+opts(Object.keys(ACCT_TYPES).map(k=>({v:k,l:ACCT_TYPES[k]})),a.type)+'</select></div>'+
     '<div class="field"><label for="a_open" id="a_openL">'+(a.type==="credit"?"Amount owed right now":"Current balance")+'</label><input id="a_open" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(a.opening)+'"></div>'+
     '<div class="field" id="a_limitF"'+(a.type==="credit"?'':' hidden')+'><label for="a_limit">Credit limit</label><input id="a_limit" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(a.limit||"")+'"></div>'+
+    '<div id="a_goalF"'+(a.type==="savings"||a.type==="cash"?'':' hidden')+'><div class="two"><div class="field"><label for="a_goal">Saving toward (optional)</label><input id="a_goal" class="amount" inputmode="decimal" placeholder="e.g. 10000" value="'+esc(a.goal||"")+'"></div>'+
+    '<div class="field"><label for="a_gdate">By when (optional)</label>'+dateField("a_gdate",a.goalDate||"","Choose date")+'</div></div>'+
+    '<p class="hint" style="margin:-6px 0 12px">With a date, Pocketbook works out how much a month it takes. Leave both empty and the account is just a balance.</p></div>'+
     '<div class="field"><label for="a_asof">Balance as of</label>'+dateField("a_asof",a.asOf||(a.created?dIso(new Date(a.created)):todayStr()))+'</div>'+
     '<p class="hint">Use the balance your bank shows for this day. Transactions dated on or before it are already included, so they won\'t change it again. Everything after adjusts it.</p><div id="aErr"></div>'+
     '<div class="actions">'+(edit?'<button type="button" class="btn danger" data-act="askdel">Delete</button>':'')+'<button type="submit" class="btn primary">'+(edit?"Save changes":"Add account")+'</button></div><div id="delBox"></div></form>';
@@ -3135,13 +3201,16 @@ function openAcct(a){
   $("a_iconBtn").addEventListener("click",()=>$("a_iconFile").click());
   $("a_iconFile").addEventListener("change",async e=>{ const f=e.target.files[0]; if(!f) return; try{ icon=await makeIcon(f); prev(); }catch(_){ $("aErr").innerHTML='<p class="err" role="alert">That picture could not be opened. Try a PNG or JPG.</p>'; } });
   $("a_iconDel").addEventListener("click",()=>{ icon=""; prev(); });
-  $("a_type").addEventListener("change",e=>{$("a_limitF").hidden=e.target.value!=="credit";});
+  $("a_type").addEventListener("change",e=>{$("a_limitF").hidden=e.target.value!=="credit";$("a_goalF").hidden=!(e.target.value==="savings"||e.target.value==="cash");});
   $("a_type").addEventListener("change",e=>{$("a_openL").textContent=e.target.value==="credit"?"Amount owed right now":"Current balance";});
   $("acctForm").addEventListener("submit",async e=>{
     e.preventDefault(); const name=$("a_name").value.trim(); const op=parseFloat(($("a_open").value||"0").replace(/[$,\s]/g,""));
     if(!name){$("aErr").innerHTML='<p class="err" role="alert">Give the account a name.</p>';return;}
     if(isNaN(op)){$("aErr").innerHTML='<p class="err" role="alert">Enter the balance as a number, like 1250.00.</p>';return;}
-    if(await save(a.id,{kind:"account",name,type:$("a_type").value,icon,limit:($("a_type").value==="credit"?(Math.round((parseFloat(($("a_limit").value||"0").replace(/[$,\s]/g,""))||0)*100)/100):0),opening:Math.round(op*100)/100,asOf:$("a_asof").value||todayStr(),
+    const ty=$("a_type").value, gv=parseFloat((($("a_goal")||{}).value||"").replace(/[$,\s]/g,""));
+    if(($("a_goal")||{}).value&&(isNaN(gv)||gv<0)){$("aErr").innerHTML='<p class="err" role="alert">Enter the goal as a number, like 10000.</p>';return;}
+    const goal=(ty==="savings"||ty==="cash")&&gv>0?Math.round(gv*100)/100:0;
+    if(await save(a.id,{kind:"account",name,type:ty,icon,goal,goalDate:goal?(($("a_gdate")||{}).value||""):"",limit:($("a_type").value==="credit"?(Math.round((parseFloat(($("a_limit").value||"0").replace(/[$,\s]/g,""))||0)*100)/100):0),opening:Math.round(op*100)/100,asOf:$("a_asof").value||todayStr(),
       asOfAt:((a.asOf||(a.created?dIso(new Date(a.created)):""))===$("a_asof").value&&+a.opening===Math.round(op*100)/100&&(a.asOfAt||a.created))?(a.asOfAt||a.created):Date.now(),created:a.created||Date.now()})){closeSheet();toast(edit?"Account updated":"Account added");}
   });
 }
