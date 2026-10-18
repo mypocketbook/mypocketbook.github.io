@@ -262,6 +262,7 @@ button.tile{text-align:left;font:inherit;color:inherit;cursor:pointer;width:100%
 .lring.plain .lgr{background:none;border:0}
 .lgr.abadge{display:grid;place-items:center}
 .lgr.abadge .badge,.lgr.abadge img{width:100%;height:100%;border-radius:50%;font-size:1.0625rem}
+.lgr.abadge.icob .ini svg{width:30px;height:30px}
 .lgr.abadge .ini{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:1.0625rem;
   letter-spacing:-.01em;background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent)}
 .lring.on .lgr.abadge .ini{background:color-mix(in srgb,var(--accent) 22%,transparent)}
@@ -896,7 +897,7 @@ const ES={
 "Saving toward (optional)":"Ahorrando hacia (opcional)","By when (optional)":"¿Para cuándo? (opcional)",
 "With a date, Pocketbook works out how much a month it takes. Leave both empty and the account is just a balance.":"Con una fecha, Pocketbook calcula cuánto al mes hace falta. Deja los dos vacíos y la cuenta es solo un saldo.",
 "Enter the goal as a number, like 10000.":"Escribe la meta como número, por ejemplo 10000.",
-"✓ Goal reached":"✓ Meta alcanzada","set a date":"ponle fecha","still owed":"todavía debo","still owed to me":"todavía me deben",
+"✓ Goal reached":"✓ Meta alcanzada","to spend":"para gastar","set aside":"apartado","set a date":"ponle fecha","still owed":"todavía debo","still owed to me":"todavía me deben",
 "Add card limits":"Agrega los límites","e.g. 10000":"ej. 10000","Go to":"Ir a","Go to another section":"Ir a otra sección","Savings":"Ahorros","still owed":"todavía debo","owed to me":"me deben","paid off":"pagado",
 /* split across projects */
 "Split it across projects":"Repártelo entre varios proyectos","Use a single project instead":"Usar un solo proyecto",
@@ -1907,10 +1908,15 @@ function viewHome(){
   const LP=lentPeople(), lentTot=LP.reduce((t,r)=>t+r.lent,0), repTot=LP.reduce((t,r)=>t+Math.min(r.repaid,r.lent),0);
   const owe=S.loans.filter(l=>l.dir!=="lent"), origTot=owe.reduce((t,l)=>t+(+l.original||+l.balance||0),0), leftTot=owe.reduce((t,l)=>t+Math.max(0,c.loan[l.id]||0),0);
   const util=c.limit?c.owed/c.limit*100:null;
+  // savings goals, read the same way projects read theirs
+  const sgAcc=S.accounts.filter(x=>acctGoal(x));
+  const sgSum=sgAcc.reduce((t,x)=>t+acctGoal(x).goal,0);
+  const sgHave=sgAcc.reduce((t,x)=>t+Math.min(acctGoal(x).goal,Math.max(0,c.bal[x.id]||0)),0);
   const items=[
-    {attr:'data-scrollto="g-day"',name:"Available",value:c.available,neg:c.available<0,pct:share(c.available),col:"var(--pos)",sub:"of total"},
+    {attr:'data-scrollto="g-day"',mode:"badge",ico:"wallet",name:"Available",value:c.available,neg:c.available<0,pct:null,sub:"to spend"},
     {attr:'data-scrollto="g-cards"',mode:"gauge",name:"Cards owe",value:c.owed,neg:c.owed>0,pct:util,sub:util==null?"Add card limits":"of limit"},
-    {attr:sv.length===1?'data-openacct="'+esc(sv[0].id)+'"':'data-scrollto="g-sav"',name:"Savings",value:c.personal,pct:share(c.personal),col:"var(--save)",sub:"of total"},
+    {attr:sv.length===1?'data-openacct="'+esc(sv[0].id)+'"':'data-scrollto="g-sav"',mode:sgSum?"fill":"badge",ico:"piggy",name:"Savings",value:c.personal,
+      pct:sgSum?sgHave/sgSum*100:null,col:"var(--save)",sub:sgSum?"of goals":"set aside"},
     {attr:'data-tab-go="projects"',name:"Projects",value:c.aside,pct:goalSum?goalHave/goalSum*100:share(c.aside),col:"var(--save)",sub:goalSum?"of goals":"of total"}];
   const lentLoans=S.loans.filter(l=>l.dir==="lent"), llTot=lentLoans.reduce((t,l)=>t+Math.max(+l.balance||0,+l.original||0),0), llLeft=lentLoans.reduce((t,l)=>t+Math.max(0,c.loan[l.id]||0),0);
   const owedAll=c.lentOut+llLeft, lentAll=lentTot+llTot, repAll=repTot+Math.max(0,llTot-llLeft);
@@ -2350,7 +2356,7 @@ function switcher(items,label){
       '<span class="bin"><span class="bnum">'+(it.count!=null?it.count:esc(it.name))+'</span></span></button>';
     let inner;
     if(mode==="badge"){
-      inner='<span class="lgr abadge">'+(it.badge||'<span class="ini">'+esc(initials(it.name))+'</span>')+'</span>';
+      inner='<span class="lgr abadge'+(it.ico?' icob':'')+'">'+(it.badge||(it.ico?'<span class="ini">'+ICO[it.ico]+'</span>':'<span class="ini">'+esc(initials(it.name))+'</span>'))+'</span>';
     } else if(mode==="gauge"){
       const g=it.pct==null?"var(--muted)":v>=70?"var(--neg)":v>=30?"#D9A400":"var(--pos)";
       inner='<span class="lgr"><svg viewBox="0 0 80 80" aria-hidden="true">'+
