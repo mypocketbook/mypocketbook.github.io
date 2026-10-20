@@ -106,6 +106,54 @@ button.row:hover{background:var(--sunk)}
 .wadd input{height:42px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:0.9375rem;color:var(--ink);min-width:0;font-family:inherit}
 .wadd .btn{height:42px}
 /* category picker */
+/* work: the week in columns, the way the driving apps show it */
+.wkwrap{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;gap:12px}
+.wknav{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:6px}
+.wkarrow{height:44px;border:0;background:none;color:var(--accent);font-size:1.5rem;line-height:1;cursor:pointer;border-radius:10px}
+.wkarrow[disabled]{color:var(--line);cursor:default}
+.wkarrow:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wklab{text-align:center;font-size:0.875rem;font-weight:700}
+.wkbig{font-family:var(--f-disp);font-size:2.25rem;line-height:1;text-align:center}
+.wksub{margin:-6px 0 0;text-align:center;font-size:0.8125rem;color:var(--muted)}
+.wkbars{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;align-items:end}
+.wkb{display:grid;gap:3px;justify-items:center;border:0;background:none;padding:4px 0 6px;border-radius:10px;cursor:pointer;font-family:inherit;min-height:44px}
+.wkb:hover{background:var(--bg)}
+.wkb.on{background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
+.wkb:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.wkv{font-family:var(--f-num);font-size:0.5625rem;color:var(--muted);height:12px;line-height:12px}
+.wkbar{display:block;width:100%;height:78px;background:var(--sunk);border-radius:6px;display:flex;align-items:flex-end;overflow:hidden}
+.wkbar i{display:block;width:100%;border-radius:6px}
+.wkbar i{background:color-mix(in srgb,var(--accent) 62%,var(--surface))}
+.wkb.on .wkbar i{background:var(--accent)}
+.wkd{font-size:0.8125rem;font-weight:700;font-family:var(--f-num)}
+.wkw{font-size:0.625rem;color:var(--muted);text-transform:lowercase}
+.wkb.today .wkd{color:var(--accent)}
+.wktap{margin:0;text-align:center}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-top:1px solid var(--line);padding-top:11px}
+.three div{display:grid;gap:2px;min-width:0}
+.three b{font-family:var(--f-num);font-size:0.9375rem;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.three em{font-style:normal;font-size:0.625rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.wkday{border:1px solid var(--line);border-radius:14px;background:var(--sunk);padding:12px;display:grid;gap:10px}
+.wkrow{display:grid;gap:9px}
+.wkh{display:flex;justify-content:space-between;align-items:baseline;font-size:0.9375rem}
+.wkh span{font-family:var(--f-num);font-weight:700}
+.wkst{display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:0.78125rem;color:var(--muted)}
+.wkst b{color:var(--ink);font-family:var(--f-num);font-weight:600}
+.wkedit{width:100%}
+.hm{display:grid;grid-template-columns:1fr auto 1fr auto;gap:6px;align-items:center}
+.hm input{height:52px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0 12px;font-size:1rem;color:var(--ink);font-family:var(--f-num);text-align:center;min-width:0}
+.hm span{font-size:0.8125rem;color:var(--muted)}
+.live{background:var(--sunk);border-radius:13px;padding:12px;display:grid;gap:6px;margin-top:2px}
+.live .sl{display:flex;justify-content:space-between;font-size:0.8125rem}
+.live .sl span:last-child{font-family:var(--f-num)}
+.live .sl.tot{border-top:1px solid var(--line);padding-top:6px;font-weight:700;font-size:0.9375rem}
+.gasbox{background:color-mix(in srgb,var(--accent) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 32%,var(--surface));border-radius:16px;padding:13px;display:grid;gap:9px;margin-top:12px}
+.gasbox .gt{margin:0;font-weight:700;font-size:0.875rem}
+.gr{display:grid;grid-template-columns:26px minmax(0,1fr) max-content;gap:9px;align-items:center}
+.gi{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:var(--surface);font-size:0.75rem}
+.gn{font-size:0.8125rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gn em{display:block;font-style:normal;font-size:0.6875rem;color:var(--muted)}
+.gv{font-family:var(--f-num);font-size:0.8125rem;font-variant-numeric:tabular-nums}
 /* projects: how the total divides */
 .psplit{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;margin:0 0 14px;display:grid;gap:14px}
 .pshead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
@@ -785,6 +833,7 @@ h2{font-weight:700;letter-spacing:-.015em}
     <button type="button" data-tab="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h14M5 12h14M5 18h9"/></svg>Activity</button>
     <button type="button" data-tab="loans"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16M5 20v-8M9.5 20v-8M14.5 20v-8M19 20v-8M3 10l9-6 9 6z"/></svg>Loans</button>
     <button type="button" data-tab="subs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5a5.5 5.5 0 0 1 5.5-5.5H18l-2.6-2.6M18 4l-2.6 2.6"/><path d="M20 14.5a5.5 5.5 0 0 1-5.5 5.5H6l2.6 2.6M6 20l2.6-2.6"/></svg>Bills</button>
+    <button type="button" data-tab="work"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 15.5h18M5.5 15.5l1.7-5.1A2 2 0 0 1 9.1 9h5.8a2 2 0 0 1 1.9 1.4l1.7 5.1M7 18.5v1M17 18.5v1"/><circle cx="7.5" cy="15.5" r="1.3"/><circle cx="16.5" cy="15.5" r="1.3"/></svg>Work</button>
     <button type="button" data-tab="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M7 8h7.5a3 3 0 0 1 0 6H8"/><circle cx="12" cy="12" r="9.5"/></svg>Projects</button>
   </div>
 </nav>
@@ -1049,7 +1098,7 @@ const ES={
 "Happy Halloween!":"¡Feliz Noche de Brujas!","Merry Christmas!":"¡Feliz Navidad!","Happy New Year!":"¡Feliz Año Nuevo!","Happy Valentine's Day!":"¡Feliz San Valentín!","Happy St. Patrick's Day!":"¡Feliz Día de San Patricio!","Happy spring!":"¡Feliz primavera!","Happy 4th of July!":"¡Feliz 4 de julio!","Enjoy the summer!":"¡Disfruta el verano!","Happy fall!":"¡Feliz otoño!","Happy Thanksgiving!":"¡Feliz Día de Acción de Gracias!",
 "Halloween":"Noche de Brujas","Christmas":"Navidad","New Year":"Año Nuevo","Valentine's":"San Valentín","St. Patrick's":"San Patricio","Spring":"Primavera","4th of July":"4 de julio","Summer":"Verano","Fall":"Otoño","Thanksgiving":"Acción de Gracias",
 /* home */
-"Net balance":"Balance neto",
+"Net balance":"Balance neto","Work":"Trabajo",
 "Restaurant":"Restaurante","Takeout & delivery":"Para llevar y domicilio","Coffee":"Café","Snacks & drinks":"Antojos y bebidas","Supermarket":"Supermercado grande","Market & produce":"Mercado y verdulería","Warehouse club":"Club de mayoreo","Convenience store":"Tienda de la esquina","Gas station":"Gasolinera","Tolls":"Peajes","Parking":"Estacionamiento","Rideshare & taxi":"Uber y taxi","Car maintenance":"Mantenimiento del auto","Public transport":"Transporte público","Internet & phone":"Internet y teléfono","Electricity":"Electricidad","Water":"Agua","Home gas":"Gas del hogar","Trash":"Basura","Insurance":"Seguro","Rent":"Renta","Mortgage":"Hipoteca","HOA & fees":"HOA y cuotas","Repairs":"Reparaciones","Furniture":"Muebles","Home & kitchen":"Casa y cocina","Clothing":"Ropa","Electronics":"Electrónica","Gifts":"Regalos","Pets":"Mascotas","Doctor":"Médico","Pharmacy":"Farmacia","Dentist":"Dentista","Vision":"Óptica","Haircut & beauty":"Peluquería y belleza","Gym":"Gimnasio","Movies & events":"Cine y eventos","Going out":"Salidas","Games":"Juegos","Hobbies":"Pasatiempos","Books":"Libros","Streaming":"Streaming","Music":"Música","Apps & software":"Apps y software","Gaming":"Videojuegos","News":"Noticias","Flights":"Vuelos","Lodging":"Hospedaje","Food on the trip":"Comida del viaje","Getting around":"Transporte del viaje","Activities":"Actividades","Subcategory":"Subcategoría","Show all categories":"Ver todas las categorías","Most used":"Más usadas","Suggested":"Sugeridas","Pick a subcategory so you can see where your money really goes.":"Elige una subcategoría para ver bien a dónde va tu dinero.","Inside":"Dentro de",
 "of goals":"de las metas","Your checking accounts, minus what you owe on credit cards. Savings, cash, projects and loans are kept apart.":"Tus cuentas corrientes, menos lo que debes en tarjetas de crédito. Ahorros, efectivo, proyectos y préstamos van aparte.","Net balance change so far":"Cambio del balance neto hasta hoy","Net balance change":"Cambio del balance neto","Everything you have plus what people owe you, minus what you owe on cards and loans.":"Todo lo que tienes más lo que te deben, menos lo que debes en tarjetas y préstamos.","Your money":"Tu dinero","Available":"Disponible","Cards owe":"Tarjetas","Savings":"Ahorros","Owed to me":"Me deben","Loans I owe":"Mis préstamos","All months":"Todos los meses","Net balance change so far":"Cambio del balance hasta hoy","Net balance change":"Cambio del balance","Closed at":"Cerró en","Spent":"Gastado","spent":"gastado","Income":"Ingresos","Card payments":"Pagos de tarjeta","Cash back":"Cashback","Loan payments":"Pagos de préstamos","Spending by category":"Gastos por categoría","Tap a category to see its transactions.":"Toca una categoría para ver sus transacciones.","Tap \"Needs a category\" to see those expenses and pick one for each.":"Toca \"Necesita categoría\" para ver esos gastos y elegir una para cada uno.","See these transactions":"Ver estas transacciones","Top 3 changes":"Los 3 cambios más grandes","No changes yet this month.":"Aún no hay cambios este mes.","Improved":"Mejoraron","Went the other way":"Empeoraron","Closing balances":"Saldos al cierre","Credit cards":"Tarjetas de crédito","Checking and cash":"Cuentas corrientes y efectivo","Personal savings":"Ahorros personales","Add card limits":"Agrega los límites","No limit set":"Sin límite","owed":"debe","+ Add":"+ Agregar","+ Add money":"+ Agregar dinero","+ Add account":"+ Agregar cuenta","+ Add transaction":"+ Agregar transacción","+ New transaction":"+ Nueva transacción","+ Lend":"+ Prestar","+ Log payment":"+ Registrar pago","+ Log repayment":"+ Registrar devolución","Add account":"Agregar cuenta","Add a transaction":"Agregar una transacción","Add transaction":"Agregar transacción","An expense, income or transfer":"Un gasto, ingreso o transferencia","A purchase with one of your cards":"Una compra con una de tus tarjetas","Move money into one of your savings":"Pasar dinero a uno de tus ahorros","Set up your accounts":"Configura tus cuentas","Add the places your money lives, then log what you spend, earn and move.":"Agrega dónde está tu dinero y luego registra lo que gastas, ganas y mueves.","Add Checking, Credit card and Cash":"Agregar cuenta corriente, tarjeta y efectivo","Add one account myself":"Agregar una cuenta yo mismo","Open an account to see its transactions and add new ones.":"Abre una cuenta para ver sus transacciones y agregar nuevas.",
 /* subs */
@@ -1627,9 +1676,9 @@ async function persist(){
   catch(e){ toast("Couldn't save to the Pocketbook folder. Reconnect it and try again."); S.status="connect"; S.connectMsg="Pocketbook lost access to its folder."; render(); return false; }
 }
 function refresh(){ LEDGER={};
-  const acc=[],pr=[],tx=[],ln=[],sb=[];
-  Object.keys(STORE).forEach(id=>{const v=Object.assign({id},STORE[id]); if(v.kind==="account")acc.push(v); else if(v.kind==="project")pr.push(v); else if(v.kind==="loan")ln.push(v); else if(v.kind==="txn")tx.push(v); else if(v.kind==="sub")sb.push(v);});
-  S.accounts=acc;S.projects=pr;S.loans=ln;S.txns=tx;S.subs=sb.sort((a,b)=>((a.status==="paused")-(b.status==="paused"))||subMonthly(b)-subMonthly(a));S.status=(S.status==="locked"||S.status==="setpin")?S.status:"ready";
+  const acc=[],pr=[],tx=[],ln=[],sb=[],sh=[];
+  Object.keys(STORE).forEach(id=>{const v=Object.assign({id},STORE[id]); if(v.kind==="account")acc.push(v); else if(v.kind==="project")pr.push(v); else if(v.kind==="loan")ln.push(v); else if(v.kind==="txn")tx.push(v); else if(v.kind==="shift")sh.push(v); else if(v.kind==="sub")sb.push(v);});
+  S.accounts=acc;S.projects=pr;S.loans=ln;S.txns=tx;S.shifts=sh.sort((a,b)=>(b.date||"").localeCompare(a.date||""));S.subs=sb.sort((a,b)=>((a.status==="paused")-(b.status==="paused"))||subMonthly(b)-subMonthly(a));S.status=(S.status==="locked"||S.status==="setpin")?S.status:"ready";
   if(S.acct!=="all"&&!acctById(S.acct)) S.acct="all";
   render();
 }
@@ -1861,7 +1910,7 @@ function render(){
   const openA=S.open&&acctById(S.open), openL=!openA&&S.openLoan&&loanById(S.openLoan), openP=!openA&&!openL&&S.openProj&&projById(S.openProj);
   document.querySelector("header.top").classList.toggle("homehdr", S.status==="ready"&&!openA&&!openL&&!openP&&S.tab==="home"&&!!userName());
   setTimeout(()=>{ maybeWelcome(); maybeAskName(); },0);
-  $("title").textContent= openA? openA.name : openL? loanLabel(openL) : openP? openP.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans",subs:"Bills"}[S.tab];
+  $("title").textContent= openA? openA.name : openL? loanLabel(openL) : openP? openP.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans",subs:"Bills",work:"Work"}[S.tab];
   $("backBtn").hidden=!(openA||openL||openP);
   $("calcTopBtn").hidden=!(S.status==="ready"&&openA); if($("calcTopBtn").hidden) closeCalc();
   $("monthnav").hidden = true;
@@ -1888,7 +1937,7 @@ function render(){
     (S.savedName?'<button class="btn" data-act="pickfolder">Choose a different folder</button>':'')+
     '<span class="hint" style="margin:0">In the window that opens, select the <b>Pocketbook</b> folder, click <b>Open</b>, then allow Chrome to edit files there.</span></div>';return;}
   v.className = (openA||openL||openP) ? "narrow" : "";
-  v.innerHTML = openA ? viewAccount(openA) : openL ? viewLoan(openL) : openP ? viewProject(openP) : ({home:viewHome,activity:viewActivity,projects:viewProjects,accounts:viewAccounts,loans:viewLoans,subs:viewSubs}[S.tab])();
+  v.innerHTML = openA ? viewAccount(openA) : openL ? viewLoan(openL) : openP ? viewProject(openP) : ({home:viewHome,activity:viewActivity,projects:viewProjects,accounts:viewAccounts,loans:viewLoans,subs:viewSubs,work:viewWork}[S.tab])();
   if($("lchart")) drawChart(); else CHART=null;
   wireWhatIf();
   if(openP||openA){ const ps=document.querySelector(".pswitch"), on=ps&&ps.querySelector(".lring.on,.bring.on,.ptile.on"); if(ps&&on&&ps.scrollWidth>ps.clientWidth){ const l=on.offsetLeft-ps.offsetLeft, r=l+on.offsetWidth; if(l<ps.scrollLeft||r>ps.scrollLeft+ps.clientWidth) ps.scrollLeft=Math.max(0,l-8); } }
@@ -2842,6 +2891,140 @@ function openMovedFund(aid){
     :'<div class="empty">'+L("No untagged transfer out of this account yet. Record the transfer first, then come back.","Aún no hay una transferencia sin proyecto saliendo de esta cuenta. Regístrala primero y vuelve.")+'</div>';
   openSheet(h);
 }
+/* ---------- Work: what you made driving, the hours it took, and the gas it cost ---------- */
+function weekStartOf(ds){ const d=pDate(ds), n=(d.getDay()+6)%7; d.setDate(d.getDate()-n); return dIso(d); }
+function weekShift(ws,n){ const d=pDate(ws); d.setDate(d.getDate()+n*7); return dIso(d); }
+function weekEndOf(ws){ const d=pDate(ws); d.setDate(d.getDate()+6); return dIso(d); }
+function hoursOf(sh){ return Math.round(((+sh.hours||0)+(+sh.mins||0)/60)*100)/100; }
+function hhmm(h){ const t=Math.round(h*60), H=Math.floor(t/60), M=t%60; return H+" h"+(M?" "+M+" m":""); }
+function shiftGas(sh){ const t=sh.gasTx&&S.txns.find(x=>x.id===sh.gasTx); return t?(+t.amount||0):(+sh.gas||0); }
+function shiftNet(sh){ return Math.round(((+sh.amount||0)-shiftGas(sh))*100)/100; }
+function weekTotals(ws){
+  const we=weekEndOf(ws), list=S.shifts.filter(x=>x.date>=ws&&x.date<=we);
+  const gross=list.reduce((t,x)=>t+(+x.amount||0),0), gas=list.reduce((t,x)=>t+shiftGas(x),0), hrs=list.reduce((t,x)=>t+hoursOf(x),0);
+  const net=Math.round((gross-gas)*100)/100;
+  return {list,gross:Math.round(gross*100)/100,gas:Math.round(gas*100)/100,hrs:Math.round(hrs*100)/100,net,rate:hrs>0?net/hrs:null};
+}
+// Gas put on a card while working, still waiting for a deposit to cover it.
+function gasOwed(){
+  const m={};
+  S.shifts.forEach(sh=>{ if(sh.covered) return; const t=sh.gasTx&&S.txns.find(x=>x.id===sh.gasTx); if(!t) return;
+    const a=acctById(t.from); if(!a||a.type!=="credit") return;
+    const r=m[t.from]||(m[t.from]={id:t.from,amt:0,n:0}); r.amt=Math.round((r.amt+(+t.amount||0))*100)/100; r.n++; });
+  return Object.values(m).sort((a,b)=>b.amt-a.amt);
+}
+function gasOwedBox(){
+  const g=gasOwed(); if(!g.length) return '';
+  const tot=g.reduce((s,x)=>s+x.amt,0);
+  return '<div class="gasbox"><p class="gt"><span aria-hidden="true">\u26fd</span> '+L("Gas waiting to be covered","Gasolina esperando cobro")+' \u00b7 '+money(tot)+'</p>'+
+    g.map(x=>'<div class="gr"><span class="gi" aria-hidden="true">\ud83d\udcb3</span><span class="gn">'+esc(acctName(x.id))+'<em>'+x.n+' '+(x.n===1?L("fill-up","carga"):L("fill-ups","cargas"))+'</em></span><span class="gv">'+money(x.amt)+'</span></div>').join("")+
+    '<p class="hint" style="margin:2px 0 0">'+L("You paid this with a card while working. When the apps deposit, that money covers it.","Esto lo pagaste con tarjeta mientras trabajabas. Cuando las apps depositen, ese dinero lo cubre.")+'</p></div>';
+}
+function weekLabel(ws){
+  const a=pDate(ws), b=pDate(weekEndOf(ws)), o={month:"short",day:"numeric"};
+  return a.toLocaleDateString(LOC(),o)+" \u2013 "+b.toLocaleDateString(LOC(),o);
+}
+function viewWork(){
+  const ws=S.workWeek||weekStartOf(todayStr()), W=weekTotals(ws), today=todayStr();
+  const sel=S.workDay&&S.workDay>=ws&&S.workDay<=weekEndOf(ws)?S.workDay:"";
+  const days=[]; for(let i=0;i<7;i++){ const d=pDate(ws); d.setDate(d.getDate()+i); const ds=dIso(d);
+    const list=S.shifts.filter(x=>x.date===ds);
+    days.push({ds,d,list,net:Math.round(list.reduce((t,x)=>t+shiftNet(x),0)*100)/100}); }
+  const top=Math.max(...days.map(x=>Math.max(0,x.net)),1);
+  const next=weekShift(ws,1), canNext=next<=weekStartOf(today);
+  let h='<section class="wkwrap">'+
+    '<div class="wknav"><button type="button" class="wkarrow" data-wkgo="-1" aria-label="'+L("Previous week","Semana anterior")+'">\u2039</button>'+
+    '<span class="wklab">'+esc(weekLabel(ws))+'</span>'+
+    '<button type="button" class="wkarrow" data-wkgo="1" aria-label="'+L("Next week","Semana siguiente")+'"'+(canNext?'':' disabled')+'>\u203a</button></div>'+
+    '<div class="wkbig">'+money(W.net)+'</div><p class="wksub">'+L("net this week","neto esta semana")+(W.hrs>0?' \u00b7 '+hhmm(W.hrs)+' \u00b7 '+money(W.rate)+' '+L("per hour","por hora"):'')+'</p>'+
+    '<div class="wkbars" role="group" aria-label="'+L("Days of the week","Días de la semana")+'">'+days.map(x=>
+      '<button type="button" class="wkb'+(x.ds===sel?' on':'')+(x.ds===today?' today':'')+'" data-wkday="'+esc(x.ds)+'" aria-pressed="'+(x.ds===sel)+'">'+
+      '<span class="wkv">'+((x.net&&(x.ds===sel||(!sel&&x.net>=top)))?money(x.net,true):'')+'</span><span class="wkbar"><i style="height:'+(x.list.length?Math.max(5,Math.max(0,x.net)/top*100):0).toFixed(1)+'%"></i></span>'+
+      '<span class="wkd">'+x.d.getDate()+'</span><span class="wkw">'+esc(x.d.toLocaleDateString(LOC(),{weekday:"short"}).replace(".",""))+'</span></button>').join("")+'</div>';
+  if(sel){
+    const dd=days.find(x=>x.ds===sel);
+    h+='<div class="wkday">'+(dd.list.length?dd.list.map(sh=>{ const g=shiftGas(sh), hr=hoursOf(sh), net=shiftNet(sh);
+        return '<div class="wkrow"><div class="wkh"><b>'+esc(dayName(sh.date))+'</b><span>'+money(net)+'</span></div>'+
+          '<div class="wkst"><span>'+L("Made","Hiciste")+' <b>'+money(sh.amount)+'</b></span><span>'+L("Hours","Horas")+' <b>'+(hr?hhmm(hr):"\u2014")+'</b></span><span>'+L("Gas","Gasolina")+' <b>'+(g?money(g):"\u2014")+'</b></span><span>'+L("Per hour","Por hora")+' <b>'+(hr?money(net/hr):"\u2014")+'</b></span></div>'+
+          '<button type="button" class="btn wkedit" data-editshift="'+esc(sh.id)+'">'+L("Edit this shift","Editar este turno")+'</button></div>'; }).join("")
+      :'<p class="hint" style="margin:0 0 10px">'+esc(dayName(sel))+' \u00b7 '+L("nothing logged.","sin registro.")+'</p><button type="button" class="btn primary" data-addshift="'+esc(sel)+'">'+L("Log this day","Registrar este día")+'</button>')+'</div>';
+  } else h+='<p class="hint wktap">'+L("Tap a column to see that day.","Toca una columna para ver ese día.")+'</p>';
+  h+='<div class="three"><div><b>'+money(W.gross)+'</b><em>'+L("Made","Hiciste")+'</em></div><div><b>'+(W.gas?"\u2212":"")+money(W.gas)+'</b><em>'+L("Gas","Gasolina")+'</em></div><div><b>'+(W.hrs?hhmm(W.hrs):"0 h")+'</b><em>'+L("Worked","Trabajadas")+'</em></div></div>'+
+    '<button type="button" class="btn primary" style="width:100%" data-addshift="1">+ '+L("Log a shift","Registrar turno")+'</button></section>';
+  h+=gasOwedBox();
+  if(!S.shifts.length) h+='<div class="empty"><strong>'+L("No shifts yet","Aún no hay turnos")+'</strong><span>'+L("Log what you made each day, the hours it took, and the gas you put in. Pocketbook works out what you really kept.","Registra lo que hiciste cada día, las horas que te tomó y la gasolina que echaste. Pocketbook calcula lo que de verdad te quedó.")+'</span></div>';
+  return h;
+}
+/* ---------- the shift form: day, money, hours, and the gas if you filled up ---------- */
+let shiftDraft=null;
+function openShift(sh,dateHint){
+  shiftDraft = sh ? Object.assign({},sh) : {date:(dateHint&&/^\d{4}-/.test(dateHint))?dateHint:todayStr(),amount:"",hours:"",mins:"",gas:"",gasFrom:""};
+  renderShift();
+}
+function lastGasCard(){
+  const t=S.txns.filter(x=>x.type==="expense"&&x.subcat==="Gas station"&&acctById(x.from)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+  if(t) return t.from; const c=S.accounts.find(a=>a.type==="credit"); return c?c.id:"";
+}
+function renderShift(err){
+  const t=shiftDraft, edit=!!t.id;
+  const gasOn=String(t.gas||"").trim()!=="";
+  const hrs=Math.round((((+t.hours||0)+(+t.mins||0)/60))*100)/100;
+  const made=parseFloat(String(t.amount).replace(/[$,\s]/g,""))||0, gas=parseFloat(String(t.gas).replace(/[$,\s]/g,""))||0;
+  const net=Math.round((made-gas)*100)/100;
+  let h=sheetHead(edit?L("Edit shift","Editar turno"):L("Log a shift","Registrar turno"))+'<form id="shiftForm" novalidate>'+
+    '<div class="two"><div class="field"><label for="k_date">'+L("Day","Día")+'</label>'+dateField("k_date",t.date)+'</div>'+
+    '<div class="field"><label for="k_h">'+L("Hours worked","Horas trabajadas")+'</label><div class="hm"><input id="k_h" inputmode="numeric" placeholder="0" value="'+esc(t.hours||"")+'" aria-label="'+L("Hours","Horas")+'"><span>h</span><input id="k_m" inputmode="numeric" placeholder="00" value="'+esc(t.mins||"")+'" aria-label="'+L("Minutes","Minutos")+'"><span>m</span></div></div></div>'+
+    '<div class="field"><label for="k_amt">'+L("Money I made","Dinero que hice")+'</label><input id="k_amt" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount||"")+'"></div>'+
+    '<div class="field"><label for="k_gas">'+L("Gas, if you filled up (optional)","Gasolina, si echaste (opcional)")+'</label><input id="k_gas" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.gas||"")+'"></div>'+
+    '<div class="field" id="k_gasF"'+(gasOn?'':' hidden')+'><label for="k_from">'+L("Paid with","Pagada con")+'</label><select id="k_from">'+opts(acctOpts(a=>a.type==="credit"||a.type==="checking"||a.type==="cash"),t.gasFrom||lastGasCard(),L("Choose card or account","Elige tarjeta o cuenta"))+'</select>'+
+    '<p class="hint" style="margin:6px 0 0">'+L("It is recorded as a real expense on that card, under Transport · Gas station.","Se registra como gasto real en esa tarjeta, en Transporte · Gasolinera.")+'</p></div>'+
+    '<div class="live" id="k_live">'+shiftLive(made,gas,hrs,net)+'</div>'+
+    (err?'<p class="err" role="alert">'+esc(err)+'</p>':'')+
+    '<div class="actions"><button type="submit" class="btn primary">'+(edit?L("Save changes","Guardar cambios"):L("Save shift","Guardar turno"))+'</button>'+
+    (edit?'<button type="button" class="btn danger" data-delshift="'+esc(t.id)+'">'+L("Delete","Eliminar")+'</button>':'')+'</div></form>';
+  openSheet(h);
+  const f=$("shiftForm"); if(f) f.addEventListener("submit",submitShift);
+  const sync=()=>{ const g=$("k_gas").value.trim();
+    $("k_gasF").hidden = g===""||parseFloat(g.replace(/[$,\s]/g,""))===0;
+    const m=parseFloat($("k_amt").value.replace(/[$,\s]/g,""))||0, gg=parseFloat(g.replace(/[$,\s]/g,""))||0;
+    const hh=Math.round((((+$("k_h").value||0)+(+$("k_m").value||0)/60))*100)/100;
+    $("k_live").innerHTML=shiftLive(m,gg,hh,Math.round((m-gg)*100)/100); };
+  ["k_amt","k_gas","k_h","k_m"].forEach(id=>{const el=$(id); if(el) el.addEventListener("input",()=>setTimeout(sync,0));});
+}
+function shiftLive(made,gas,hrs,net){
+  if(!made&&!gas) return '<p class="hint" style="margin:0">'+L("Fill in the day and Pocketbook works out what you kept.","Llena el día y Pocketbook calcula lo que te quedó.")+'</p>';
+  return '<div class="sl"><span>'+L("Made","Hiciste")+'</span><span>'+money(made)+'</span></div>'+
+    (gas?'<div class="sl"><span>'+L("Gas","Gasolina")+'</span><span>\u2212'+money(gas)+'</span></div>':'')+
+    '<div class="sl tot"><span>'+L("Net","Neto")+(hrs?' \u00b7 '+money(net/hrs)+'/h':'')+'</span><span>'+money(net)+'</span></div>';
+}
+async function submitShift(e){
+  e.preventDefault();
+  const t=shiftDraft;
+  t.date=$("k_date").value; t.hours=$("k_h").value.trim(); t.mins=$("k_m").value.trim();
+  t.amount=$("k_amt").value.trim(); t.gas=$("k_gas").value.trim(); t.gasFrom=($("k_from")||{}).value||"";
+  const made=parseFloat(String(t.amount).replace(/[$,\s]/g,""));
+  if(!t.date) return renderShift(L("Pick the day you worked.","Elige el día que trabajaste."));
+  if(!(made>0)) return renderShift(L("Write what you made that day.","Escribe lo que hiciste ese día."));
+  const hh=+t.hours||0, mm=+t.mins||0;
+  if(hh<0||mm<0||mm>59||hh>24) return renderShift(L("Hours and minutes must be a real amount of time.","Las horas y los minutos deben ser un tiempo real."));
+  const gas=parseFloat(String(t.gas).replace(/[$,\s]/g,""))||0;
+  if(gas>0&&!acctById(t.gasFrom)) return renderShift(L("Choose what you paid the gas with.","Elige con qué pagaste la gasolina."));
+  // the gas is a real expense, created, updated or removed alongside the shift
+  let gasTx=t.gasTx||"";
+  if(gas>0){
+    const doc={kind:"txn",type:"expense",amount:Math.round(gas*100)/100,date:t.date,desc:L("Gas while working","Gasolina trabajando"),payee:L("Gas station","Gasolinera"),
+      category:"Transport & gas",subcat:"Gas station",from:t.gasFrom,work:true,created:(gasTx&&STORE[gasTx]&&STORE[gasTx].created)||Date.now()};
+    if(gasTx&&STORE[gasTx]){ if(!await save(gasTx,doc)) return; }
+    else { gasTx=newId(); if(!await save(gasTx,doc)) return; }
+  } else if(gasTx&&STORE[gasTx]){ await remove(gasTx); gasTx=""; }
+  const doc={kind:"shift",date:t.date,amount:Math.round(made*100)/100,hours:String(hh),mins:String(mm),gas:gas>0?String(Math.round(gas*100)/100):"",gasFrom:gas>0?t.gasFrom:"",gasTx:gasTx,covered:!!t.covered,created:t.created||Date.now()};
+  if(await save(t.id||null,doc)){ closeSheet(); S.workDay=t.date; S.workWeek=weekStartOf(t.date); toast(t.id?L("Shift updated","Turno actualizado"):L("Shift saved","Turno guardado")); render(); }
+}
+async function deleteShift(id){
+  const sh=S.shifts.find(x=>x.id===id); if(!sh) return;
+  if(sh.gasTx&&STORE[sh.gasTx]) await remove(sh.gasTx);
+  if(await remove(id)){ closeSheet(); toast(L("Shift deleted","Turno eliminado")); render(); }
+}
 function viewProjects(){
   const c=compute();
   let h=helpBox(L('How projects work','Cómo funcionan los proyectos'),L('Write the project name in the description, like <b>"Carmencita"</b>. A <b>Transfer</b> adds to the project. A <b>Card payment</b> from checking subtracts from it. Card purchases don\'t change it until you pay the card. The money stays in your accounts; this shows how much of it is for each project.',
@@ -3741,6 +3924,11 @@ document.addEventListener("click",async e=>{
     const fs=$("f_subcat"); if(fs) fs.value=draft.subcat; catRefresh(); return; }
   if(ds.catall){ draft.catAll=true; catRefresh(); return; }
   if(ds.fixacct){ openMovedFund(ds.fixacct); return; }
+  if(ds.addshift){ openShift(null,ds.addshift); return; }
+  if(ds.editshift){ const sh=S.shifts.find(x=>x.id===ds.editshift); if(sh) openShift(sh); return; }
+  if(ds.delshift){ await deleteShift(ds.delshift); return; }
+  if(ds.wkgo){ S.workWeek=weekShift(S.workWeek||weekStartOf(todayStr()),+ds.wkgo); S.workDay=""; render(); return; }
+  if(ds.wkday){ S.workDay=S.workDay===ds.wkday?"":ds.wkday; render(); return; }
   if(ds.movedtx){ const t=S.txns.find(x=>x.id===ds.movedtx); if(t){ closeSheet(); openTx(t,{project:ds.movedpid}); } return; }
   if(ds.calfor){ if(CAL&&CAL.for===ds.calfor) closeCal(); else openCal(ds.calfor); return; }
   if(ds.calnav){ const [y,m]=CAL.ym.split("-").map(Number); const d=new Date(y,m-1+(+ds.calnav),1); CAL.ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); drawCal(); return; }
@@ -3860,7 +4048,7 @@ document.addEventListener("submit",async e=>{
     if(isNaN(price)||price<0){ $("w_price").focus(); toast("Enter the price as a number."); return; }
     await wishUpdate(pid,w=>w.concat([{id:newId(),name,price:Math.round(price*100)/100,done:false}])); setTimeout(()=>{const n=$("w_name"); if(n) n.focus();},50); }
 });
-$("addBtn").addEventListener("click",newTx);
+$("addBtn").addEventListener("click",()=>{ if(S.tab==="work"&&!S.open&&!S.openProj&&!S.openLoan) openShift(null,S.workDay||""); else newTx(); });
 /* the floating + slides away while you scroll down a list and comes back on the way up */
 (function(){ let lastY=0,away=false;
   addEventListener("scroll",()=>{ const b=$("addBtn"); if(!b||b.hidden) return; const y=Math.max(0,scrollY); if(Math.abs(y-lastY)<8) return;
