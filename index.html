@@ -2550,10 +2550,15 @@ function lentSection(){
   const out=P.reduce((s,r)=>s+r.left,0);
   let h='<section class="grp"><h2 id="g-lent"><span>Loans to others</span><span class="h2r"><span class="gsum pos">'+money(out)+'</span>'+secAdd('data-addfor="lend"','hand','Lend money')+'</span></h2>';
   if(!P.length) return h+'<div class="empty">When you lend money, log it as an expense with the category <b>Lent to others</b> and write who it is for. It shows up here so you can track repayments.</div></section>';
-  h+='<div class="list">'+P.map(r=>{ const st=lentStatus(r), pct=r.lent?Math.min(100,r.repaid/r.lent*100):100;
+  const row=r=>{ const st=lentStatus(r), pct=r.lent?Math.min(100,r.repaid/r.lent*100):100;
     return '<button class="row" '+r.attr+'><span class="badge lent">'+esc(initials(r.name))+'</span><span class="main"><span class="t">'+esc(r.name)+' <span class="pill st-'+st.c+'">'+st.t+'</span></span>'+
       '<span class="ubar goal"><i style="width:'+pct.toFixed(1)+'%"></i></span><span class="m">'+(r.why?'For '+esc(r.why)+' · ':'')+'Lent '+money(r.lent)+' · repaid '+money(r.repaid)+'</span></span>'+
-      '<span class="amt '+(r.left>0?"":"mut")+'">'+money(r.left)+'<span class="owed">still owed</span></span></button>'; }).join("")+'</div></section>';
+      '<span class="amt '+(r.left>0?"":"mut")+'">'+money(r.left)+'<span class="owed">still owed</span></span></button>'; };
+  const open=P.filter(r=>r.left>0.004), done=P.filter(r=>r.left<=0.004);
+  h+=open.length?'<div class="list">'+open.map(row).join("")+'</div>'
+     :'<div class="empty">'+L("Nobody owes you right now.","Ahora mismo nadie te debe.")+'</div>';
+  if(done.length) h+='<details class="mdet"><summary>'+L("Settled","Ya saldados")+' ('+done.length+')</summary><div class="list" style="margin-top:8px">'+done.map(row).join("")+'</div></details>';
+  h+='</section>';
   return h;
 }
 function openLentPerson(name){
@@ -2927,13 +2932,18 @@ function viewLoans(){
   if(!mine.length) return h+'<div class="empty"><strong>No loans to pay</strong><span>Add a car loan, student loan or personal loan. Enter what is left today and log each payment as you make it.</span></div></section>';
   const monthly=mine.reduce((s,l)=>s+(+l.payment||0),0);
   h+='<div class="split" style="margin-bottom:12px"><div><div class="eyebrow">I still owe</div><div class="v neg">'+money(c.loansOwe)+'</div></div><div><div class="eyebrow">Monthly payments</div><div class="v">'+money(monthly)+'</div></div></div>';
-  h+='<div class="list">'+mine.map(l=>{
+  const lrow=l=>{
     const left=c.loan[l.id], n=nextDue(l);
     const pill = n&&left>0 ? '<span class="pill'+(n.days<=5?" due":"")+'">'+esc(dueText(n))+'</span>' : (left<=0?'<span class="pill">Paid off</span>':'');
     const meta=[l.party||"Loan"]; if(+l.payment) meta.push(money(l.payment)+"/mo"); if(+l.rate) meta.push(l.rate+"% interest");
     return '<button class="row" data-openloan="'+esc(l.id)+'"><span class="badge loan">'+esc(initials(l.name))+'</span><span class="main"><span class="t">'+esc(l.name)+pill+'</span><span class="m">'+esc(meta.join(" · "))+'</span></span>'+
       '<span class="amt '+(left>0?"neg":"")+'">'+money(left)+'<span class="owed">left</span></span></button>';
-  }).join("")+'</div></section>';
+  };
+  const lopen=mine.filter(l=>(c.loan[l.id]||0)>0.004), ldone=mine.filter(l=>(c.loan[l.id]||0)<=0.004);
+  h+=lopen.length?'<div class="list">'+lopen.map(lrow).join("")+'</div>'
+     :'<div class="empty">'+L("Nothing left to pay off.","No te queda nada por pagar.")+'</div>';
+  if(ldone.length) h+='<details class="mdet"><summary>'+L("Paid off","Liquidados")+' ('+ldone.length+')</summary><div class="list" style="margin-top:8px">'+ldone.map(lrow).join("")+'</div></details>';
+  h+='</section>';
   return h;
 }
 function dIso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
