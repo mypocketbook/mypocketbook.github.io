@@ -105,6 +105,24 @@ button.row:hover{background:var(--sunk)}
 .wadd{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
 .wadd input{height:42px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:0.9375rem;color:var(--ink);min-width:0;font-family:inherit}
 .wadd .btn{height:42px}
+/* category picker */
+.catpick{display:grid;gap:14px}
+.catgrp{display:grid;gap:8px}
+.catwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:8px}
+.catlb,.catsh{margin:0;font-size:0.6875rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.catlb span,.catsh span{color:var(--muted)}
+.catc{display:flex;align-items:center;gap:7px;min-height:52px;padding:6px 10px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font-family:inherit;font-size:0.78125rem;line-height:1.2;cursor:pointer;text-align:left;min-width:0}
+.catc i{font-style:normal;font-size:1rem;line-height:1;flex:none}
+.catc>span{min-width:0;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:break-word}
+.catc u{text-decoration:none;font-size:0.6875rem;color:var(--muted);margin-left:auto;padding-left:4px;flex:none}
+.catc:hover{border-color:var(--muted)}
+.catc.on{border-color:var(--tint);border-width:2px;padding:5.5px 9.5px;background:color-mix(in srgb,var(--tint) 16%,var(--surface));font-weight:700}
+.catc.on u{color:var(--ink)}
+.catc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.catsub{display:grid;gap:8px;border:1px solid var(--line);border-radius:14px;background:var(--sunk);padding:12px}
+.catsub .catc{background:var(--surface)}
+.catmore{justify-self:start;border:0;background:none;color:var(--accent);font-family:inherit;font-size:0.875rem;font-weight:700;cursor:pointer;padding:0 2px;min-height:44px;text-align:left}
+.catmore:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .wli.wlall{display:block;text-align:center;color:var(--muted);font-size:0.875rem;padding:14px 12px}
 .calcwrap{position:relative}.calcwrap input{padding-right:50px!important}
 .calcbtn{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:10px;border:0;background:var(--sunk);color:var(--muted);display:grid;place-items:center;padding:0;cursor:pointer}
@@ -768,6 +786,31 @@ const CAT_MERGE = {"Loans":"Lent to others","Gas":"Transport & gas","Transport":
 const CAT_GONE = {"Other":1,"Gifts":1,"Gifts & other":1};
 function catOf(t){ const c=t&&t.category; if(!c||CAT_GONE[c]) return ""; return CAT_MERGE[c]||c; }
 const INC_CATS = ["Salary","Freelance",SHARE_IN,"Refund","Gift","Loan repayment","Other"];
+// Every spending category that splits in two levels. Picking the second level is required.
+const SUB_CATS = {
+  "Food & dining":["Restaurant","Takeout & delivery","Coffee","Snacks & drinks"],
+  "Groceries":["Supermarket","Market & produce","Warehouse club","Convenience store"],
+  "Transport & gas":["Gas station","Tolls","Parking","Rideshare & taxi","Car maintenance","Public transport"],
+  "Bills & utilities":["Internet & phone","Electricity","Water","Home gas","Trash","Insurance"],
+  "Rent / housing":["Rent","Mortgage","HOA & fees","Repairs","Furniture"],
+  "Shopping":["Home & kitchen","Clothing","Electronics","Gifts","Pets"],
+  "Health & personal care":["Doctor","Pharmacy","Dentist","Vision","Haircut & beauty","Gym"],
+  "Entertainment":["Movies & events","Going out","Games","Hobbies","Books"],
+  "Subscriptions":["Streaming","Music","Apps & software","Gaming","News"],
+  "Travel":["Flights","Lodging","Food on the trip","Getting around","Activities"]
+};
+const SUB_EMOJI = {"Restaurant":"\ud83c\udf7d\ufe0f","Takeout & delivery":"\ud83d\udef5","Coffee":"\u2615","Snacks & drinks":"\ud83e\udd64",
+  "Supermarket":"\ud83d\uded2","Market & produce":"\ud83e\udd6c","Warehouse club":"\ud83d\udce6","Convenience store":"\ud83c\udfea",
+  "Gas station":"\u26fd","Tolls":"\ud83d\udee3\ufe0f","Parking":"\ud83c\udd7f\ufe0f","Rideshare & taxi":"\ud83d\ude95","Car maintenance":"\ud83d\udd27","Public transport":"\ud83d\ude8c",
+  "Internet & phone":"\ud83d\udcf6","Electricity":"\u26a1","Water":"\ud83d\udca7","Home gas":"\ud83d\udd25","Trash":"\ud83d\uddd1\ufe0f","Insurance":"\ud83d\udee1\ufe0f",
+  "Rent":"\ud83d\udd11","Mortgage":"\ud83c\udfe6","HOA & fees":"\ud83d\udccb","Repairs":"\ud83d\udee0\ufe0f","Furniture":"\ud83d\udecb\ufe0f",
+  "Home & kitchen":"\ud83c\udf74","Clothing":"\ud83d\udc55","Electronics":"\ud83d\udcbb","Gifts":"\ud83c\udf81","Pets":"\ud83d\udc36",
+  "Doctor":"\ud83e\ude7a","Pharmacy":"\ud83d\udc8a","Dentist":"\ud83e\uddb7","Vision":"\ud83d\udc53","Haircut & beauty":"\u2702\ufe0f","Gym":"\ud83c\udfcb\ufe0f",
+  "Movies & events":"\ud83c\udfac","Going out":"\ud83c\udf78","Games":"\ud83c\udfae","Hobbies":"\ud83e\uddf6","Books":"\ud83d\udcda",
+  "Streaming":"\ud83d\udcfa","Music":"\ud83c\udfb5","Apps & software":"\ud83d\udcbe","Gaming":"\ud83d\udd79\ufe0f","News":"\ud83d\udcf0",
+  "Flights":"\u2708\ufe0f","Lodging":"\ud83c\udfe8","Food on the trip":"\ud83c\udf5c","Getting around":"\ud83d\ude87","Activities":"\ud83c\udfab"};
+function subsOf(cat){ return SUB_CATS[cat]||null; }
+function subOf(t){ const c=catOf(t), l=subsOf(c); const v=t&&t.subcat; return l&&v&&l.indexOf(v)>=0?v:""; }
 
 /* ===== Look: Day/Night, color palettes, automatic seasonal themes ===== */
 const PALETTES={
@@ -926,7 +969,9 @@ const ES={
 "Happy Halloween!":"¡Feliz Noche de Brujas!","Merry Christmas!":"¡Feliz Navidad!","Happy New Year!":"¡Feliz Año Nuevo!","Happy Valentine's Day!":"¡Feliz San Valentín!","Happy St. Patrick's Day!":"¡Feliz Día de San Patricio!","Happy spring!":"¡Feliz primavera!","Happy 4th of July!":"¡Feliz 4 de julio!","Enjoy the summer!":"¡Disfruta el verano!","Happy fall!":"¡Feliz otoño!","Happy Thanksgiving!":"¡Feliz Día de Acción de Gracias!",
 "Halloween":"Noche de Brujas","Christmas":"Navidad","New Year":"Año Nuevo","Valentine's":"San Valentín","St. Patrick's":"San Patricio","Spring":"Primavera","4th of July":"4 de julio","Summer":"Verano","Fall":"Otoño","Thanksgiving":"Acción de Gracias",
 /* home */
-"Net balance":"Balance neto","of goals":"de las metas","Your checking accounts, minus what you owe on credit cards. Savings, cash, projects and loans are kept apart.":"Tus cuentas corrientes, menos lo que debes en tarjetas de crédito. Ahorros, efectivo, proyectos y préstamos van aparte.","Net balance change so far":"Cambio del balance neto hasta hoy","Net balance change":"Cambio del balance neto","Everything you have plus what people owe you, minus what you owe on cards and loans.":"Todo lo que tienes más lo que te deben, menos lo que debes en tarjetas y préstamos.","Your money":"Tu dinero","Available":"Disponible","Cards owe":"Tarjetas","Savings":"Ahorros","Owed to me":"Me deben","Loans I owe":"Mis préstamos","All months":"Todos los meses","Net balance change so far":"Cambio del balance hasta hoy","Net balance change":"Cambio del balance","Closed at":"Cerró en","Spent":"Gastado","spent":"gastado","Income":"Ingresos","Card payments":"Pagos de tarjeta","Cash back":"Cashback","Loan payments":"Pagos de préstamos","Spending by category":"Gastos por categoría","Tap a category to see its transactions.":"Toca una categoría para ver sus transacciones.","Tap \"Needs a category\" to see those expenses and pick one for each.":"Toca \"Necesita categoría\" para ver esos gastos y elegir una para cada uno.","See these transactions":"Ver estas transacciones","Top 3 changes":"Los 3 cambios más grandes","No changes yet this month.":"Aún no hay cambios este mes.","Improved":"Mejoraron","Went the other way":"Empeoraron","Closing balances":"Saldos al cierre","Credit cards":"Tarjetas de crédito","Checking and cash":"Cuentas corrientes y efectivo","Personal savings":"Ahorros personales","Add card limits":"Agrega los límites","No limit set":"Sin límite","owed":"debe","+ Add":"+ Agregar","+ Add money":"+ Agregar dinero","+ Add account":"+ Agregar cuenta","+ Add transaction":"+ Agregar transacción","+ New transaction":"+ Nueva transacción","+ Lend":"+ Prestar","+ Log payment":"+ Registrar pago","+ Log repayment":"+ Registrar devolución","Add account":"Agregar cuenta","Add a transaction":"Agregar una transacción","Add transaction":"Agregar transacción","An expense, income or transfer":"Un gasto, ingreso o transferencia","A purchase with one of your cards":"Una compra con una de tus tarjetas","Move money into one of your savings":"Pasar dinero a uno de tus ahorros","Set up your accounts":"Configura tus cuentas","Add the places your money lives, then log what you spend, earn and move.":"Agrega dónde está tu dinero y luego registra lo que gastas, ganas y mueves.","Add Checking, Credit card and Cash":"Agregar cuenta corriente, tarjeta y efectivo","Add one account myself":"Agregar una cuenta yo mismo","Open an account to see its transactions and add new ones.":"Abre una cuenta para ver sus transacciones y agregar nuevas.",
+"Net balance":"Balance neto",
+"Restaurant":"Restaurante","Takeout & delivery":"Para llevar y domicilio","Coffee":"Café","Snacks & drinks":"Antojos y bebidas","Supermarket":"Supermercado grande","Market & produce":"Mercado y verdulería","Warehouse club":"Club de mayoreo","Convenience store":"Tienda de la esquina","Gas station":"Gasolinera","Tolls":"Peajes","Parking":"Estacionamiento","Rideshare & taxi":"Uber y taxi","Car maintenance":"Mantenimiento del auto","Public transport":"Transporte público","Internet & phone":"Internet y teléfono","Electricity":"Electricidad","Water":"Agua","Home gas":"Gas del hogar","Trash":"Basura","Insurance":"Seguro","Rent":"Renta","Mortgage":"Hipoteca","HOA & fees":"HOA y cuotas","Repairs":"Reparaciones","Furniture":"Muebles","Home & kitchen":"Casa y cocina","Clothing":"Ropa","Electronics":"Electrónica","Gifts":"Regalos","Pets":"Mascotas","Doctor":"Médico","Pharmacy":"Farmacia","Dentist":"Dentista","Vision":"Óptica","Haircut & beauty":"Peluquería y belleza","Gym":"Gimnasio","Movies & events":"Cine y eventos","Going out":"Salidas","Games":"Juegos","Hobbies":"Pasatiempos","Books":"Libros","Streaming":"Streaming","Music":"Música","Apps & software":"Apps y software","Gaming":"Videojuegos","News":"Noticias","Flights":"Vuelos","Lodging":"Hospedaje","Food on the trip":"Comida del viaje","Getting around":"Transporte del viaje","Activities":"Actividades","Subcategory":"Subcategoría","Show all categories":"Ver todas las categorías","Most used":"Más usadas","Suggested":"Sugeridas","Pick a subcategory so you can see where your money really goes.":"Elige una subcategoría para ver bien a dónde va tu dinero.","Inside":"Dentro de",
+"of goals":"de las metas","Your checking accounts, minus what you owe on credit cards. Savings, cash, projects and loans are kept apart.":"Tus cuentas corrientes, menos lo que debes en tarjetas de crédito. Ahorros, efectivo, proyectos y préstamos van aparte.","Net balance change so far":"Cambio del balance neto hasta hoy","Net balance change":"Cambio del balance neto","Everything you have plus what people owe you, minus what you owe on cards and loans.":"Todo lo que tienes más lo que te deben, menos lo que debes en tarjetas y préstamos.","Your money":"Tu dinero","Available":"Disponible","Cards owe":"Tarjetas","Savings":"Ahorros","Owed to me":"Me deben","Loans I owe":"Mis préstamos","All months":"Todos los meses","Net balance change so far":"Cambio del balance hasta hoy","Net balance change":"Cambio del balance","Closed at":"Cerró en","Spent":"Gastado","spent":"gastado","Income":"Ingresos","Card payments":"Pagos de tarjeta","Cash back":"Cashback","Loan payments":"Pagos de préstamos","Spending by category":"Gastos por categoría","Tap a category to see its transactions.":"Toca una categoría para ver sus transacciones.","Tap \"Needs a category\" to see those expenses and pick one for each.":"Toca \"Necesita categoría\" para ver esos gastos y elegir una para cada uno.","See these transactions":"Ver estas transacciones","Top 3 changes":"Los 3 cambios más grandes","No changes yet this month.":"Aún no hay cambios este mes.","Improved":"Mejoraron","Went the other way":"Empeoraron","Closing balances":"Saldos al cierre","Credit cards":"Tarjetas de crédito","Checking and cash":"Cuentas corrientes y efectivo","Personal savings":"Ahorros personales","Add card limits":"Agrega los límites","No limit set":"Sin límite","owed":"debe","+ Add":"+ Agregar","+ Add money":"+ Agregar dinero","+ Add account":"+ Agregar cuenta","+ Add transaction":"+ Agregar transacción","+ New transaction":"+ Nueva transacción","+ Lend":"+ Prestar","+ Log payment":"+ Registrar pago","+ Log repayment":"+ Registrar devolución","Add account":"Agregar cuenta","Add a transaction":"Agregar una transacción","Add transaction":"Agregar transacción","An expense, income or transfer":"Un gasto, ingreso o transferencia","A purchase with one of your cards":"Una compra con una de tus tarjetas","Move money into one of your savings":"Pasar dinero a uno de tus ahorros","Set up your accounts":"Configura tus cuentas","Add the places your money lives, then log what you spend, earn and move.":"Agrega dónde está tu dinero y luego registra lo que gastas, ganas y mueves.","Add Checking, Credit card and Cash":"Agregar cuenta corriente, tarjeta y efectivo","Add one account myself":"Agregar una cuenta yo mismo","Open an account to see its transactions and add new ones.":"Abre una cuenta para ver sus transacciones y agregar nuevas.",
 /* subs */
 "Subs":"Subs","Bills":"Pagos","Add what you pay every month \u2014 streaming, rent, insurance, phone \u2014 and Pocketbook shows you what is coming up and what it adds up to in a year.":"Agrega lo que pagas cada mes \u2014 streaming, renta, seguro, tel\u00e9fono \u2014 y Pocketbook te muestra lo que viene y cu\u00e1nto suma en un a\u00f1o.","Add a payment":"Agregar un pago","Subscriptions":"Suscripciones","Nothing tracked yet":"Aún no sigues ninguna","Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.":"Agrega lo que pagas cada mes (streaming, teléfono, programas) y Pocketbook te muestra cuánto suma en un año.","Add a subscription":"Agregar una suscripción","Every month":"Cada mes","Every year":"Cada año","Found in your transactions":"Encontradas en tus transacciones","These charges repeat. Only you can say whether they are subscriptions.":"Estos cargos se repiten. Solo tú puedes decir si son suscripciones.","Not a subscription":"No es una suscripción","Track it":"Seguirla","Tracked":"Las que sigues","New subscription":"Nueva suscripción","Edit subscription":"Editar suscripción","How often":"Cada cuánto","Monthly":"Mensual","Yearly":"Anual","Subscription updated":"Suscripción actualizada","Give the subscription a name.":"Ponle un nombre a la suscripción.",
 /* metas en cuentas y anillos que se vacían */
@@ -3121,6 +3166,53 @@ function updTxPrev(){
   const late=ids.some(id=>!counts(t,id));
   box.innerHTML=rows.length?'<div class="tph">Balances '+(amt?'after this':'now')+'</div>'+rows.join("")+(late?'<p class="hint" style="margin:6px 0 0">This date is before an account\'s starting balance, so that account won\'t change.</p>':''):'';
 }
+/* ---------- category picker: suggestions, full grid, and the second level inline ---------- */
+function catUses(type){
+  const m={}; S.txns.forEach(t=>{ if(t.type!==type) return; const c=catOf(t); if(!c) return; m[c]=(m[c]||0)+1; });
+  return Object.keys(m).sort((a,b)=>m[b]-m[a]);
+}
+function catForPayee(type,name){
+  const k=String(name||"").trim().toLowerCase(); if(k.length<2) return [];
+  const m={}; S.txns.forEach(t=>{ if(t.type!==type) return; const n=String(t.payee||t.payer||t.desc||"").trim().toLowerCase();
+    if(!n||(n!==k&&n.indexOf(k)<0&&k.indexOf(n)<0)) return; const c=catOf(t)||t.category; if(!c) return;
+    const key=c+"\u0000"+(t.subcat||""); m[key]=(m[key]||0)+1; });
+  return Object.keys(m).sort((a,b)=>m[b]-m[a]).map(k=>k.split("\u0000"));
+}
+function catChip(cat,on,sub){
+  const tint=CAT_COLORS[cat]||"#868E96";
+  return '<button type="button" class="catc'+(on?' on':'')+(sub?' sub':'')+'" data-'+(sub?'subpick':'catpick')+'="'+esc(cat)+'" aria-pressed="'+(!!on)+'" style="--tint:'+tint+'">'+
+    '<i aria-hidden="true">'+((sub?SUB_EMOJI[cat]:CAT_EMOJI[cat])||"\ud83e\uddfe")+'</i><span>'+esc(cat)+'</span>'+(!sub&&subsOf(cat)?'<u aria-hidden="true">'+(on?"\u25be":"\u203a")+'</u>':'')+'</button>';
+}
+function catPickInner(t){
+  const list=t.type==="income"?INC_CATS:EXP_CATS, cur=t.type==="expense"?catOf(t):(t.category||"");
+  const subs=subsOf(cur), curSub=subs&&subs.indexOf(t.subcat)>=0?t.subcat:"";
+  let h="";
+  if(!cur){
+    const name=t.type==="income"?(t.payer||t.desc):(t.payee||t.desc);
+    const hits=catForPayee(t.type,name).filter(x=>list.indexOf(x[0])>=0).slice(0,2);
+    const used=catUses(t.type).filter(c=>list.indexOf(c)>=0&&!hits.some(x=>x[0]===c)).slice(0,3);
+    if(hits.length) h+='<div class="catgrp"><p class="catlb"><span>'+L("For","Para")+'</span> '+esc(String(name).trim().slice(0,22))+'</p><div class="catwrap">'+hits.map(x=>catChip(x[0],false)).join("")+'</div></div>';
+    if(used.length) h+='<div class="catgrp"><p class="catlb"><span>'+L("Most used","Más usadas")+'</span></p><div class="catwrap">'+used.map(c=>catChip(c,false)).join("")+'</div></div>';
+    if(!t.catAll&&(hits.length||used.length)) h+='<button type="button" class="catmore" data-catall="1">'+L("Show all categories","Ver todas las categorías")+' \u203a</button>';
+    else h+='<div class="catwrap">'+list.map(c=>catChip(c,false)).join("")+'</div>';
+  } else {
+    h+='<div class="catwrap">'+list.map(c=>catChip(c,c===cur)).join("")+'</div>';
+    if(subs) h+='<div class="catsub"><p class="catsh"><span aria-hidden="true">'+(CAT_EMOJI[cur]||"")+'</span> <span>'+L("Inside","Dentro de")+'</span> <span>'+esc(cur)+'</span></p><div class="catwrap">'+subs.map(x=>catChip(x,x===curSub,true)).join("")+'</div></div>';
+  }
+  return h;
+}
+function catField(t){
+  const cur=t.type==="expense"?catOf(t):(t.category||"");
+  return '<div class="field"><label id="catLbl">'+(subsOf(cur)?L("Category and subcategory","Categoría y subcategoría"):"Category")+'</label>'+
+    '<input type="hidden" id="f_cat" value="'+esc(cur)+'"><input type="hidden" id="f_subcat" value="'+esc(t.subcat||"")+'">'+
+    '<div class="catpick" id="catPick" role="group" aria-labelledby="catLbl">'+catPickInner(t)+'</div></div>';
+}
+function catRefresh(){
+  const el=$("catPick"); if(!el) return;
+  draft.category=($("f_cat")||{}).value||""; draft.subcat=($("f_subcat")||{}).value||"";
+  el.innerHTML=catPickInner(draft);
+  const lb=$("catLbl"); if(lb) lb.textContent=subsOf(draft.category)?L("Category and subcategory","Categoría y subcategoría"):L("Category","Categoría");
+}
 function borrowerField(t,label,hide){
   const bound=t.type==="income"&&t.category===REPAY?String(t.lentKey||"").trim():"";
   const names=bound?[]:lentPeople().map(r=>r.name);
@@ -3178,13 +3270,13 @@ function renderTx(errMsg){
   if(t.type==="expense"){
     h+='<div class="field"><label for="f_from">Paid with</label><select id="f_from">'+opts(acctOpts(credit).concat(acctOpts(liquid)),t.from,"Choose card or account")+'</select></div>';
     h+='<div class="field"><label for="f_payee">Destination: who you paid</label><input id="f_payee" list="payees" maxlength="60" placeholder="e.g. Publix, Shell, Netflix" value="'+esc(t.payee)+'"><datalist id="payees">'+payeeList().map(p=>'<option value="'+esc(p)+'"></option>').join("")+'</datalist></div>';
-    h+='<div class="field"><label for="f_cat">Category</label><select id="f_cat">'+opts(EXP_CATS.map(c=>({v:c,l:c})),t.type==="expense"?catOf(t):"","Choose a category")+'</select></div>';
+    h+=catField(t);
     h+=borrowerField(t,"Lent to (who owes you)",catOf(t)!==LENT);
     h+=projField(t,"For a project? (optional)","No project");
   } else if(t.type==="income"){
     h+='<div class="field" id="f_payerF"'+(t.category===REPAY?' hidden':'')+'><label for="f_payer">Received from (optional)</label><input id="f_payer" maxlength="60" placeholder="e.g. Employer name" value="'+esc(t.payer)+'"></div>';
     h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(),t.to,"Choose account")+'</select></div>';
-    h+='<div class="field"><label for="f_cat">Category</label><select id="f_cat">'+opts(INC_CATS.map(c=>({v:c,l:c})),t.category,"Choose a category")+'</select></div>';
+    h+=catField(t);
     h+=borrowerField(t,"Paid back by",t.category!==REPAY);
     h+=projField(t,"Save it for a project (optional)","No project");
   } else if(t.type==="transfer"){
@@ -3242,7 +3334,7 @@ function renderTx(errMsg){
     fcat.addEventListener("change",sync); ["f_borrower","f_amount"].forEach(id=>{const el=$(id); if(el) el.addEventListener("input",updRepayHint);}); updRepayHint();
     const auto=()=>{ const b=$("f_borrower"); if(!b) return;
       if(draft.type==="income"){ const txt=(($("f_desc")||{}).value||"")+" "+(($("f_payer")||{}).value||""); const r=detectBorrower(txt);
-        if(r&&!fcat.value){ fcat.value=REPAY; fcat.classList.add("flash"); setTimeout(()=>fcat.classList.remove("flash"),700); sync(); } }
+        if(r&&!fcat.value){ fcat.value=REPAY; catRefresh(); sync(); } }
       else if(draft.type==="expense"&&fcat.value===LENT&&!b.dataset.typed){ const txt=($("f_desc")||{}).value||""; const r=detectBorrower(txt); const n=r?r.name:nameInDesc(txt); if(n) b.value=n; }
     };
     ["f_desc","f_payer"].forEach(id=>{const el=$(id); if(el) el.addEventListener("input",auto);}); fcat.addEventListener("change",auto);
@@ -3271,7 +3363,7 @@ function loanDefaults(){
 }
 function readTxForm(){
   const g=id=>{const el=$(id);return el?el.value.trim():undefined;};
-  const map={amount:"f_amount",date:"f_date",desc:"f_desc",from:"f_from",to:"f_to",category:"f_cat",project:"f_proj",payee:"f_payee",payer:"f_payer",loan:"f_loan",interest:"f_int",borrower:"f_borrower"};
+  const map={amount:"f_amount",date:"f_date",desc:"f_desc",from:"f_from",to:"f_to",category:"f_cat",subcat:"f_subcat",project:"f_proj",payee:"f_payee",payer:"f_payer",loan:"f_loan",interest:"f_int",borrower:"f_borrower"};
   for(const k in map){const v=g(map[k]); if(v!==undefined) draft[k]=v;}
   if(document.querySelector("[data-sp]")) draft.parts=readSplit();
 }
@@ -3282,6 +3374,8 @@ async function submitTx(e){
   if(!(amt>0)) return renderTx("Enter an amount greater than zero.");
   if(!t.desc) return renderTx("Add a short description.");
   if((t.type==="expense"||t.type==="income")&&!t.category) return renderTx("Choose a category so you can see where your money goes.");
+  const subList=t.type==="expense"?subsOf(catOf(t)):null;
+  if(subList&&subList.indexOf(t.subcat)<0) return renderTx(L("Pick a subcategory so you can see where your money really goes.","Elige una subcategoría para ver bien a dónde va tu dinero."));
   if(((t.type==="expense"&&t.category===LENT)||(t.type==="income"&&t.category===REPAY))&&!String(t.borrower||"").trim()) return renderTx(t.type==="expense"?"Write who you lent the money to.":"Write who paid you back.");
   const lentLoan = t.type==="loanpay" && loanById(t.loan) && loanById(t.loan).dir==="lent";
   const need={expense:["from","payee"],income:["to"],transfer:["from","to"],cardpay:["from","to"],save:["from","project"],loanpay:["loan",lentLoan?"to":"from"]}[t.type];
@@ -3294,6 +3388,7 @@ async function submitTx(e){
     to:["income","transfer","cardpay"].includes(t.type)?t.to:"",
     payee:t.type==="expense"?t.payee:"", payer:t.type==="income"?(t.category===REPAY?String(t.borrower||"").trim():(t.payer||"")):"",
     category:["expense","income"].includes(t.type)?(t.category||""):"",
+    subcat:(t.type==="expense"&&subList)?String(t.subcat||""):"",
     project:["save","expense","transfer","income","cardpay"].includes(t.type)?(t.split?"":(t.project||"")):"",
     borrower:((t.type==="expense"&&t.category===LENT)||(t.type==="income"&&t.category===REPAY))?String(t.borrower||"").trim():"",
     lentKey:(t.type==="income"&&t.category===REPAY)?String(t.lentKey||"").trim():""};
@@ -3460,6 +3555,14 @@ document.addEventListener("click",async e=>{
   const b=e.target.closest("button");
   if(!b){ const card=e.target.closest("[data-cardopen]"); if(card){ S.openProj=card.dataset.cardopen;S.open=null;S.openLoan=null;render();window.scrollTo(0,0); } return; }
   const ds=b.dataset;
+  if(ds.catpick!==undefined){ const same=draft.category===ds.catpick;
+    draft.category=same?"":ds.catpick; const sl=subsOf(draft.category);
+    if(!sl||sl.indexOf(draft.subcat)<0) draft.subcat="";
+    const fc=$("f_cat"), fs=$("f_subcat"); if(fc) fc.value=draft.category; if(fs) fs.value=draft.subcat;
+    catRefresh(); if(fc) fc.dispatchEvent(new Event("change",{bubbles:true})); return; }
+  if(ds.subpick!==undefined){ draft.subcat=draft.subcat===ds.subpick?"":ds.subpick;
+    const fs=$("f_subcat"); if(fs) fs.value=draft.subcat; catRefresh(); return; }
+  if(ds.catall){ draft.catAll=true; catRefresh(); return; }
   if(ds.calfor){ if(CAL&&CAL.for===ds.calfor) closeCal(); else openCal(ds.calfor); return; }
   if(ds.calnav){ const [y,m]=CAL.ym.split("-").map(Number); const d=new Date(y,m-1+(+ds.calnav),1); CAL.ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); drawCal(); return; }
   if(ds.calday){ pickDay(ds.calday); return; }
