@@ -133,6 +133,7 @@ button.psn:hover{color:var(--accent);text-decoration:underline}
 .pspc{font-family:var(--f-num);font-size:0.75rem;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
 .psv{font-family:var(--f-num);font-size:0.8125rem;font-variant-numeric:tabular-nums}
 .psfoot{margin:0}
+.psfix{margin-top:9px;width:100%;font-size:0.8125rem}
 .catpick{display:grid;gap:12px}
 .catgrp{display:grid;gap:8px}
 .catwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:8px}
@@ -2812,9 +2813,29 @@ function projSplitBlock(c){
         '<button type="button" class="psn" data-cardopen="'+esc(r.p.id)+'">'+esc(r.p.name)+'</button>'+
         '<span class="pspc">'+Math.round(Math.max(0,r.amt)/whole*100)+'%</span><span class="psv">'+money(r.amt)+'</span></div>').join("")+
       (Math.abs(free)>0.004?'<div class="psrow free"><span class="psd" aria-hidden="true"></span><span class="psn">'+(free>0?L("Not assigned to a project","Sin asignar a un proyecto"):L("Assigned beyond the balance","Asignado de más"))+'</span><span class="pspc">'+(free>0?Math.round(free/whole*100)+'%':'')+'</span><span class="psv'+(free<0?' neg':'')+'">'+money(Math.abs(free))+'</span></div>':'')+
-      '</div></div><p class="hint psfoot">'+L("Account balance","Saldo de la cuenta")+' '+money(bal)+'</p></div>';
+      '</div></div><p class="hint psfoot">'+L("Account balance","Saldo de la cuenta")+' '+money(bal)+'</p>'+
+      (free<-0.004?'<button type="button" class="btn psfix" data-fixacct="'+esc(aid)+'">'+L("This money moved — point the project at it","Este dinero se mudó: apunta el proyecto allá")+'</button>':'')+'</div>';
   });
   return h+'</section>';
+}
+// A project still parked in an account that no longer holds the money: find the transfer that carried it out.
+function openMovedFund(aid){
+  const W=projLedger().where, mine=[];
+  S.projects.forEach(p=>{ const v=(W[p.id]||{})[aid]; if(v>0.004) mine.push({p,amt:v}); });
+  mine.sort((a,b)=>b.amt-a.amt);
+  if(!mine.length) return;
+  const pid=mine[0].p.id, held=mine[0].amt;
+  const outs=S.txns.filter(t=>t.type==="transfer"&&t.from===aid&&!t.project&&!isSplit(t))
+    .sort((a,b)=>Math.abs((+a.amount||0)-held)-Math.abs((+b.amount||0)-held)||(b.date||"").localeCompare(a.date||"")).slice(0,8);
+  let h=sheetHead(L("Where did this money go?","¿A dónde se fue este dinero?"))+
+    '<p>'+L("<b>"+esc(acctName(aid))+"</b> holds "+money(mine.reduce((s,x)=>s+x.amt,0))+" of project money but no longer has the balance for it.","<b>"+esc(acctName(aid))+"</b> tiene "+money(mine.reduce((s,x)=>s+x.amt,0))+" de dinero de proyectos, pero ya no tiene el saldo.")+'</p>'+
+    '<p class="hint">'+L("Pick the transfer that carried it out and the project rides along, changing account without changing size. A transfer that carried more than the project had says so on its row.",
+            "Elige la transferencia que se lo llevó y el proyecto se va con ella: cambia de cuenta sin cambiar de tamaño. Si una transferencia llevaba más de lo que el proyecto tenía, su fila te lo avisa.")+'</p>';
+  h+=outs.length?'<div class="list">'+outs.map(t=>'<button class="row" data-movedtx="'+esc(t.id)+'" data-movedpid="'+esc(pid)+'"><span class="badge tx" style="--tint:#1C7ED6" aria-hidden="true">\u21c4</span>'+
+      '<span class="main"><span class="t">'+esc(t.desc||L("Transfer","Transferencia"))+'</span><span class="m">'+esc(dayName(t.date))+' \u00b7 '+esc(acctName(t.from))+' \u2192 '+esc(acctName(t.to))+'</span></span>'+
+      '<span class="amt">'+money(t.amount)+(((+t.amount||0)-held)>0.005?'<span class="owed">+'+money((+t.amount||0)-held)+' '+L("to the fund","al fondo")+'</span>':'')+'</span></button>').join("")+'</div>'
+    :'<div class="empty">'+L("No untagged transfer out of this account yet. Record the transfer first, then come back.","Aún no hay una transferencia sin proyecto saliendo de esta cuenta. Regístrala primero y vuelve.")+'</div>';
+  openSheet(h);
 }
 function viewProjects(){
   const c=compute();
@@ -3379,7 +3400,7 @@ function updRepayHint(){
 }
 function openTx(tx,preset){
   if(!S.accounts.length){toast("Add an account first.");S.tab="home";S.open=null;render();return;}
-  draft = tx? Object.assign({},tx,{desc:tx.desc||tx.note||"",split:isSplit(tx)}) : Object.assign({type:"expense",date:todayStr(),amount:"",from:"",to:"",category:"",project:"",desc:"",payee:"",payer:""},preset||{});
+  draft = tx? Object.assign({},tx,{desc:tx.desc||tx.note||"",split:isSplit(tx)},preset||{}) : Object.assign({type:"expense",date:todayStr(),amount:"",from:"",to:"",category:"",project:"",desc:"",payee:"",payer:""},preset||{});
   if(!tx&&!(preset&&preset.type)){
     const a=draft.ctx&&acctById(draft.ctx);
     if(a&&a.type==="checking") draft.type="cardpay";
@@ -3709,6 +3730,8 @@ document.addEventListener("click",async e=>{
   if(ds.subpick!==undefined){ draft.subcat=draft.subcat===ds.subpick?"":ds.subpick;
     const fs=$("f_subcat"); if(fs) fs.value=draft.subcat; catRefresh(); return; }
   if(ds.catall){ draft.catAll=true; catRefresh(); return; }
+  if(ds.fixacct){ openMovedFund(ds.fixacct); return; }
+  if(ds.movedtx){ const t=S.txns.find(x=>x.id===ds.movedtx); if(t){ closeSheet(); openTx(t,{project:ds.movedpid}); } return; }
   if(ds.calfor){ if(CAL&&CAL.for===ds.calfor) closeCal(); else openCal(ds.calfor); return; }
   if(ds.calnav){ const [y,m]=CAL.ym.split("-").map(Number); const d=new Date(y,m-1+(+ds.calnav),1); CAL.ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); drawCal(); return; }
   if(ds.calday){ pickDay(ds.calday); return; }
