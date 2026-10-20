@@ -106,10 +106,10 @@ button.row:hover{background:var(--sunk)}
 .wadd input{height:42px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:0.9375rem;color:var(--ink);min-width:0;font-family:inherit}
 .wadd .btn{height:42px}
 /* category picker */
-.catpick{display:grid;gap:14px}
+.catpick{display:grid;gap:12px}
 .catgrp{display:grid;gap:8px}
 .catwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:8px}
-.catlb,.catsh{margin:0;font-size:0.6875rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.catlb,.catsh{margin:0;font-size:0.6875rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .catlb span,.catsh span{color:var(--muted)}
 .catc{display:flex;align-items:center;gap:7px;min-height:52px;padding:6px 10px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font-family:inherit;font-size:0.78125rem;line-height:1.2;cursor:pointer;text-align:left;min-width:0}
 .catc i{font-style:normal;font-size:1rem;line-height:1;flex:none}
@@ -3256,7 +3256,8 @@ function catForPayee(type,name){
 }
 function catChip(cat,on,sub){
   const tint=CAT_COLORS[cat]||"#868E96";
-  return '<button type="button" class="catc'+(on?' on':'')+(sub?' sub':'')+'" data-'+(sub?'subpick':'catpick')+'="'+esc(cat)+'" aria-pressed="'+(!!on)+'" style="--tint:'+tint+'">'+
+  const par=!sub&&subsOf(cat);
+  return '<button type="button" class="catc'+(on?' on':'')+(sub?' sub':'')+'" data-'+(sub?'subpick':'catpick')+'="'+esc(cat)+'" aria-pressed="'+(!!on)+'"'+(par?' aria-expanded="'+(!!on)+'" aria-controls="catSub"':'')+' style="--tint:'+tint+'">'+
     '<i aria-hidden="true">'+((sub?SUB_EMOJI[cat]:CAT_EMOJI[cat])||"\ud83e\uddfe")+'</i><span>'+esc(cat)+'</span>'+(!sub&&subsOf(cat)?'<u aria-hidden="true">'+(on?"\u25be":"\u203a")+'</u>':'')+'</button>';
 }
 function catPickInner(t){
@@ -3273,7 +3274,7 @@ function catPickInner(t){
     else h+='<div class="catwrap">'+list.map(c=>catChip(c,false)).join("")+'</div>';
   } else {
     h+='<div class="catwrap">'+list.map(c=>catChip(c,c===cur)).join("")+'</div>';
-    if(subs) h+='<div class="catsub"><p class="catsh"><span aria-hidden="true">'+(CAT_EMOJI[cur]||"")+'</span> <span>'+L("Inside","Dentro de")+'</span> <span>'+esc(cur)+'</span></p><div class="catwrap">'+subs.map(x=>catChip(x,x===curSub,true)).join("")+'</div></div>';
+    if(subs) h+='<div class="catsub" id="catSub" role="group" aria-labelledby="catSubH"><p class="catsh" id="catSubH"><span aria-hidden="true">'+(CAT_EMOJI[cur]||"")+'</span> <span>'+L("Inside","Dentro de")+'</span> <span>'+esc(cur)+'</span></p><div class="catwrap">'+subs.map(x=>catChip(x,x===curSub,true)).join("")+'</div></div>';
   }
   return h;
 }
