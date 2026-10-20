@@ -184,7 +184,9 @@ html[data-theme="light"] #seasonfx i{background:#A9C4D8}
 .ri .sw{width:10px;height:10px;border-radius:3px}.ri .rn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ri .rp{font-family:var(--f-num);font-size:0.8125rem;white-space:nowrap}.ri .rp em{font-style:normal;color:var(--muted);display:inline-block;min-width:42px;text-align:right;margin-left:8px}
 .pill.st-pos{background:color-mix(in srgb,var(--pos) 16%,var(--surface));color:var(--pos)}
-.pill.st-mid{background:color-mix(in srgb,#D9A400 18%,var(--surface));color:#C08F00}
+.pill.st-mid{background:color-mix(in srgb,#D9A400 18%,var(--surface));color:#A87A00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill.st-mid{color:#E0A800}}
+:root[data-theme="dark"] .pill.st-mid{color:#E0A800}
 .pill.st-neg{background:color-mix(in srgb,var(--neg) 14%,var(--surface));color:var(--neg)}
 .h2r{display:flex;align-items:baseline;gap:12px;min-width:0}
 .subh .h2r span{font-family:var(--f-num);letter-spacing:0;color:var(--save)}
@@ -956,7 +958,7 @@ const ES={
 /* misc messages */
 "Couldn't save. Check your connection and try again.":"No se pudo guardar. Revisa tu conexión e inténtalo otra vez.","You're offline. That change wasn't saved, try again when you're connected.":"No tienes conexión. Ese cambio no se guardó; inténtalo cuando estés conectado.","Can't reach your data right now. Showing the last saved copy.":"No se puede llegar a tus datos ahora. Mostrando la última copia guardada.","Updated with the latest saved data":"Actualizado con los últimos datos guardados","The app didn't load completely. Check your connection and reload.":"La app no cargó por completo. Revisa tu conexión y vuelve a cargar.","You'll need your email or username and your password to log in again on this device. Your data stays saved online.":"Necesitarás tu correo o usuario y tu contraseña para volver a entrar en este dispositivo. Tus datos siguen guardados en línea.","Wrong PIN.":"PIN incorrecto.","Net worth":"Patrimonio neto","Net worth change so far":"Cambio del patrimonio hasta hoy","Net worth change":"Cambio del patrimonio","Loans to others":"Préstamos a otros","My loans":"Mis préstamos","Log payment received":"Registrar pago recibido","+ Log payment received":"+ Registrar pago recibido","Your name or nickname":"Tu nombre o apodo","e.g. Alfredo":"ej. Alfredo","Tell us your name or nickname.":"Escribe tu nombre o apodo.","Add credit card":"Agregar tarjeta de crédito","Add savings account":"Agregar cuenta de ahorros","Add checking or cash account":"Agregar cuenta corriente o efectivo","Lend money":"Prestar dinero","Edit":"Editar","Log repayment":"Registrar devolución","Log payment":"Registrar pago","Payment history":"Historial de pagos","Enter":"Entrar","Language":"Idioma",
 "e.g. Car loan, Personal loan":"ej. Préstamo de auto, préstamo personal","e.g. bank or person":"ej. banco o persona","e.g. 15":"ej. 15","e.g. 6.9":"ej. 6.9","e.g. 7.2":"ej. 7.2","e.g. 36":"ej. 36","Not set":"Sin definir","e.g. Chase checking, Visa":"ej. Chase corriente, Visa","e.g. Vacation fund":"ej. Fondo de vacaciones","e.g. 1500":"ej. 1500","Item, like Floor mats":"Artículo, como alfombras","Price":"Precio","Item":"Artículo","e.g. Weekly groceries":"ej. Supermercado de la semana","e.g. October statement":"ej. Estado de cuenta de octubre","e.g. Paycheck Oct 1–15":"ej. Pago del 1 al 15 de oct","e.g. Employer name":"ej. Nombre del empleador","e.g. ATM withdrawal":"ej. Retiro del cajero","e.g. Raul":"ej. Raúl","e.g. SoFi loan payment":"ej. Pago del préstamo SoFi","e.g. Monthly deposit":"ej. Depósito mensual","e.g. alfredo":"ej. alfredo","Save it for a project (optional)":"Guárdalo para un proyecto (opcional)","Tip: write the project name in the description (e.g. \"Carmencita\") and it's detected automatically.":"Consejo: escribe el nombre del proyecto en la descripción (ej. \"Carmencita\") y se detecta solo.","still owed":"todavía debe","left":"restante","in progress":"en curso","Debt-free on":"Libre de deudas el","balance":"saldo","Saldo real":"Saldo real","No goal, it's an ongoing fund":"Sin meta, es un fondo continuo","Saving for something specific? Set a goal (optional)":"¿Ahorras para algo específico? Pon una meta (opcional)","Payments":"Pagos","Expense":"Gasto","Received from":"Recibido de","Paid you":"Te pagó","Paid back to you":"Te devolvió","Starting balance":"Saldo inicial","Before Pocketbook":"Antes de Pocketbook","How it works":"Cómo funciona","ⓘ How it works":"ⓘ Cómo funciona"
-,"Accounts added. Tap each one to set its balance.":"Cuentas agregadas. Toca cada una para poner su saldo.","Add a credit card account first":"Primero agrega una tarjeta de crédito","Add an account first.":"Primero agrega una cuenta.","Backup saved in the backups folder":"Copia guardada en la carpeta de copias","Brought in your data from the old Pocketbook":"Trajimos tus datos del Pocketbook anterior","Couldn't save it. Is the database set up?":"No se pudo guardar. ¿Está configurada la base de datos?","Couldn't save the backup file.":"No se pudo guardar el archivo de copia.","Couldn't save the backup. Reconnect the folder and try again.":"No se pudo guardar la copia. Vuelve a conectar la carpeta e inténtalo otra vez.","Couldn't save to the Pocketbook folder. Reconnect it and try again.":"No se pudo guardar en la carpeta de Pocketbook. Vuelve a conectarla e inténtalo otra vez.","Couldn't save. Safari's storage for this page is full or blocked.":"No se pudo guardar. El espacio de Safari para esta página está lleno o bloqueado.","Credit cards (card payment)":"Tarjetas de crédito (pago de tarjeta)","Loans (loan payment)":"Préstamos (pago de préstamo)","Data brought in":"Datos importados","Paid back by":"Devuelto por","Open calculator":"Abrir calculadora","Pocketbook lost access to its folder.":"Pocketbook perdió el acceso a su carpeta.","Save to project":"Guardar en un proyecto","Someone":"Alguien","What the priority colors mean":"Qué significan los colores de prioridad","already in balance":"ya incluido en el saldo","pocketbook-data.json in that folder couldn't be read. Restore a backup from the backups folder.":"No se pudo leer pocketbook-data.json en esa carpeta. Restaura una copia desde la carpeta de copias.","e.g. Publix, Shell, Netflix":"ej. Publix, Shell, Netflix","of your money":"de tu dinero","Choose card or account":"Elige tarjeta o cuenta","Filter by account":"Filtrar por cuenta","Loan direction":"Tipo de préstamo","Loan views":"Vistas del préstamo","Project type":"Tipo de proyecto","Transaction type":"Tipo de transacción","View":"Vista","closed":"cerrado","amount owed":"lo que debes","of limit":"del límite","Set a monthly payment to see when":"Pon un pago mensual para ver cuándo","Over the whole loan you pay about":"En todo el préstamo pagas cerca de","start of day":"inicio del día"
+,"Accounts added. Tap each one to set its balance.":"Cuentas agregadas. Toca cada una para poner su saldo.","Add a credit card account first":"Primero agrega una tarjeta de crédito","Add an account first.":"Primero agrega una cuenta.","Backup saved in the backups folder":"Copia guardada en la carpeta de copias","Brought in your data from the old Pocketbook":"Trajimos tus datos del Pocketbook anterior","Couldn't save it. Is the database set up?":"No se pudo guardar. ¿Está configurada la base de datos?","Couldn't save the backup file.":"No se pudo guardar el archivo de copia.","Couldn't save the backup. Reconnect the folder and try again.":"No se pudo guardar la copia. Vuelve a conectar la carpeta e inténtalo otra vez.","Couldn't save to the Pocketbook folder. Reconnect it and try again.":"No se pudo guardar en la carpeta de Pocketbook. Vuelve a conectarla e inténtalo otra vez.","Couldn't save. Safari's storage for this page is full or blocked.":"No se pudo guardar. El espacio de Safari para esta página está lleno o bloqueado.","Credit cards (card payment)":"Tarjetas de crédito (pago de tarjeta)","Loans (loan payment)":"Préstamos (pago de préstamo)","Data brought in":"Datos importados","Paid back by":"Devuelto por","Who paid (optional)":"Quién pagó (opcional)","Open calculator":"Abrir calculadora","Pocketbook lost access to its folder.":"Pocketbook perdió el acceso a su carpeta.","Save to project":"Guardar en un proyecto","Someone":"Alguien","What the priority colors mean":"Qué significan los colores de prioridad","already in balance":"ya incluido en el saldo","pocketbook-data.json in that folder couldn't be read. Restore a backup from the backups folder.":"No se pudo leer pocketbook-data.json en esa carpeta. Restaura una copia desde la carpeta de copias.","e.g. Publix, Shell, Netflix":"ej. Publix, Shell, Netflix","of your money":"de tu dinero","Choose card or account":"Elige tarjeta o cuenta","Filter by account":"Filtrar por cuenta","Loan direction":"Tipo de préstamo","Loan views":"Vistas del préstamo","Project type":"Tipo de proyecto","Transaction type":"Tipo de transacción","View":"Vista","closed":"cerrado","amount owed":"lo que debes","of limit":"del límite","Set a monthly payment to see when":"Pon un pago mensual para ver cuándo","Over the whole loan you pay about":"En todo el préstamo pagas cerca de","start of day":"inicio del día"
 ,"Shared bill · their share":"Gasto compartido · su parte","Shared bill · my share":"Gasto compartido · mi parte","Money leaving you: a store, a service, or a person you paid.":"Dinero que sale: una tienda, un servicio o una persona a la que le pagaste.","Money reaching you from someone else: your pay, a refund, or their share of a bill.":"Dinero que te llega de otra persona: tu pago, un reembolso o la parte que te toca de un gasto compartido.","Only between your own accounts. Money from or to another person is Income or Expense.":"Solo entre tus propias cuentas. El dinero que viene de otra persona o va para otra persona es Ingreso o Gasto.","Paying one of your credit cards from one of your accounts.":"Pagar una de tus tarjetas de crédito desde una de tus cuentas.","A payment on a loan: one you are paying off, or one someone is paying back to you.":"Un pago de un préstamo: uno que estás pagando o uno que te están devolviendo.","Moving your own money into a project.":"Mover tu propio dinero a un proyecto.","Both sides are yours: pick another of your accounts, or one of your cards or loans to log a payment. Choose a project to add this money to it.":"Las dos cuentas son tuyas: elige otra de tus cuentas, o una de tus tarjetas o préstamos para registrar un pago. Elige un proyecto para sumarle este dinero."
 };
 const MNY="([−\\-+]?\\$[\\d,]+(?:\\.\\d+)?)";
@@ -964,6 +966,7 @@ const ES_PAT=[
  [/^© (\d+) (.+)\. All rights reserved\.$/,"© $1 $2. Todos los derechos reservados."],
  [/^Couldn't (change it|create the account|save the new password|sign in): (.+)$/,m=>({"change it":"No se pudo cambiar","create the account":"No se pudo crear la cuenta","save the new password":"No se pudo guardar la nueva contraseña","sign in":"No se pudo iniciar sesión"})[m[1]]+": "+m[2]],
  [/^Full repayment: (.+) will be paid in full\.$/,"Devolución completa: $1 ya no te deberá nada."],
+ [/^Going to: (.+)$/,"Va a: $1"],
  [/^Still owed on this loan: (\$[\d,.]+)\.$/,"Falta por cobrar de este préstamo: $1."],
  [new RegExp("^Partial repayment: (.+) will still owe "+MNY+"\\.$"),"Devolución parcial: $1 todavía te deberá $2."],
  [new RegExp("^That's "+MNY+" more than (.+) owes \\("+MNY+"\\)\\.$"),"Son $1 más de lo que $2 te debe ($3)."],
@@ -1170,7 +1173,7 @@ function txDisplay(t){
   const a=+t.amount||0; let title, meta, sign="", cls="";
   const desc=t.desc||t.note||"";
   if(t.type==="expense"){title=t.payee?(t.payee+(desc&&desc.toLowerCase()!==t.payee.toLowerCase()?" – "+desc:"")):(desc||t.category||"Expense");meta="Paid with "+acctName(t.from)+(catOf(t)?" · "+catOf(t):"")+(t.project?" · from "+projName(t.project):"");sign="−";cls="neg";}
-  else if(t.type==="income"){title=desc||t.category||"Income";meta=(t.payer||"Income")+" → "+acctName(t.to);sign="+";cls="pos";}
+  else if(t.type==="income"){title=desc||t.category||"Income";meta=(t.payer||(t.category===REPAY?lentKeyOf(t):"")||"Income")+" → "+acctName(t.to);sign="+";cls="pos";}
   else if(t.type==="transfer"){title=desc||"Transfer";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
   else if(t.type==="cardpay"){title=desc||"Card payment";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
   else if(t.type==="save"&&isSplit(t)){title=desc||"Saved to projects";meta=acctName(t.from)+" → "+txParts(t).length+" projects";cls="pos";sign="+";}
@@ -2365,10 +2368,11 @@ function detectBorrower(text){
   const d=normWords(text); if(!d.trim()) return null;
   return lentPeople().filter(r=>r.lent>0).find(r=>{ const k=normWords(r.name).trim().split(" ")[0]; return k.length>=3&&d.includes(" "+k+" "); })||null;
 }
+function lentKeyOf(t){ return String(t.lentKey||"").trim()||borrowerOf(t); }
 function lentPeople(){
   const m={};
   S.txns.forEach(t=>{ const isLend=t.type==="expense"&&catOf(t)===LENT, isPay=t.type==="income"&&t.category===REPAY; if(!isLend&&!isPay) return;
-    const name=borrowerOf(t), k=name.toLowerCase(); const r=m[k]||(m[k]={name,lent:0,repaid:0,txns:[]});
+    const name=lentKeyOf(t), k=name.toLowerCase(); const r=m[k]||(m[k]={name,lent:0,repaid:0,txns:[]});
     if(isLend) r.lent+=(+t.amount||0); else r.repaid+=(+t.amount||0); r.txns.push(t); });
   return Object.values(m).map(r=>Object.assign(r,{lent:Math.round(r.lent*100)/100,repaid:Math.round(r.repaid*100)/100,left:Math.round(Math.max(0,r.lent-r.repaid)*100)/100,extra:Math.round(Math.max(0,r.repaid-r.lent)*100)/100}))
     .sort((a,b)=>b.left-a.left||a.name.localeCompare(b.name));
@@ -3085,15 +3089,19 @@ function updTxPrev(){
   box.innerHTML=rows.length?'<div class="tph">Balances '+(amt?'after this':'now')+'</div>'+rows.join("")+(late?'<p class="hint" style="margin:6px 0 0">This date is before an account\'s starting balance, so that account won\'t change.</p>':''):'';
 }
 function borrowerField(t,label,hide){
-  const names=lentPeople().map(r=>r.name);
-  return '<div class="field" id="f_borrowerF"'+(hide?' hidden':'')+'><label for="f_borrower">'+label+'</label><input id="f_borrower" list="borrowers" maxlength="60" placeholder="e.g. Raul" value="'+esc(t.borrower||"")+'"><datalist id="borrowers">'+names.map(n=>'<option value="'+esc(n)+'"></option>').join("")+'</datalist><p class="hint" id="repayHint" style="margin:6px 0 0"></p></div>';
+  const bound=t.type==="income"&&t.category===REPAY?String(t.lentKey||"").trim():"";
+  const names=bound?[]:lentPeople().map(r=>r.name);
+  return '<div class="field" id="f_borrowerF"'+(hide?' hidden':'')+'>'+(bound?'<p class="hint" style="margin:0 0 6px">'+esc("Going to: "+bound)+'</p>':'')+
+    '<label for="f_borrower">'+(bound?"Who paid (optional)":label)+'</label><input id="f_borrower"'+(bound?'':' list="borrowers"')+' maxlength="60" placeholder="e.g. Raul" value="'+esc(t.borrower||"")+'">'+
+    (bound?'':'<datalist id="borrowers">'+names.map(n=>'<option value="'+esc(n)+'"></option>').join("")+'</datalist>')+'<p class="hint" id="repayHint" style="margin:6px 0 0"></p></div>';
 }
 function updRepayHint(){
   const hn=$("repayHint"), cat=$("f_cat"); if(!hn||!cat) return; hn.textContent="";
   if(draft.type!=="income"||cat.value!==REPAY) return;
-  const who=($("f_borrower")||{}).value||""; const r=lentPeople().find(x=>x.name.toLowerCase()===who.trim().toLowerCase()); if(!r) { if(who) hn.textContent=who+" has no money lent to them yet."; return; }
+  const key=String(draft.lentKey||"").trim(), who=key||(($("f_borrower")||{}).value||"");
+  const r=lentPeople().find(x=>x.name.toLowerCase()===who.trim().toLowerCase()); if(!r) { if(who&&!key) hn.textContent=who+" has no money lent to them yet."; return; }
   const amt=parseFloat(String(($("f_amount")||{}).value||"").replace(/[$,\s]/g,""))||0;
-  const owed=draft.id&&draft.category===REPAY&&borrowerOf(draft).toLowerCase()===r.name.toLowerCase()?Math.round((r.left+(+draft.amount||0))*100)/100:r.left;
+  const owed=draft.id&&draft.category===REPAY&&lentKeyOf(draft).toLowerCase()===r.name.toLowerCase()?Math.round((r.left+(+draft.amount||0))*100)/100:r.left;
   if(!amt){ hn.textContent=r.name+" owes you "+money(owed)+"."; return; }
   const left=Math.round((owed-amt)*100)/100;
   hn.textContent= left>0.004 ? "Partial repayment: "+r.name+" will still owe "+money(left)+"." : left<-0.004 ? "That's "+money(-left)+" more than "+r.name+" owes ("+money(owed)+")." : "Full repayment: "+r.name+" will be paid in full.";
@@ -3196,11 +3204,11 @@ function renderTx(errMsg){
   ["f_amount","f_from","f_to","f_loan","f_int","f_date"].forEach(id=>{ const el=$(id); if(el){ el.addEventListener("input",updTxPrev); el.addEventListener("change",updTxPrev); } }); updTxPrev();
   const fcat=$("f_cat"), bf=$("f_borrowerF");
   if(fcat&&bf){ const sync=()=>{ const on=(draft.type==="expense"&&fcat.value===LENT)||(draft.type==="income"&&fcat.value===REPAY); bf.hidden=!on;
-      const b=$("f_borrower"); if(on&&b&&!b.value){ const d=($("f_desc")||{}).value||"", kb=detectBorrower(d); const cand=draft.type==="expense"?((kb&&kb.name)||nameInDesc(d)||(($("f_payee")||{}).value||"")):((($("f_payer")||{}).value)||(kb&&kb.name)||nameInDesc(d)); if(cand) b.value=cand; } updRepayHint(); };
+      const b=$("f_borrower"); if(on&&b&&!b.value&&draft.type==="expense"){ const d=($("f_desc")||{}).value||"", kb=detectBorrower(d); const cand=(kb&&kb.name)||nameInDesc(d)||(($("f_payee")||{}).value||""); if(cand) b.value=cand; } updRepayHint(); };
     fcat.addEventListener("change",sync); ["f_borrower","f_amount"].forEach(id=>{const el=$(id); if(el) el.addEventListener("input",updRepayHint);}); updRepayHint();
     const auto=()=>{ const b=$("f_borrower"); if(!b) return;
       if(draft.type==="income"){ const txt=(($("f_desc")||{}).value||"")+" "+(($("f_payer")||{}).value||""); const r=detectBorrower(txt);
-        if(r&&(!fcat.value||fcat.value===REPAY)){ if(fcat.value!==REPAY){ fcat.value=REPAY; fcat.classList.add("flash"); setTimeout(()=>fcat.classList.remove("flash"),700); } if(!b.dataset.typed) b.value=r.name; sync(); } }
+        if(r&&!fcat.value){ fcat.value=REPAY; fcat.classList.add("flash"); setTimeout(()=>fcat.classList.remove("flash"),700); sync(); } }
       else if(draft.type==="expense"&&fcat.value===LENT&&!b.dataset.typed){ const txt=($("f_desc")||{}).value||""; const r=detectBorrower(txt); const n=r?r.name:nameInDesc(txt); if(n) b.value=n; }
     };
     ["f_desc","f_payer"].forEach(id=>{const el=$(id); if(el) el.addEventListener("input",auto);}); fcat.addEventListener("change",auto);
@@ -3253,7 +3261,8 @@ async function submitTx(e){
     payee:t.type==="expense"?t.payee:"", payer:t.type==="income"?(t.payer||""):"",
     category:["expense","income"].includes(t.type)?(t.category||""):"",
     project:["save","expense","transfer","income","cardpay"].includes(t.type)?(t.split?"":(t.project||"")):"",
-    borrower:((t.type==="expense"&&t.category===LENT)||(t.type==="income"&&t.category===REPAY))?String(t.borrower||"").trim():""};
+    borrower:((t.type==="expense"&&t.category===LENT)||(t.type==="income"&&t.category===REPAY))?String(t.borrower||"").trim():"",
+    lentKey:(t.type==="income"&&t.category===REPAY)?String(t.lentKey||"").trim():""};
   if(t.split&&["save","expense","transfer","income","cardpay"].includes(t.type)){
     const parts=(t.parts||[]).filter(p=>p&&p.pid&&projById(p.pid)&&Math.abs(+p.amt||0)>=0.005);
     if(!parts.length) return renderTx(L("Give at least one project an amount, or switch back to a single project.","Dale un monto a por lo menos un proyecto, o vuelve a un solo proyecto."));
@@ -3415,7 +3424,7 @@ document.addEventListener("click",async e=>{
   if(ds.pinact){ if(ds.pinact==="skip"){ try{ localStorage.setItem("pb_pin_skip_"+UID,"1"); }catch(_){} markUnlocked(); S.status="ready"; render(); } else { S.loginMsg=""; await SB.auth.signOut(); S.authMode="login"; render(); } return; }
   if(ds.fundonly){ const doc=STORE[ds.fundonly]; if(doc&&await save(ds.fundonly,Object.assign({},doc,{fund:true}))) toast("Saved as an ongoing fund"); return; }
   if(ds.lentperson){ openLentPerson(ds.lentperson); return; }
-  if(ds.repay){ const r=lentPeople().find(x=>x.name===ds.repay); const ck=S.accounts.find(a=>a.type==="checking"); openTx(null,{type:"income",category:REPAY,borrower:ds.repay,payer:ds.repay,amount:r?r.left.toFixed(2):"",desc:"Repayment from "+ds.repay,to:ck?ck.id:""}); return; }
+  if(ds.repay){ const r=lentPeople().find(x=>x.name===ds.repay); const ck=S.accounts.find(a=>a.type==="checking"); openTx(null,{type:"income",category:REPAY,lentKey:ds.repay,amount:r?r.left.toFixed(2):"",desc:"Repayment",to:ck?ck.id:""}); return; }
   if(ds.catlist){ openCatList(ds.catlist,ds.catym); return; }
   if(ds.addmenu){ openAcct({type:ds.addmenu==="day"?"checking":ds.addmenu}); return; }
   if(ds.addfor){ closeSheet(); const k=ds.addfor, first=t=>S.accounts.find(a=>a.type===t);
