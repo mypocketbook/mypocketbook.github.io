@@ -119,6 +119,13 @@ button.row:hover{background:var(--sunk)}
 .catc.on{border-color:var(--tint);border-width:2px;padding:5.5px 9.5px;background:color-mix(in srgb,var(--tint) 16%,var(--surface));font-weight:700}
 .catc.on u{color:var(--ink)}
 .catc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.subsplit{display:grid;gap:8px;border:1px solid var(--line);border-radius:14px;background:var(--sunk);padding:12px;margin:0 0 12px}
+.ssrow{display:grid;grid-template-columns:minmax(0,1fr) 72px max-content;gap:10px;align-items:center}
+.ssn{display:flex;gap:7px;align-items:center;min-width:0;font-size:0.8125rem}
+.ssn>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ssb{height:7px;border-radius:99px;background:color-mix(in srgb,var(--ink) 10%,transparent);overflow:hidden}
+.ssb i{display:block;height:100%;border-radius:99px}
+.ssv{font-family:var(--f-num);font-size:0.8125rem;font-variant-numeric:tabular-nums}
 .catsub{display:grid;gap:8px;border:1px solid var(--line);border-radius:14px;background:var(--sunk);padding:12px}
 .catsub .catc{background:var(--surface)}
 .catmore{justify-self:start;border:0;background:none;color:var(--accent);font-family:inherit;font-size:0.875rem;font-weight:700;cursor:pointer;padding:0 2px;min-height:44px;text-align:left}
@@ -809,6 +816,51 @@ const SUB_EMOJI = {"Restaurant":"\ud83c\udf7d\ufe0f","Takeout & delivery":"\ud83
   "Movies & events":"\ud83c\udfac","Going out":"\ud83c\udf78","Games":"\ud83c\udfae","Hobbies":"\ud83e\uddf6","Books":"\ud83d\udcda",
   "Streaming":"\ud83d\udcfa","Music":"\ud83c\udfb5","Apps & software":"\ud83d\udcbe","Gaming":"\ud83d\udd79\ufe0f","News":"\ud83d\udcf0",
   "Flights":"\u2708\ufe0f","Lodging":"\ud83c\udfe8","Food on the trip":"\ud83c\udf5c","Getting around":"\ud83d\ude87","Activities":"\ud83c\udfab"};
+const SUB_GUESS = [
+  [/\b(at&?t|t-?mobile|verizon|xfinity|comcast|spectrum|metro ?pcs|mint ?mobile|cricket|internet|wifi|phone bill)\b/,"Bills & utilities","Internet & phone"],
+  [/\b(fpl|florida power|duke energy|con ?ed|pg&?e|electric|electricidad|power bill|luz)\b/,"Bills & utilities","Electricity"],
+  [/\b(water|agua|aqua|sewer|acueducto)\b/,"Bills & utilities","Water"],
+  [/\b(trash|waste|garbage|basura|recycl)\b/,"Bills & utilities","Trash"],
+  [/\b(geico|progressive|state farm|allstate|liberty mutual|insurance|seguro|policy)\b/,"Bills & utilities","Insurance"],
+  [/\b(teco|natural gas|gas bill|propane)\b/,"Bills & utilities","Home gas"],
+  [/\b(netflix|hulu|disney\+?|hbo|max|peacock|paramount|apple tv|prime video|youtube premium)\b/,"Subscriptions","Streaming"],
+  [/\b(spotify|apple music|pandora|tidal|soundcloud)\b/,"Subscriptions","Music"],
+  [/\b(icloud|google one|dropbox|adobe|microsoft 365|office 365|notion|chatgpt|openai|claude|anthropic|canva|github)\b/,"Subscriptions","Apps & software"],
+  [/\b(xbox|playstation|psn|nintendo|steam|game ?pass)\b/,"Subscriptions","Gaming"],
+  [/\b(nytimes|new york times|wsj|washington post|news ?paper)\b/,"Subscriptions","News"],
+  [/\b(shell|chevron|exxon|mobil|bp|sunoco|wawa|racetrac|race ?way|citgo|marathon|gasolin|fuel)\b/,"Transport & gas","Gas station"],
+  [/\b(sunpass|e-?zpass|toll|peaje)\b/,"Transport & gas","Tolls"],
+  [/\b(parking|garage|park ?mobile|estacionamiento)\b/,"Transport & gas","Parking"],
+  [/\b(uber(?! ?eats)|lyft|taxi|cabify|didi)\b/,"Transport & gas","Rideshare & taxi"],
+  [/\b(jiffy lube|valvoline|oil change|tire|mechanic|auto ?zone|advance auto|taller)\b/,"Transport & gas","Car maintenance"],
+  [/\b(publix|walmart|winn[- ]?dixie|aldi|kroger|trader joe|whole foods|safeway|supermercado|grocer)\b/,"Groceries","Supermarket"],
+  [/\b(costco|sam'?s club|bj'?s)\b/,"Groceries","Warehouse club"],
+  [/\b(7-?eleven|circle k|corner store|convenience)\b/,"Groceries","Convenience store"],
+  [/\b(starbucks|dunkin|café|cafe|coffee|panera)\b/,"Food & dining","Coffee"],
+  [/\b(doordash|uber ?eats|grubhub|postmates|instacart|delivery|domicilio)\b/,"Food & dining","Takeout & delivery"],
+  [/\b(chipotle|mcdonald|burger|pizza|wendy|taco|subway|restaurant|grill|kitchen|diner|sushi|wok)\b/,"Food & dining","Restaurant"],
+  [/\b(cvs|walgreens|pharmacy|farmacia|rite aid)\b/,"Health & personal care","Pharmacy"],
+  [/\b(dentist|dental|dentista|orthodon)\b/,"Health & personal care","Dentist"],
+  [/\b(barber|salon|haircut|peluquer|nails)\b/,"Health & personal care","Haircut & beauty"],
+  [/\b(planet fitness|la fitness|crunch|gym|gimnasio|ymca)\b/,"Health & personal care","Gym"],
+  [/\b(doctor|clinic|urgent care|hospital|medical|m[eé]dico)\b/,"Health & personal care","Doctor"],
+  [/\b(rent payment|monthly rent|renta|landlord|apartment)\b/,"Rent / housing","Rent"],
+  [/\b(mortgage|hipoteca)\b/,"Rent / housing","Mortgage"],
+  [/\b(hoa|condo fee)\b/,"Rent / housing","HOA & fees"],
+  [/\b(home depot|lowe'?s|ikea|wayfair|mattress|furniture|muebles)\b/,"Shopping","Home & kitchen"],
+  [/\b(nike|zara|h&m|old navy|shein|clothing|ropa|shoes)\b/,"Shopping","Clothing"],
+  [/\b(best buy|apple store|newegg|micro center|electronic)\b/,"Shopping","Electronics"],
+  [/\b(petco|petsmart|chewy|vet |veterinar)\b/,"Shopping","Pets"],
+  [/\b(cinemark|amc|regal|movie|concert|ticketmaster|cine)\b/,"Entertainment","Movies & events"],
+  [/\b(airline|american air|delta|united air|jetblue|spirit|frontier|flight|vuelo)\b/,"Travel","Flights"],
+  [/\b(hotel|airbnb|marriott|hilton|hostel|hospedaje)\b/,"Travel","Lodging"]
+];
+function guessSub(t){
+  const txt=(" "+[t.payee,t.desc,t.note].filter(Boolean).join(" ")+" ").toLowerCase();
+  const cat=catOf(t); const subs=subsOf(cat); if(!subs) return "";
+  for(const [re,c,sub] of SUB_GUESS){ if(c===cat&&subs.indexOf(sub)>=0&&re.test(txt)) return sub; }
+  return "";
+}
 function subsOf(cat){ return SUB_CATS[cat]||null; }
 function subOf(t){ const c=catOf(t), l=subsOf(c); const v=t&&t.subcat; return l&&v&&l.indexOf(v)>=0?v:""; }
 
@@ -1227,7 +1279,7 @@ function txDest(t){
 function txDisplay(t){
   const a=+t.amount||0; let title, meta, sign="", cls="";
   const desc=t.desc||t.note||"";
-  if(t.type==="expense"){title=t.payee?(t.payee+(desc&&desc.toLowerCase()!==t.payee.toLowerCase()?" – "+desc:"")):(desc||t.category||"Expense");meta="Paid with "+acctName(t.from)+(catOf(t)?" · "+catOf(t):"")+(t.project?" · from "+projName(t.project):"");sign="−";cls="neg";}
+  if(t.type==="expense"){title=t.payee?(t.payee+(desc&&desc.toLowerCase()!==t.payee.toLowerCase()?" – "+desc:"")):(desc||t.category||"Expense");meta="Paid with "+acctName(t.from)+((subOf(t)||catOf(t))?" · "+(subOf(t)||catOf(t)):"")+(t.project?" · from "+projName(t.project):"");sign="−";cls="neg";}
   else if(t.type==="income"){title=desc||t.category||"Income";meta=(t.payer||(t.category===REPAY?lentKeyOf(t):"")||"Income")+" → "+acctName(t.to);sign="+";cls="pos";}
   else if(t.type==="transfer"){title=desc||"Transfer";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
   else if(t.type==="cardpay"){title=desc||"Card payment";meta=acctName(t.from)+" → "+acctName(t.to);cls="mut";}
@@ -1349,8 +1401,22 @@ async function cloudReady(){
   await runSetup();
   try{ const pend=JSON.parse(localStorage.getItem("pb_pending_name")||"null"); if(pend&&pend.name&&!userName()){ STORE["meta-profile"]={kind:"meta",name:pend.name}; await persist(); } localStorage.removeItem("pb_pending_name"); }catch(e){}
   try{ const ml=STORE["meta-look"]; if(!ml||(ml.lang!=="es"&&ml.lang!=="en")){ STORE["meta-look"]=Object.assign({kind:"meta"},ml||{},{mode:LOOK.mode,pal:LOOK.pal,season:LOOK.season,tips:LOOK.tips,lang:LOOK.lang}); await persist(); } }catch(e){}
-  refresh(); gateAfterLogin();
+  refresh(); await fillSubcats(); gateAfterLogin();
   if(!rtChannel){ rtChannel=SB.channel("pb-items").on("postgres_changes",{event:"*",schema:"public",table:TABLE},()=>scheduleReload()).subscribe(); }
+}
+// One pass over old expenses: give each the second level its payee implies.
+async function fillSubcats(){
+  try{
+    let n=0;
+    for(const id in STORE){ const d=STORE[id];
+      if(!d||d.kind!=="txn"||d.type!=="expense"||d.subcat) continue;
+      const g=guessSub(d); if(!g) continue;
+      STORE[id]=Object.assign({},d,{subcat:g}); n++;
+    }
+    if(!n) return;
+    await persist(); refresh();
+    toast(L(n+" old expense"+(n===1?"":"s")+" got a subcategory", n+" gasto"+(n===1?"":"s")+" viejo"+(n===1?"":"s")+" recibi"+(n===1?"ó":"eron")+" subcategoría"));
+  }catch(_){}
 }
 async function cloudStart(){
   MODE="cloud";
@@ -2500,6 +2566,16 @@ function openCatList(cat,ym){
   const list=sortTx(S.txns.filter(t=>t.type==="expense"&&t.date&&ymOf(t.date)===ym&&((catOf(t)||"__none")===cat)));
   const total=list.reduce((s,t)=>s+(+t.amount||0),0), name=cat==="__none"?"Needs a category":cat;
   let h=sheetHead(name+" · "+monthName(ym,true))+'<p class="hint" style="margin:0 0 10px">'+list.length+' expense'+(list.length===1?'':'s')+' · '+money(total)+'. Tap one to change its category.</p>';
+  const subs=subsOf(cat);
+  if(subs&&list.length){
+    const m={}; list.forEach(t=>{ const k=subOf(t)||"__none"; m[k]=(m[k]||0)+(+t.amount||0); });
+    const rows=Object.keys(m).map(k=>({k,amt:Math.round(m[k]*100)/100})).sort((a,b)=>b.amt-a.amt);
+    const top=rows.length?rows[0].amt:0;
+    h+='<div class="subsplit"><p class="catsh">'+L("Inside this category","Dentro de esta categoría")+'</p>'+rows.map(r=>
+      '<div class="ssrow"><span class="ssn"><span aria-hidden="true">'+(r.k==="__none"?"\u2014":(SUB_EMOJI[r.k]||""))+'</span><span>'+esc(r.k==="__none"?L("No subcategory","Sin subcategoría"):r.k)+'</span></span>'+
+      '<span class="ssb"><i style="width:'+(top?Math.max(3,r.amt/top*100):0).toFixed(1)+'%;background:'+(CAT_COLORS[cat]||"#868E96")+'"></i></span>'+
+      '<span class="ssv">'+money(r.amt)+'</span></div>').join("")+'</div>';
+  }
   h+=list.length?'<div class="list">'+list.map(t=>{const d=txDisplay(t);return '<button class="row" data-edittx="'+esc(t.id)+'">'+d.bdg+'<span class="main"><span class="t">'+esc(d.title)+'</span><span class="m">'+esc(dayName(t.date))+' · '+esc(t.category&&!catOf(t)?'was "'+t.category+'"':(catOf(t)||"no category"))+'</span></span><span class="amt">'+money(t.amount)+'</span></button>';}).join("")+'</div>':'<div class="empty">Nothing here.</div>';
   openSheet(h);
 }
