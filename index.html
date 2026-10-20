@@ -147,6 +147,9 @@ button.row:hover{background:var(--sunk)}
 .live .sl{display:flex;justify-content:space-between;font-size:0.8125rem}
 .live .sl span:last-child{font-family:var(--f-num)}
 .live .sl.tot{border-top:1px solid var(--line);padding-top:6px;font-weight:700;font-size:0.9375rem}
+.pendbox{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:13px;display:grid;gap:8px;margin-top:12px}
+.pendbox .gt{margin:0;font-weight:700;font-size:0.875rem}
+.pendv{margin:0;font-family:var(--f-disp);font-size:1.5rem;line-height:1}
 .gasbox{background:color-mix(in srgb,var(--accent) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 32%,var(--surface));border-radius:16px;padding:13px;display:grid;gap:9px;margin-top:12px}
 .gasbox .gt{margin:0;font-weight:700;font-size:0.875rem}
 .gr{display:grid;grid-template-columns:26px minmax(0,1fr) max-content;gap:9px;align-items:center}
@@ -1335,8 +1338,9 @@ function compute(upTo){
   let asideSav=0; const LW=projLedger(upTo).where;
   S.projects.forEach(p=>{ const m=LW[p.id]||{}; Object.keys(m).forEach(k=>{ const ac=acctById(k); if(ac&&ac.type==="savings") asideSav+=m[k]; else { asideDaily+=m[k]; if(ac&&ac.type==="checking") asideChk+=m[k]; } }); });
   personal-=asideSav;
-  const available=daily-asideDaily, savingsTotal=personal+aside;
-  return {bal,proj,loan,liquid,owed,aside,loansOwe,loansLent,daily,personal,limit,available,savingsTotal,lentOut:lentPeople().reduce((s,r)=>s+r.left,0),net:chk-asideChk-owed,free:available-owed};
+  const gasHeld=upTo?0:gasReserve();
+  const available=daily-asideDaily-gasHeld, savingsTotal=personal+aside;
+  return {bal,proj,loan,liquid,owed,aside,loansOwe,loansLent,daily,personal,limit,available,savingsTotal,lentOut:lentPeople().reduce((s,r)=>s+r.left,0),gasHeld,net:chk-asideChk-owed,free:available-owed};
 }
 function monthStats(ym,acct){
   let spent=0,income=0,saved=0,cards=0,loans=0,cashback=0,lent=0,repaid=0;
@@ -2906,6 +2910,16 @@ function weekTotals(ws){
   return {list,gross:Math.round(gross*100)/100,gas:Math.round(gas*100)/100,hrs:Math.round(hrs*100)/100,net,rate:hrs>0?net/hrs:null};
 }
 // Gas put on a card while working, still waiting for a deposit to cover it.
+function workEarned(){ return Math.round(S.shifts.reduce((t,x)=>t+(+x.amount||0),0)*100)/100; }
+function workDeposits(){ return S.txns.filter(t=>t.type==="income"&&t.workPay); }
+function workPaid(){ return Math.round(workDeposits().reduce((t,x)=>t+(+x.amount||0),0)*100)/100; }
+function workPending(){ return Math.round(Math.max(0,workEarned()-workPaid())*100)/100; }
+// Gas already covered by a deposit sits in that account, spoken for, until the card is paid.
+function gasReserve(){
+  if(!workDeposits().length) return 0;
+  return Math.round(gasOwed().reduce((t,x)=>t+x.amt,0)*100)/100;
+}
+function gasAcct(){ const d=workDeposits().sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0]; return d?d.to:""; }
 function gasOwed(){
   const m={};
   S.shifts.forEach(sh=>{ if(sh.covered) return; const t=sh.gasTx&&S.txns.find(x=>x.id===sh.gasTx); if(!t) return;
@@ -2951,6 +2965,10 @@ function viewWork(){
   } else h+='<p class="hint wktap">'+L("Tap a column to see that day.","Toca una columna para ver ese día.")+'</p>';
   h+='<div class="three"><div><b>'+money(W.gross)+'</b><em>'+L("Made","Hiciste")+'</em></div><div><b>'+(W.gas?"\u2212":"")+money(W.gas)+'</b><em>'+L("Gas","Gasolina")+'</em></div><div><b>'+(W.hrs?hhmm(W.hrs):"0 h")+'</b><em>'+L("Worked","Trabajadas")+'</em></div></div>'+
     '<button type="button" class="btn primary" style="width:100%" data-addshift="1">+ '+L("Log a shift","Registrar turno")+'</button></section>';
+  const pend=workPending();
+  if(pend>0.004||workDeposits().length) h+='<div class="pendbox"><p class="gt"><span aria-hidden="true">\u23f3</span> '+L("Waiting to be paid by the apps","Por cobrar en las apps")+'</p>'+
+    '<p class="pendv">'+money(pend)+'</p><p class="hint" style="margin:0">'+L("Logged as worked and not deposited yet. It is not in any of your accounts.","Registrado como trabajado y aún sin depositar. No está en ninguna de tus cuentas.")+'</p>'+
+    '<button type="button" class="btn" data-addpay="1">'+L("Register a deposit","Registrar un depósito")+'</button></div>';
   h+=gasOwedBox();
   if(!S.shifts.length) h+='<div class="empty"><strong>'+L("No shifts yet","Aún no hay turnos")+'</strong><span>'+L("Log what you made each day, the hours it took, and the gas you put in. Pocketbook works out what you really kept.","Registra lo que hiciste cada día, las horas que te tomó y la gasolina que echaste. Pocketbook calcula lo que de verdad te quedó.")+'</span></div>';
   return h;
@@ -3024,6 +3042,68 @@ async function deleteShift(id){
   const sh=S.shifts.find(x=>x.id===id); if(!sh) return;
   if(sh.gasTx&&STORE[sh.gasTx]) await remove(sh.gasTx);
   if(await remove(id)){ closeSheet(); toast(L("Shift deleted","Turno eliminado")); render(); }
+}
+/* ---------- the deposit: the apps finally pay, and the gas gets covered ---------- */
+let payDraft=null;
+function openWorkPay(){
+  const ck=S.accounts.find(a=>a.type==="checking")||S.accounts.find(a=>a.type!=="credit");
+  payDraft={date:todayStr(),amount:"",to:ck?ck.id:""};
+  renderWorkPay();
+}
+function renderWorkPay(err){
+  const t=payDraft, pend=workPending(), amt=parseFloat(String(t.amount).replace(/[$,\s]/g,""))||0;
+  let h=sheetHead(L("Register a deposit","Registrar un depósito"))+'<form id="payForm" novalidate>'+
+    '<p class="hint" style="margin:0 0 10px">'+L("The money the apps owe you, landing in your account.","El dinero que te deben las apps, cayendo en tu cuenta.")+'</p>'+
+    '<div class="two"><div class="field"><label for="w_date">'+L("Day","Día")+'</label>'+dateField("w_date",t.date)+'</div>'+
+    '<div class="field"><label for="w_amt">'+L("Amount","Monto")+'</label><input id="w_amt" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount||"")+'"></div></div>'+
+    '<div class="field"><label for="w_to">'+L("Into which account","A qué cuenta")+'</label><select id="w_to">'+opts(acctOpts(a=>a.type!=="credit"),t.to,L("Choose account","Elige una cuenta"))+'</select></div>'+
+    '<div class="live" id="w_live">'+payLive(pend,amt)+'</div>'+
+    (err?'<p class="err" role="alert">'+esc(err)+'</p>':'')+
+    '<div class="actions"><button type="submit" class="btn primary">'+L("Register deposit","Registrar depósito")+'</button></div></form>';
+  openSheet(h);
+  const f=$("payForm"); if(f) f.addEventListener("submit",submitWorkPay);
+  const el=$("w_amt"); if(el) el.addEventListener("input",()=>setTimeout(()=>{
+    $("w_live").innerHTML=payLive(pend,parseFloat($("w_amt").value.replace(/[$,\s]/g,""))||0); },0));
+}
+function payLive(pend,amt){
+  if(!amt) return '<div class="sl"><span>'+L("You logged working","Registraste trabajando")+'</span><span>'+money(pend)+'</span></div>';
+  const d=Math.round((amt-pend)*100)/100;
+  return '<div class="sl"><span>'+L("You logged working","Registraste trabajando")+'</span><span>'+money(pend)+'</span></div>'+
+    '<div class="sl"><span>'+L("They deposited","Te depositaron")+'</span><span>'+money(amt)+'</span></div>'+
+    '<div class="sl tot"><span>'+(Math.abs(d)<0.005?L("They match","Cuadra"):d<0?L("Difference (fees, adjustments)","Diferencia (comisiones, ajustes)"):L("More than you logged","Más de lo que registraste"))+'</span><span>'+(Math.abs(d)<0.005?"\u2014":(d<0?"\u2212":"+")+money(Math.abs(d)))+'</span></div>';
+}
+async function submitWorkPay(e){
+  e.preventDefault();
+  const t=payDraft; t.date=$("w_date").value; t.amount=$("w_amt").value.trim(); t.to=$("w_to").value;
+  const amt=parseFloat(String(t.amount).replace(/[$,\s]/g,""));
+  if(!t.date) return renderWorkPay(L("Pick the day it landed.","Elige el día que cayó."));
+  if(!(amt>0)) return renderWorkPay(L("Write how much they deposited.","Escribe cuánto te depositaron."));
+  if(!acctById(t.to)) return renderWorkPay(L("Choose the account it landed in.","Elige la cuenta donde cayó."));
+  const doc={kind:"txn",type:"income",amount:Math.round(amt*100)/100,date:t.date,desc:L("Deposit from the apps","Depósito de las apps"),
+    payer:L("Driving apps","Apps de manejo"),to:t.to,category:"Freelance",workPay:true,created:Date.now()};
+  if(await save(null,doc)){ closeSheet(); toast(L("Deposit registered","Depósito registrado")); offerGasPay(t.to); render(); }
+}
+// A: right after the deposit, offer to pay back the cards that carried the gas.
+function offerGasPay(acctId){
+  const g=gasOwed(); if(!g.length) return;
+  const tot=Math.round(g.reduce((s,x)=>s+x.amt,0)*100)/100;
+  openSheet(sheetHead(L("Part of this is gas","Parte de esto es gasolina"))+
+    '<p>'+L("<b>"+money(tot)+"</b> of what just landed is gas you put on a card while working.","<b>"+money(tot)+"</b> de lo que acaba de caer es gasolina que pusiste con tarjeta trabajando.")+'</p>'+
+    '<div class="list">'+g.map(x=>'<div class="row" style="cursor:default"><span class="badge tx" style="--tint:#7048E8" aria-hidden="true">\ud83d\udcb3</span><span class="main"><span class="t">'+esc(acctName(x.id))+'</span><span class="m">'+x.n+' '+(x.n===1?L("fill-up","carga"):L("cargas","cargas"))+'</span></span><span class="amt">'+money(x.amt)+'</span></div>').join("")+'</div>'+
+    '<p class="hint">'+L("Until you pay them, this money stays set aside and does not count as available.","Hasta que las pagues, este dinero queda apartado y no cuenta como disponible.")+'</p>'+
+    '<div class="actions" style="margin-top:14px"><button type="button" class="btn" data-act="close">'+L("Not now","Ahora no")+'</button>'+
+    '<button type="button" class="btn primary" data-gaspay="'+esc(g[0].id)+'" data-gasfrom="'+esc(acctId)+'">'+L("Pay","Pagar")+' '+esc(acctName(g[0].id))+'</button></div>');
+}
+// Any payment to a card clears the gas it was carrying, oldest fill-up first.
+async function coverGas(cardId,amount){
+  let left=Math.round((+amount||0)*100)/100; if(!(left>0)) return;
+  const list=S.shifts.filter(sh=>{ if(sh.covered) return false; const t=sh.gasTx&&S.txns.find(x=>x.id===sh.gasTx); return t&&t.from===cardId; })
+    .sort((a,b)=>(a.date||"").localeCompare(b.date||""));
+  for(const sh of list){ const t=S.txns.find(x=>x.id===sh.gasTx), amt=+t.amount||0;
+    if(amt-0.005>left) break;
+    left=Math.round((left-amt)*100)/100;
+    await save(sh.id,Object.assign({},STORE[sh.id],{covered:true}));
+  }
 }
 function viewProjects(){
   const c=compute();
@@ -3766,7 +3846,8 @@ async function submitTx(e){
     if(ac&&ac.type==="credit"&&txParts(doc).length){ if(!t.id) doc.cardWait=true; else if(old&&old.cardWait){ doc.cardWait=true; if(old.cardPaid){ doc.cardPaid=old.cardPaid; doc.cardPaidOn=old.cardPaidOn; } } } }
   const ef=(!t.id&&!t._tipDone&&!doc.parts)?projEffect(doc):null;
   if(ef&&ef.sign>0){ const sug=smartSuggest(ef.pid,doc.amount); if(sug) return showTip(sug,doc); }
-  if(await save(t.id,doc)){ if(t.settles&&STORE[t.settles]) await save(t.settles,Object.assign({},STORE[t.settles],{cardPaid:true,cardPaidOn:doc.date})); closeSheet();toast(t.id?"Transaction updated":"Transaction added"); if(!S.open) S.month=ymOf(doc.date); render();}
+  if(await save(t.id,doc)){ if(t.settles&&STORE[t.settles]) await save(t.settles,Object.assign({},STORE[t.settles],{cardPaid:true,cardPaidOn:doc.date}));
+    if(doc.type==="cardpay"&&doc.to&&!t.id) await coverGas(doc.to,doc.amount); closeSheet();toast(t.id?"Transaction updated":"Transaction added"); if(!S.open) S.month=ymOf(doc.date); render();}
 }
 /* ===== Smart suggestions: a gentle second look before money goes into a project ===== */
 function smartSuggest(pid,amt){
@@ -3929,6 +4010,8 @@ document.addEventListener("click",async e=>{
   if(ds.delshift){ await deleteShift(ds.delshift); return; }
   if(ds.wkgo){ S.workWeek=weekShift(S.workWeek||weekStartOf(todayStr()),+ds.wkgo); S.workDay=""; render(); return; }
   if(ds.wkday){ S.workDay=S.workDay===ds.wkday?"":ds.wkday; render(); return; }
+  if(ds.addpay){ openWorkPay(); return; }
+  if(ds.gaspay){ const g=gasOwed().find(x=>x.id===ds.gaspay); if(g){ closeSheet(); openTx(null,{type:"cardpay",from:ds.gasfrom,to:g.id,amount:g.amt.toFixed(2),desc:L("Work gas","Gasolina de trabajo")}); } return; }
   if(ds.movedtx){ const t=S.txns.find(x=>x.id===ds.movedtx); if(t){ closeSheet(); openTx(t,{project:ds.movedpid}); } return; }
   if(ds.calfor){ if(CAL&&CAL.for===ds.calfor) closeCal(); else openCal(ds.calfor); return; }
   if(ds.calnav){ const [y,m]=CAL.ym.split("-").map(Number); const d=new Date(y,m-1+(+ds.calnav),1); CAL.ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); drawCal(); return; }
