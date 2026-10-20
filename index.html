@@ -484,6 +484,13 @@ nav.tabs button[aria-current="page"]{color:var(--accent)}
 .calfoot{display:flex;gap:6px;margin-top:8px}
 .calfoot .btn{flex:1;padding:8px}
 .fundtag{display:inline-block;margin-top:4px;font-size:0.75rem;font-weight:600;padding:2px 8px;border-radius:99px;background:color-mix(in srgb,var(--pos) 14%,var(--surface));color:var(--pos);font-variant-numeric:tabular-nums}
+.subtop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin:2px 0 4px}
+.subf{display:flex;gap:6px;flex-wrap:wrap;min-width:0}
+.daybox{width:36px;height:36px;flex:none;border-radius:10px;background:var(--sunk);display:grid;place-items:center;align-content:center;line-height:1;color:var(--ink)}
+.daybox b{font-family:var(--f-num);font-weight:700;font-size:0.9375rem}.daybox small{font-size:0.5rem;font-weight:700;letter-spacing:.04em;color:var(--muted);margin-top:1px}
+.subrow .t.tl{display:flex;align-items:center;min-width:0}.subrow .tn{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.subrow .tl .ttag{flex:none}
+.ttag{display:inline-block;margin-left:6px;vertical-align:1px;font-size:0.625rem;font-weight:700;padding:2px 7px;border-radius:99px;background:var(--sunk);color:var(--muted)}
+.subdone .t,.subdone .amt{color:var(--muted)}
 .subq-meta{margin:-6px 0 14px;color:var(--muted);font-size:0.875rem}
 .subq-h{font-size:0.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:26px 0 4px}
 .prow2{padding:12px 0;border-top:1px solid var(--line)}
@@ -712,7 +719,7 @@ h2{font-weight:700;letter-spacing:-.015em}
     <button type="button" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg>Home</button>
     <button type="button" data-tab="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 6h14M5 12h14M5 18h9"/></svg>Activity</button>
     <button type="button" data-tab="loans"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h16M5 20v-8M9.5 20v-8M14.5 20v-8M19 20v-8M3 10l9-6 9 6z"/></svg>Loans</button>
-    <button type="button" data-tab="subs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5a5.5 5.5 0 0 1 5.5-5.5H18l-2.6-2.6M18 4l-2.6 2.6"/><path d="M20 14.5a5.5 5.5 0 0 1-5.5 5.5H6l2.6 2.6M6 20l2.6-2.6"/></svg>Subs</button>
+    <button type="button" data-tab="subs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5a5.5 5.5 0 0 1 5.5-5.5H18l-2.6-2.6M18 4l-2.6 2.6"/><path d="M20 14.5a5.5 5.5 0 0 1-5.5 5.5H6l2.6 2.6M6 20l2.6-2.6"/></svg>Bills</button>
     <button type="button" data-tab="projects"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M7 8h7.5a3 3 0 0 1 0 6H8"/><circle cx="12" cy="12" r="9.5"/></svg>Projects</button>
   </div>
 </nav>
@@ -909,7 +916,7 @@ const ES={
 /* home */
 "Net balance":"Balance neto","of goals":"de las metas","What you have in checking, savings and cash, minus what you owe on credit cards. Loans are kept apart, in the Loans tab.":"Lo que tienes en cuentas corrientes, ahorros y efectivo, menos lo que debes en tarjetas de crédito. Los préstamos van aparte, en la pestaña Loans.","Change in your money so far":"Cambio en tu dinero hasta hoy","Change in your money":"Cambio en tu dinero","Everything you have plus what people owe you, minus what you owe on cards and loans.":"Todo lo que tienes más lo que te deben, menos lo que debes en tarjetas y préstamos.","Your money":"Tu dinero","Available":"Disponible","Cards owe":"Tarjetas","Savings":"Ahorros","Owed to me":"Me deben","Loans I owe":"Mis préstamos","All months":"Todos los meses","Net balance change so far":"Cambio del balance hasta hoy","Net balance change":"Cambio del balance","Closed at":"Cerró en","Spent":"Gastado","spent":"gastado","Income":"Ingresos","Card payments":"Pagos de tarjeta","Cash back":"Cashback","Loan payments":"Pagos de préstamos","Spending by category":"Gastos por categoría","Tap a category to see its transactions.":"Toca una categoría para ver sus transacciones.","Tap \"Needs a category\" to see those expenses and pick one for each.":"Toca \"Necesita categoría\" para ver esos gastos y elegir una para cada uno.","See these transactions":"Ver estas transacciones","Top 3 changes":"Los 3 cambios más grandes","No changes yet this month.":"Aún no hay cambios este mes.","Improved":"Mejoraron","Went the other way":"Empeoraron","Closing balances":"Saldos al cierre","Credit cards":"Tarjetas de crédito","Checking and cash":"Cuentas corrientes y efectivo","Personal savings":"Ahorros personales","Add card limits":"Agrega los límites","No limit set":"Sin límite","owed":"debe","+ Add":"+ Agregar","+ Add money":"+ Agregar dinero","+ Add account":"+ Agregar cuenta","+ Add transaction":"+ Agregar transacción","+ New transaction":"+ Nueva transacción","+ Lend":"+ Prestar","+ Log payment":"+ Registrar pago","+ Log repayment":"+ Registrar devolución","Add account":"Agregar cuenta","Add a transaction":"Agregar una transacción","Add transaction":"Agregar transacción","An expense, income or transfer":"Un gasto, ingreso o transferencia","A purchase with one of your cards":"Una compra con una de tus tarjetas","Move money into one of your savings":"Pasar dinero a uno de tus ahorros","Set up your accounts":"Configura tus cuentas","Add the places your money lives, then log what you spend, earn and move.":"Agrega dónde está tu dinero y luego registra lo que gastas, ganas y mueves.","Add Checking, Credit card and Cash":"Agregar cuenta corriente, tarjeta y efectivo","Add one account myself":"Agregar una cuenta yo mismo","Open an account to see its transactions and add new ones.":"Abre una cuenta para ver sus transacciones y agregar nuevas.",
 /* subs */
-"Subs":"Subs","Subscriptions":"Suscripciones","Nothing tracked yet":"Aún no sigues ninguna","Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.":"Agrega lo que pagas cada mes (streaming, teléfono, programas) y Pocketbook te muestra cuánto suma en un año.","Add a subscription":"Agregar una suscripción","Every month":"Cada mes","Every year":"Cada año","Found in your transactions":"Encontradas en tus transacciones","These charges repeat. Only you can say whether they are subscriptions.":"Estos cargos se repiten. Solo tú puedes decir si son suscripciones.","Not a subscription":"No es una suscripción","Track it":"Seguirla","Tracked":"Las que sigues","New subscription":"Nueva suscripción","Edit subscription":"Editar suscripción","How often":"Cada cuánto","Monthly":"Mensual","Yearly":"Anual","Subscription updated":"Suscripción actualizada","Give the subscription a name.":"Ponle un nombre a la suscripción.",
+"Subs":"Subs","Bills":"Pagos","Add what you pay every month \u2014 streaming, rent, insurance, phone \u2014 and Pocketbook shows you what is coming up and what it adds up to in a year.":"Agrega lo que pagas cada mes \u2014 streaming, renta, seguro, tel\u00e9fono \u2014 y Pocketbook te muestra lo que viene y cu\u00e1nto suma en un a\u00f1o.","Add a payment":"Agregar un pago","Subscriptions":"Suscripciones","Nothing tracked yet":"Aún no sigues ninguna","Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.":"Agrega lo que pagas cada mes (streaming, teléfono, programas) y Pocketbook te muestra cuánto suma en un año.","Add a subscription":"Agregar una suscripción","Every month":"Cada mes","Every year":"Cada año","Found in your transactions":"Encontradas en tus transacciones","These charges repeat. Only you can say whether they are subscriptions.":"Estos cargos se repiten. Solo tú puedes decir si son suscripciones.","Not a subscription":"No es una suscripción","Track it":"Seguirla","Tracked":"Las que sigues","New subscription":"Nueva suscripción","Edit subscription":"Editar suscripción","How often":"Cada cuánto","Monthly":"Mensual","Yearly":"Anual","Subscription updated":"Suscripción actualizada","Give the subscription a name.":"Ponle un nombre a la suscripción.",
 /* metas en cuentas y anillos que se vacían */
 "Saving toward (optional)":"Ahorrando hacia (opcional)","By when (optional)":"¿Para cuándo? (opcional)",
 "With a date, Pocketbook works out how much a month it takes. Leave both empty and the account is just a balance.":"Con una fecha, Pocketbook calcula cuánto al mes hace falta. Deja los dos vacíos y la cuenta es solo un saldo.",
@@ -1701,7 +1708,7 @@ function render(){
   const openA=S.open&&acctById(S.open), openL=!openA&&S.openLoan&&loanById(S.openLoan), openP=!openA&&!openL&&S.openProj&&projById(S.openProj);
   document.querySelector("header.top").classList.toggle("homehdr", S.status==="ready"&&!openA&&!openL&&!openP&&S.tab==="home"&&!!userName());
   setTimeout(()=>{ maybeWelcome(); maybeAskName(); },0);
-  $("title").textContent= openA? openA.name : openL? loanLabel(openL) : openP? openP.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans",subs:"Subscriptions"}[S.tab];
+  $("title").textContent= openA? openA.name : openL? loanLabel(openL) : openP? openP.name : {home:"Overview",activity:"Activity",projects:"Projects",accounts:"Accounts",loans:"Loans",subs:"Bills"}[S.tab];
   $("backBtn").hidden=!(openA||openL||openP);
   $("calcTopBtn").hidden=!(S.status==="ready"&&openA); if($("calcTopBtn").hidden) closeCalc();
   $("monthnav").hidden = true;
@@ -1842,18 +1849,45 @@ function subCandidates(){
   return out.sort((a,b)=>b.amount-a.amount);
 }
 
+/* ---------- recurring payments: what is coming up, grouped by when, with a type on each ---------- */
+const SUB_TYPES=[["sub","Subscription","Suscripci\u00f3n"],["home","Housing","Vivienda"],["insurance","Insurance","Seguro"],["service","Utility","Servicio"],["other","Other","Otro"]];
+function subTypeName(k){ const t=SUB_TYPES.find(x=>x[0]===(k||"sub"))||SUB_TYPES[0]; return LANG()==="es"?t[2]:t[1]; }
+function subTypeGuess(name){ const n=String(name||"").toLowerCase();
+  if(/insur|seguro|geico|progressive|state farm|allstate/.test(n)) return "insurance";
+  if(/\brent\b|renta|mortgage|hipoteca|\bhoa\b/.test(n)) return "home";
+  if(/electric|\bluz\b|water|\bagua\b|internet|wifi|comcast|xfinity|spectrum|verizon|t-mobile|tmobile|at&t|phone|tel[e\u00e9]fono|\bfpl\b|duke/.test(n)) return "service";
+  return "sub"; }
+function subDayBox(d){ return '<span class="daybox" aria-hidden="true"><b>'+d.getDate()+'</b><small>'+esc(d.toLocaleDateString(LOC(),{month:"short"}).toUpperCase())+'</small></span>'; }
 function viewSubs(){
   const T=subsTotals(), cand=subCandidates();
   let h="";
   if(!S.subs.length&&!cand.length)
-    return '<div class="empty"><strong>Nothing tracked yet</strong><span>Add what you pay for every month \u2014 streaming, phone, software \u2014 and Pocketbook shows you what it adds up to in a year.</span><button class="btn primary" data-newsub="1">Add a subscription</button></div>';
+    return '<div class="empty"><strong>Nothing tracked yet</strong><span>Add what you pay every month \u2014 streaming, rent, insurance, phone \u2014 and Pocketbook shows you what is coming up and what it adds up to in a year.</span><button class="btn primary" data-newsub="1">Add a payment</button></div>';
   if(S.subs.length){
-    h+='<section class="subtot"><div><span class="eyebrow">Every month</span><b>'+money(T.mo)+'</b></div>'+
-       '<div class="yr"><span class="eyebrow">Every year</span><b>'+money(T.yr)+'</b></div>'+
-       '<span class="subn">'+T.n+' active</span></section>'+
-       (subsActive().some(s=>(s.people||[]).length)?'<p class="hint" style="margin:-4px 0 12px">'+L("Totals count only your part of shared subscriptions.","Los totales cuentan solo tu parte de las suscripciones compartidas.")+'</p>':'');
-    const due=subsActive().filter(s=>!subLogged(s)&&daysUntil(subCharge(s))>=0&&daysUntil(subCharge(s))<=7);
-    if(due.length) h+='<p class="subnext">Coming up: '+due.map(u=>esc(u.name)+' <b>'+money(+u.amount||0)+'</b> '+dueWord(daysUntil(subCharge(u)))).join(' \u00b7 ')+'</p>';
+    const ym=ymOf(todayStr()), f=S.subType||"all", types=SUB_TYPES.map(t=>t[0]).filter(k=>S.subs.some(x=>(x.type||"sub")===k));
+    const vis=x=>f==="all"||(x.type||"sub")===f;
+    const items=subsActive().filter(vis).map(x=>{ const d=subCharge(x), n=daysUntil(d), lg=subLogged(x); return {s:x,d,n,lg,paid:!!lg&&String(lg.date||"").slice(0,7)===ym}; });
+    const week=items.filter(x=>!x.paid&&x.n<=7).sort((a,b)=>a.d-b.d), later=items.filter(x=>!x.paid&&x.n>7&&ymOf(dIso(x.d))===ym).sort((a,b)=>a.d-b.d),
+          ahead=items.filter(x=>!x.paid&&x.n>7&&ymOf(dIso(x.d))!==ym).sort((a,b)=>a.d-b.d), paid=items.filter(x=>x.paid).sort((a,b)=>String(a.lg.date).localeCompare(String(b.lg.date)));
+    const sum=l=>l.reduce((t,x)=>t+(+x.s.amount||0),0);
+    const left=sum(week.filter(x=>ymOf(dIso(x.d))===ym))+sum(later);
+    h+='<section class="subtot"><div><span class="eyebrow">'+L("Left to pay this month","Falta pagar este mes")+'</span><b>'+money(left)+'</b></div>'+
+       '<div class="yr"><span class="eyebrow">'+L("Every month","Cada mes")+'</span><b>'+money(T.mo)+'</b></div>'+
+       '<div class="yr"><span class="eyebrow">'+L("Every year","Cada a\u00f1o")+'</span><b>'+money(T.yr)+'</b></div></section>'+
+       (subsActive().some(x=>(x.people||[]).length)?'<p class="hint" style="margin:-4px 0 12px">'+L("Totals count only your part of shared payments.","Los totales cuentan solo tu parte de los pagos compartidos.")+'</p>':'');
+    h+='<div class="subtop">'+(types.length>1?'<div class="subf" role="group" aria-label="'+L("Type","Tipo")+'">'+
+        ['all'].concat(types).map(k=>'<button type="button" class="chip" data-subfilter="'+k+'" aria-pressed="'+(f===k)+'">'+(k==="all"?L("All","Todo"):esc(subTypeName(k)))+'</button>').join("")+'</div>':'<span></span>')+
+      secAdd('data-newsub="1"','repeat',L("Add a payment","Agregar un pago"))+'</div>';
+    const row=(x,done)=>{ const s=x.s, shared=(s.people||[]).length, amt=(s.varies?"~":"")+money(+s.amount||0);
+      const meta=done?'\u2713 '+L("Written down","Registrado"):((s.cycle==="yearly"?cycleName(s.cycle)+' \u00b7 ':'')+dueWord(x.n).replace(/^./,c=>c.toUpperCase())+(shared?' \u00b7 '+L(subPaidNow(s).length+"/"+s.people.length+" paid",subPaidNow(s).length+"/"+s.people.length+" pagaron"):""));
+      return '<button class="row subrow'+(done?' subdone':'')+'" data-opensub="'+esc(s.id)+'">'+subDayBox(done?pDate(x.lg.date):x.d)+
+        '<span class="main"><span class="t tl"><span class="tn">'+esc(s.name)+'</span><span class="ttag">'+esc(subTypeName(s.type))+'</span>'+(s.varies?'<span class="ttag">'+L("varies","var\u00eda")+'</span>':'')+'</span><span class="m">'+meta+'</span></span>'+
+        '<span class="subamt"><span class="amt">'+amt+'</span>'+(shared?'<span class="owed">'+L("your part "+money(subMine(s)),"tu parte "+money(subMine(s)))+'</span>':'')+'</span></button>'; };
+    const grp=(title,list,done)=>list.length?'<h2>'+title+' <span>'+money(sum(list))+'</span></h2><div class="list sublist">'+list.map(x=>row(x,done)).join("")+'</div>':'';
+    h+=grp(L("This week","Esta semana"),week)+grp(L("Later this month","Despu\u00e9s este mes"),later)+grp(L("Coming later","M\u00e1s adelante"),ahead)+grp(L("Already paid this month","Ya pagados este mes"),paid,true);
+    if(!items.length) h+='<p class="hint" style="margin:16px 2px">'+L("Nothing of this type yet.","Todav\u00eda no hay nada de este tipo.")+'</p>';
+    const off=(S.subs||[]).filter(x=>x.status==="paused"&&vis(x));
+    if(off.length) h+='<h2>'+L("Paused","En pausa")+'</h2><div class="list sublist">'+off.map(x=>'<button class="row subrow off" data-opensub="'+esc(x.id)+'">'+subDayBox(subCharge(x))+'<span class="main"><span class="t">'+esc(x.name)+'<span class="ttag">'+esc(subTypeName(x.type))+'</span></span><span class="m"><span class="pausepill">'+L("Paused","En pausa")+'</span></span></span><span class="subamt"><span class="amt">'+money(+x.amount||0)+'</span></span></button>').join("")+'</div>';
   }
   if(cand.length){
     h+='<h2>Found in your transactions</h2><p class="hint" style="margin:-4px 0 10px">These charges repeat. Only you can say whether they are subscriptions.</p><div class="list">'+
@@ -1862,17 +1896,6 @@ function viewSubs(){
         '<button type="button" class="btn primary" data-subtrack="'+esc(c.key)+'">Track it</button></span></div>').join("")+'</div>';
   }
   if(S.subs.length){
-    const rows=s=>{ const d=subCharge(s), n=daysUntil(d), paused=s.status==="paused", done=!paused&&subLogged(s);
-      const when=esc(fmtDate(d))+" \u00b7 "+dueWord(n)+((s.people||[]).length&&!paused?" \u00b7 "+L(subPaidNow(s).length+"/"+s.people.length+" paid",subPaidNow(s).length+"/"+s.people.length+" pagaron"):"");
-      return '<div class="subwrap'+(paused?" off":"")+'"><button class="row subrow" data-opensub="'+esc(s.id)+'">'+
-        '<span class="subico" aria-hidden="true">'+ICO.repeat+'</span>'+
-        '<span class="main"><span class="t">'+esc(s.name)+'</span><span class="m">'+(paused?'<span class="pausepill">'+L("Paused","En pausa")+'</span> ':'')+cycleName(s.cycle)+' \u00b7 '+esc(acctName(s.account)||L("No card set","Sin tarjeta"))+'</span></span>'+
-        '<span class="subamt"><span class="amt">'+money(+s.amount||0)+'</span><span class="owed">'+((s.people||[]).length?L("you pay "+money(subMine(s)),"tu parte "+money(subMine(s))):(s.cycle==="yearly"?money(subMonthly(s))+' a month':money(subYearly(s))+' a year'))+'</span></span></button>'+
-        (paused?'':'<span class="subfoot"><span class="when">'+when+'</span>'+
-          (done?'<span class="okmark">\u2713 Written down</span>':n<=2?'<button type="button" class="btn tiny" data-sublog="'+esc(s.id)+'">Write it down</button>':'')+'</span>')+
-        '</div>'; };
-    h+='<h2 style="display:flex;justify-content:space-between;align-items:center">Tracked'+secAdd('data-newsub="1"','repeat',"Add a subscription")+'</h2>'+
-       '<div class="list sublist">'+S.subs.map(rows).join("")+'</div>';
     h+=helpBox(L("Why nothing is added for you","Por qué nada se agrega solo"),
       L("A subscription charges on one day and shows on your card a few days later \u2014 Pocketbook keeps both dates so you know when to expect it. It never writes the charge for you. You do that yourself, the moment it lands, because that is the second you actually feel the money leave.",
         "Una suscripci\u00f3n se cobra un d\u00eda y aparece en tu tarjeta unos d\u00edas despu\u00e9s: Pocketbook guarda las dos fechas para que sepas cu\u00e1ndo esperarla. Nunca registra el cargo por ti. Eso lo haces t\u00fa, en el momento en que llega, porque ese es el segundo en que de verdad sientes salir el dinero."));
@@ -1904,10 +1927,12 @@ function openSub(x){
   const yearly=s.cycle==="yearly";
   let h=sheetHead(edit?L("Edit subscription","Editar suscripción"):L("New subscription","Nueva suscripción"))+'<form id="subForm" novalidate>'+
     '<div class="field"><label for="s_name">'+L("Name","Nombre")+'</label><input id="s_name" maxlength="40" placeholder="'+L("e.g. Netflix","ej. Netflix")+'" value="'+esc(s.name)+'"></div>'+
+    '<div class="field"><label for="s_type">'+L("Type","Tipo")+'</label><select id="s_type">'+SUB_TYPES.map(t=>'<option value="'+t[0]+'"'+((s.type||"sub")===t[0]?" selected":"")+'>'+esc(LANG()==="es"?t[2]:t[1])+'</option>').join("")+'</select></div>'+
     '<div class="two"><div class="field"><label for="s_amount">'+L("Amount","Monto")+'</label><input id="s_amount" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(s.amount)+'"></div>'+
     '<div class="field"><label>'+L("How often","Cada cuánto")+'</label><div class="seg" role="group" aria-label="'+L("How often","Cada cuánto")+'">'+
       ['monthly','yearly'].map(c=>'<button type="button" class="chip" data-scyc="'+c+'" aria-pressed="'+((s.cycle||"monthly")===c)+'">'+cycleName(c)+'</button>').join("")+'</div></div></div>'+
     '<p class="subprev" id="s_prev" aria-live="polite"></p>'+
+    '<div class="field"><button type="button" class="chip" id="s_var" aria-pressed="'+(!!s.varies)+'">'+L("The amount changes each time (like electricity)","El monto cambia cada vez (como la luz)")+'</button></div>'+
     '<div class="field" id="s_dayF"'+(yearly?' hidden':'')+'><label for="s_day">'+L("Charge day of the month","Día del cobro")+'</label><input id="s_day" inputmode="numeric" maxlength="2" placeholder="8" value="'+esc(s.day||"")+'"></div>'+
     '<div class="field" id="s_anchF"'+(yearly?'':' hidden')+'><label for="s_anch">'+L("Charge date","Fecha del cobro")+'</label>'+dateField("s_anch",s.anchor||todayStr())+'</div>'+
     '<div class="field"><label for="s_lag">'+L("Days until it shows on the card","Días hasta que aparece en la tarjeta")+'</label><input id="s_lag" inputmode="numeric" maxlength="2" value="'+esc(s.lag==null?3:s.lag)+'"><span class="hint">'+L("Most cards take two or three days to post a charge.","La mayoría de las tarjetas tardan dos o tres días en mostrar un cargo.")+'</span></div>'+
@@ -1920,7 +1945,10 @@ function openSub(x){
     '<button type="submit" class="btn primary">'+(edit?L("Save changes","Guardar cambios"):L("Track it","Seguirla"))+'</button></div><div id="delBox"></div></form>';
   draft=Object.assign({},s,{kind:"sub"});
   openSheet(h);
-  let cyc=s.cycle||"monthly", st=s.status||"active";
+  let cyc=s.cycle||"monthly", st=s.status||"active", vr=!!s.varies, typeTouched=edit||!!s.type;
+  $("s_var").addEventListener("click",()=>{ vr=!vr; $("s_var").setAttribute("aria-pressed",String(vr)); });
+  $("s_type").addEventListener("change",()=>{ typeTouched=true; });
+  $("s_name").addEventListener("input",()=>{ if(!typeTouched){ $("s_type").value=subTypeGuess($("s_name").value); } });
   const prev=()=>{ const a=parseFloat(String($("s_amount").value).replace(/[$,\s]/g,"")); const box=$("s_prev"); if(!box) return;
     if(isNaN(a)||a<=0){ box.textContent=""; box.classList.remove("on"); return; }
     box.classList.add("on");
@@ -1955,7 +1983,7 @@ function openSub(x){
     for(const x of named){ const v=parseFloat(String(x.share).replace(/[$,\s]/g,"")); if(!String(x.name||"").trim()) return err(L("Each person needs a name.","Cada persona necesita un nombre.")); if(isNaN(v)||v<=0) return err(L("Put "+x.name+"'s part, like 5.00.","Pon la parte de "+x.name+", como 5.00.")); }
     const people=named.map(x=>({id:x.id,name:String(x.name).trim(),share:Math.round(parseFloat(String(x.share).replace(/[$,\s]/g,""))*100)/100}));
     if(people.reduce((t,x)=>t+x.share,0)>amt+0.004) return err(L("The shares add up to more than the "+money(amt)+" charge.","Las partes suman m\u00e1s que el cobro de "+money(amt)+"."));
-    const doc={kind:"sub",name,amount:Math.round(amt*100)/100,cycle:cyc,lag,people,account:$("s_acct").value,category:$("s_cat").value,
+    const doc={kind:"sub",name,amount:Math.round(amt*100)/100,cycle:cyc,lag,people,type:$("s_type").value,varies:vr,account:$("s_acct").value,category:$("s_cat").value,
       note:$("s_note").value.trim(),status:st,created:s.created||Date.now()};
     if(cyc==="yearly") doc.anchor=anchor; else doc.day=day;
     if(await save(s.id,Object.assign({},(s.id&&STORE[s.id])||{},doc))){ closeSheet(); toast(edit?L("Subscription updated","Suscripción actualizada"):L("Now tracking "+name,"Ahora sigues "+name)); }
@@ -2474,7 +2502,7 @@ function jumpBar(here){
   if(here!=="sav"&&has("savings")) out.push(["home:g-sav","Savings"]);
   if(here!=="proj"&&S.projects.length) out.push(["projects:","Projects"]);
   if(here!=="loans"&&S.loans.length) out.push(["loans:","Loans"]);
-  if(here!=="subs"&&(S.subs||[]).length) out.push(["subs:","Subscriptions"]);
+  if(here!=="subs"&&(S.subs||[]).length) out.push(["subs:","Bills"]);
   if(!out.length) return "";
   return '<nav class="jumpbar" aria-label="Go to another section"><span class="jl">Go to</span>'+
     '<span class="chips">'+out.map(x=>'<button type="button" class="chip" data-jump="'+esc(x[0])+'">'+esc(x[1])+'</button>').join("")+'</span></nav>';
@@ -3431,11 +3459,12 @@ document.addEventListener("click",async e=>{
   if(ds.sublog){ const sb=(S.subs||[]).find(x=>x.id===ds.sublog);
     if(sb) openTx(null,{type:"expense",payee:sb.name,desc:sb.name,amount:String(+sb.amount||""),from:sb.account||"",category:sb.category||"Subscriptions"}); return; }
   if(ds.opensub){ openSubQuick((S.subs||[]).find(x=>x.id===ds.opensub)); return; }
+  if(ds.subfilter){ S.subType=ds.subfilter; render(); return; }
   if(ds.editsub){ openSub((S.subs||[]).find(x=>x.id===ds.editsub)); return; }
   if(ds.substep){ const sb=(S.subs||[]).find(x=>x.id===ds.substep); if(!sb) return; const paid=Object.assign({},sb.paid||{}), arr=(paid[ds.skey]||[]).slice(), i=arr.indexOf(ds.spid);
     if(i>=0) arr.splice(i,1); else arr.push(ds.spid); paid[ds.skey]=arr;
     if(await save(sb.id,Object.assign({},STORE[sb.id],{paid}))) openSubQuick((S.subs||[]).find(x=>x.id===sb.id)); return; }
-  if(ds.subtrack){ const c=subCandidates().find(x=>x.key===ds.subtrack); if(c) openSub({name:c.name,amount:String(c.amount),cycle:"monthly",day:String(c.day),lag:3,account:c.account,category:c.category,status:"active"}); return; }
+  if(ds.subtrack){ const c=subCandidates().find(x=>x.key===ds.subtrack); if(c) openSub({name:c.name,type:subTypeGuess(c.name),amount:String(c.amount),cycle:"monthly",day:String(c.day),lag:3,account:c.account,category:c.category,status:"active"}); return; }
   if(ds.subskip){ const m=STORE["meta-subskip"]||{kind:"meta",list:[]}; const list=(m.list||[]).concat([ds.subskip]);
     STORE["meta-subskip"]=Object.assign({},m,{kind:"meta",list}); if(await persist()){ refresh(); toast(L("Won't ask again","No preguntaré otra vez")); } return; }
   if(ds.projhist){openProjHistory(ds.projhist);return;}
