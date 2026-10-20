@@ -2242,6 +2242,20 @@ function askCard(id){
             esc(names)+" conserva su dinero hasta que pagues la tarjeta. Si dices que sí, se abre el pago de la tarjeta ya lleno, y ahí es cuando baja el fondo.")+'</p>'+
     '<div class="actions"><button type="button" class="btn" data-cardlater="'+esc(id)+'">'+L("Not yet","Todavía no")+'</button><button type="button" class="btn primary" data-cardpay="'+esc(id)+'">'+L("Yes, record the payment","Sí, registrar el pago")+'</button></div>');
 }
+function askWishBuy(pid,wid){
+  const p=projById(pid); if(!p) return; const w=(p.wish||[]).find(x=>x.id===wid); if(!w||!(+w.price>0)) return;
+  const row=a=>'<button type="button" class="row" data-wishbuy="'+esc(wid)+'" data-wishbuyproj="'+esc(pid)+'" data-wishbuyacct="'+esc(a.id)+'">'+
+    '<span class="badge tx" style="--tint:'+(a.type==="credit"?"#7048E8":"#1C7ED6")+'" aria-hidden="true">'+(a.type==="credit"?"\ud83d\udcb3":"\ud83c\udfe6")+'</span>'+
+    '<span class="main"><span class="t">'+esc(a.name)+'</span><span class="m">'+esc(ACCT_TYPES[a.type]||"")+'</span></span></button>';
+  const cards=S.accounts.filter(a=>a.type==="credit"), rest=S.accounts.filter(a=>a.type!=="credit");
+  openSheet(sheetHead(L("What did you pay with?","\u00bfCon qu\u00e9 lo pagaste?"))+
+    '<p>'+L("<b>"+esc(w.name)+"</b> \u00b7 "+money(+w.price||0)+" for <b>"+esc(p.name)+"</b>.","<b>"+esc(w.name)+"</b> \u00b7 "+money(+w.price||0)+" para <b>"+esc(p.name)+"</b>.")+'</p>'+
+    '<p class="hint">'+L("Pick it and the expense opens already filled in. On a card, "+esc(p.name)+" keeps its money until you pay that card.",
+            "Elige y se abre el gasto ya lleno. Si fue con tarjeta, "+esc(p.name)+" conserva su dinero hasta que pagues esa tarjeta.")+'</p>'+
+    (cards.length?'<h4 class="subh">'+L("Credit cards","Tarjetas de cr\u00e9dito")+'</h4><div class="list">'+cards.map(row).join("")+'</div>':'')+
+    (rest.length?'<h4 class="subh">'+L("Accounts","Cuentas")+'</h4><div class="list">'+rest.map(row).join("")+'</div>':'')+
+    '<div class="actions" style="margin-top:14px"><button type="button" class="btn" data-act="close">'+L("Not now","Ahora no")+'</button></div>');
+}
 function payCardFor(id){
   const t=S.txns.find(x=>x.id===id); if(!t) return;
   const lastPay=S.txns.filter(x=>x.type==="cardpay"&&x.from&&acctById(x.from)).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
@@ -3491,8 +3505,12 @@ document.addEventListener("click",async e=>{
     openTx(null,{type:"transfer",project:ds.saveto,from:from?from.id:"",to:w?w.id:"",desc:projName(ds.saveto)}); return; }
   if(ds.viewproj){ const keep=b.classList.contains("ptile")||b.classList.contains("bring"); const sx=keep&&b.parentElement?b.parentElement.scrollLeft:0; S.openProj=ds.viewproj;S.open=null;S.openLoan=null;render();
     if(keep){ const ps=document.querySelector(".pswitch"); if(ps){ ps.scrollLeft=sx; const on=ps.querySelector(".lring.on,.bring.on,.ptile.on"); if(on) on.scrollIntoView({behavior:"smooth",inline:"nearest",block:"nearest"}); } } else window.scrollTo(0,0); return;}
-  if(ds.wishtoggle){await wishUpdate(ds.wishproj,w=>w.map(x=>x.id===ds.wishtoggle?Object.assign({},x,{done:!x.done}):x));return;}
+  if(ds.wishtoggle){ const pr0=projById(ds.wishproj), w0=pr0&&(pr0.wish||[]).find(x=>x.id===ds.wishtoggle), turningOn=!!(w0&&!w0.done);
+    await wishUpdate(ds.wishproj,w=>w.map(x=>x.id===ds.wishtoggle?Object.assign({},x,{done:!x.done}):x));
+    if(turningOn) askWishBuy(ds.wishproj,ds.wishtoggle); return;}
   if(ds.wishdel){await wishUpdate(ds.wishproj,w=>w.filter(x=>x.id!==ds.wishdel));return;}
+  if(ds.wishbuyacct){ const pr=projById(ds.wishbuyproj), wi=pr&&(pr.wish||[]).find(x=>x.id===ds.wishbuy); if(!wi) return;
+    closeSheet(); openTx(null,{type:"expense",from:ds.wishbuyacct,amount:(+wi.price||0).toFixed(2),payee:wi.name,desc:wi.name,project:ds.wishbuyproj,category:"Shopping"}); return;}
   if(ds.editproj){openProj(projById(ds.editproj));return;}
   if(ds.wq!==undefined){ const x=$("wx"); if(x){ x.value = ds.wq==="0" ? "" : ds.wq; if(ds.wq==="0"&&$("wl")) $("wl").value=""; drawWhatIf(); } return; }
   if(ds.splitmode){ readTxForm();
