@@ -184,7 +184,7 @@ html[data-theme="light"] #seasonfx i{background:#A9C4D8}
 .ri .sw{width:10px;height:10px;border-radius:3px}.ri .rn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ri .rp{font-family:var(--f-num);font-size:0.8125rem;white-space:nowrap}.ri .rp em{font-style:normal;color:var(--muted);display:inline-block;min-width:42px;text-align:right;margin-left:8px}
 .pill.st-pos{background:color-mix(in srgb,var(--pos) 16%,var(--surface));color:var(--pos)}
-.pill.st-mid{background:color-mix(in srgb,#D9A400 18%,var(--surface));color:#A87A00}
+.pill.st-mid{background:color-mix(in srgb,#D9A400 18%,var(--surface));color:#806000}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill.st-mid{color:#E0A800}}
 :root[data-theme="dark"] .pill.st-mid{color:#E0A800}
 .pill.st-neg{background:color-mix(in srgb,var(--neg) 14%,var(--surface));color:var(--neg)}
@@ -2955,7 +2955,7 @@ function openLoanForm(l){
     '<div class="field"><label for="l_party" id="l_partyL">'+(l.dir==="lent"?"Who owes you":"Lender (optional)")+'</label><input id="l_party" maxlength="40" placeholder="e.g. bank or person" value="'+esc(l.party)+'"></div>'+
     '<div class="two"><div class="field"><label for="l_bal">Still owed today</label><input id="l_bal" class="amount" inputmode="decimal" placeholder="0.00" value="'+num(l.balance)+'"></div>'+
     '<div class="field"><label for="l_orig">Original amount (optional)</label><input id="l_orig" class="amount" inputmode="decimal" placeholder="0.00" value="'+num(l.original)+'"></div></div>'+
-    '<div class="two"><div class="field"><label for="l_pay">Monthly payment (optional)</label><input id="l_pay" inputmode="decimal" placeholder="0.00" value="'+num(l.payment)+'"></div>'+
+    '<div class="two"><div class="field"><label for="l_pay">Monthly payment (optional)</label><input id="l_pay" class="amount" inputmode="decimal" placeholder="0.00" value="'+num(l.payment)+'"></div>'+
     '<div class="field"><label for="l_due">Due day of month (optional)</label><input id="l_due" inputmode="numeric" placeholder="e.g. 15" value="'+num(l.dueDay)+'"></div></div>'+
     '<div class="two"><div class="field"><label for="l_rate">Interest rate % (optional)</label><input id="l_rate" inputmode="decimal" placeholder="e.g. 6.9" value="'+num(l.rate)+'"></div>'+
     '<div class="field"><label for="l_apr">APR % (optional)</label><input id="l_apr" inputmode="decimal" placeholder="e.g. 7.2" value="'+num(l.apr)+'"></div></div>'+
@@ -3149,7 +3149,7 @@ function renderTx(errMsg){
     h+=borrowerField(t,"Lent to (who owes you)",catOf(t)!==LENT);
     h+=projField(t,"For a project? (optional)","No project");
   } else if(t.type==="income"){
-    h+='<div class="field"><label for="f_payer">Received from (optional)</label><input id="f_payer" maxlength="60" placeholder="e.g. Employer name" value="'+esc(t.payer)+'"></div>';
+    h+='<div class="field" id="f_payerF"'+(t.category===REPAY?' hidden':'')+'><label for="f_payer">Received from (optional)</label><input id="f_payer" maxlength="60" placeholder="e.g. Employer name" value="'+esc(t.payer)+'"></div>';
     h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(),t.to,"Choose account")+'</select></div>';
     h+='<div class="field"><label for="f_cat">Category</label><select id="f_cat">'+opts(INC_CATS.map(c=>({v:c,l:c})),t.category,"Choose a category")+'</select></div>';
     h+=borrowerField(t,"Paid back by",t.category!==REPAY);
@@ -3179,7 +3179,7 @@ function renderTx(errMsg){
       h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(liquid),t.to,"Choose account")+'</select></div>';
     } else {
       h+='<div class="field"><label for="f_from">Paid from</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose account")+'</select></div>';
-      h+='<div class="field"><label for="f_int">Of which interest</label><input id="f_int" inputmode="decimal" placeholder="0.00" value="'+esc(t.interest||"")+'"></div>';
+      h+='<div class="field"><label for="f_int">Of which interest</label><input id="f_int" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.interest||"")+'"></div>';
       h+='<p class="hint" id="splitHint">'+(l&&+l.rate?(l.method==="daily"?'Counted by day at '+esc(l.rate)+'% since your last payment. ':'Filled in from your '+esc(l.rate)+'% rate. ')+'Change it to match your statement if it differs. ':'')+'Only the part that is not interest lowers what you still owe.</p>';
     }
   } else if(t.type==="save"){
@@ -3204,6 +3204,7 @@ function renderTx(errMsg){
   ["f_amount","f_from","f_to","f_loan","f_int","f_date"].forEach(id=>{ const el=$(id); if(el){ el.addEventListener("input",updTxPrev); el.addEventListener("change",updTxPrev); } }); updTxPrev();
   const fcat=$("f_cat"), bf=$("f_borrowerF");
   if(fcat&&bf){ const sync=()=>{ const on=(draft.type==="expense"&&fcat.value===LENT)||(draft.type==="income"&&fcat.value===REPAY); bf.hidden=!on;
+      const pf=$("f_payerF"); if(pf) pf.hidden=(draft.type==="income"&&fcat.value===REPAY);
       const b=$("f_borrower"); if(on&&b&&!b.value&&draft.type==="expense"){ const d=($("f_desc")||{}).value||"", kb=detectBorrower(d); const cand=(kb&&kb.name)||nameInDesc(d)||(($("f_payee")||{}).value||""); if(cand) b.value=cand; } updRepayHint(); };
     fcat.addEventListener("change",sync); ["f_borrower","f_amount"].forEach(id=>{const el=$(id); if(el) el.addEventListener("input",updRepayHint);}); updRepayHint();
     const auto=()=>{ const b=$("f_borrower"); if(!b) return;
@@ -3258,7 +3259,7 @@ async function submitTx(e){
   if(t.type==="transfer"&&t.from===t.to) return renderTx("From and Destination must be different accounts.");
   const doc={kind:"txn",type:t.type,amount:Math.round(amt*100)/100,date:t.date,desc:t.desc,from:t.type==="income"?"":(t.from||""),created:t.created||Date.now(),
     to:["income","transfer","cardpay"].includes(t.type)?t.to:"",
-    payee:t.type==="expense"?t.payee:"", payer:t.type==="income"?(t.payer||""):"",
+    payee:t.type==="expense"?t.payee:"", payer:t.type==="income"?(t.category===REPAY?String(t.borrower||"").trim():(t.payer||"")):"",
     category:["expense","income"].includes(t.type)?(t.category||""):"",
     project:["save","expense","transfer","income","cardpay"].includes(t.type)?(t.split?"":(t.project||"")):"",
     borrower:((t.type==="expense"&&t.category===LENT)||(t.type==="income"&&t.category===REPAY))?String(t.borrower||"").trim():"",
@@ -3400,6 +3401,18 @@ function askDelete(){
 }
 
 /* ---------- events ---------- */
+// Money fields fill from the right: every digit pushes the last one left past the point.
+function amountMask(el){
+  const d=String(el.value).replace(/\D/g,"").replace(/^0+(?=\d)/,"").slice(0,12);
+  el.value = d ? ((parseInt(d,10)||0)/100).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}) : "";
+  try{ el.setSelectionRange(el.value.length,el.value.length); }catch(_){}
+}
+document.addEventListener("input",e=>{ const el=e.target; if(el&&el.classList&&el.classList.contains("amount")) amountMask(el); });
+function amountNorm(el){
+  const v=parseFloat(String(el.value).replace(/[^0-9.-]/g,""));
+  if(isFinite(v)) el.value=v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+document.addEventListener("focusin",e=>{ const el=e.target; if(el&&el.classList&&el.classList.contains("amount")&&el.value) amountNorm(el); });
 document.addEventListener("click",e=>{
   const cq=e.target.closest("[data-cardask]"); if(cq){ e.stopPropagation(); e.preventDefault(); askCard(cq.dataset.cardask); return; }
   const ck=e.target.closest("[data-ck]"); if(ck){ e.stopPropagation(); calcKey(ck.dataset.ck); return; }
@@ -3424,7 +3437,7 @@ document.addEventListener("click",async e=>{
   if(ds.pinact){ if(ds.pinact==="skip"){ try{ localStorage.setItem("pb_pin_skip_"+UID,"1"); }catch(_){} markUnlocked(); S.status="ready"; render(); } else { S.loginMsg=""; await SB.auth.signOut(); S.authMode="login"; render(); } return; }
   if(ds.fundonly){ const doc=STORE[ds.fundonly]; if(doc&&await save(ds.fundonly,Object.assign({},doc,{fund:true}))) toast("Saved as an ongoing fund"); return; }
   if(ds.lentperson){ openLentPerson(ds.lentperson); return; }
-  if(ds.repay){ const r=lentPeople().find(x=>x.name===ds.repay); const ck=S.accounts.find(a=>a.type==="checking"); openTx(null,{type:"income",category:REPAY,lentKey:ds.repay,amount:r?r.left.toFixed(2):"",desc:"Repayment",to:ck?ck.id:""}); return; }
+  if(ds.repay){ const r=lentPeople().find(x=>x.name===ds.repay); const ck=S.accounts.find(a=>a.type==="checking"); openTx(null,{type:"income",category:REPAY,lentKey:ds.repay,amount:"",desc:L("Repayment","Devolución"),to:ck?ck.id:""}); return; }
   if(ds.catlist){ openCatList(ds.catlist,ds.catym); return; }
   if(ds.addmenu){ openAcct({type:ds.addmenu==="day"?"checking":ds.addmenu}); return; }
   if(ds.addfor){ closeSheet(); const k=ds.addfor, first=t=>S.accounts.find(a=>a.type===t);
