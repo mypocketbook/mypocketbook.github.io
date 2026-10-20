@@ -105,6 +105,7 @@ button.row:hover{background:var(--sunk)}
 .wadd{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
 .wadd input{height:42px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:0.9375rem;color:var(--ink);min-width:0;font-family:inherit}
 .wadd .btn{height:42px}
+.wli.wlall{display:block;text-align:center;color:var(--muted);font-size:0.875rem;padding:14px 12px}
 .calcwrap{position:relative}.calcwrap input{padding-right:50px!important}
 .calcbtn{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:10px;border:0;background:var(--sunk);color:var(--muted);display:grid;place-items:center;padding:0;cursor:pointer}
 .calcbtn:hover{color:var(--accent)}
@@ -2585,11 +2586,20 @@ function viewProject(p){
   h+=cardBox(cardWaiting(p.id));
   h+='<div class="pcols"><div class="pcol">';
   // wish list
-  h+='<h2>Wish list <span class="gsum">'+(wish.length?money(wLeft)+' still to buy':'')+'</span></h2><div class="list wl">'+
-    wish.map(w=>'<div class="wli'+(w.done?' done':'')+'"><button type="button" class="wchk" data-wishtoggle="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" aria-pressed="'+(!!w.done)+'" aria-label="'+(w.done?"Mark as not bought":"Mark as bought")+'">'+(w.done?'✓':'')+'</button><span class="wn">'+esc(w.name)+'</span><span class="wpw"><i aria-hidden="true">$</i><input class="wp amount" inputmode="decimal" placeholder="0.00" aria-label="'+esc("Price of "+w.name)+'" data-wishprice="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" value="'+(+w.price?esc((+w.price).toFixed(2)):"")+'"></span><button type="button" class="wdel" data-wishdel="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" aria-label="Remove '+esc(w.name)+'">×</button></div>').join("")+
+  const wRow=w=>'<div class="wli'+(w.done?' done':'')+'"><button type="button" class="wchk" data-wishtoggle="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" aria-pressed="'+(!!w.done)+'" aria-label="'+(w.done?"Mark as not bought":"Mark as bought")+'">'+(w.done?'✓':'')+'</button><span class="wn">'+esc(w.name)+'</span><span class="wpw"><i aria-hidden="true">$</i><input class="wp amount" inputmode="decimal" placeholder="0.00" aria-label="'+esc("Price of "+w.name)+'" data-wishprice="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" value="'+(+w.price?esc((+w.price).toFixed(2)):"")+'"></span><button type="button" class="wdel" data-wishdel="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" aria-label="Remove '+esc(w.name)+'">×</button></div>';
+  const toBuy=wish.filter(w=>!w.done), bought=wish.filter(w=>w.done);
+  const wBought=Math.round(bought.reduce((s,w)=>s+(+w.price||0),0)*100)/100, noPrice=toBuy.filter(w=>!(+w.price)).length;
+  h+='<h2>Wish list <span class="gsum">'+(toBuy.length?money(wLeft)+' still to buy':'')+'</span></h2><div class="list wl">'+
+    toBuy.map(wRow).join("")+
+    (wish.length&&!toBuy.length?'<div class="wli wlall">'+L("Everything on the list is bought.","Ya compraste todo lo de la lista.")+'</div>':'')+
     '<form class="wadd" id="wishForm" data-pid="'+esc(p.id)+'" novalidate><input id="w_name" maxlength="60" placeholder="Item, like Floor mats" aria-label="Item"><input id="w_price" class="amount" inputmode="decimal" placeholder="Price" aria-label="Price"><button type="submit" class="btn primary">Add</button></form></div>';
-  if(wish.length){ const short=wLeft-Math.max(0,bal);
-    h+='<p class="hint" style="margin:8px 2px 0">List total '+money(wTotal)+'. '+(wLeft<=0?'Everything is bought.':(short>0?'You need '+money(short)+' more to buy what is left.':'You have enough to buy what is left.'))+'</p>'; }
+  if(toBuy.length){ const short=wLeft-Math.max(0,bal);
+    h+='<p class="hint" style="margin:8px 2px 0">'+(noPrice?L(noPrice===1?"One item has no price yet.":noPrice+" items have no price yet.",noPrice===1?"Un artículo aún no tiene precio.":noPrice+" artículos aún no tienen precio."):'List total '+money(wTotal)+'. '+(short>0?'You need '+money(short)+' more to buy what is left.':'You have enough to buy what is left.'))+'</p>'; }
+  if(bought.length){ const pc=Math.round(bought.length/wish.length*100);
+    h+='<h2 style="margin-top:18px">'+L("Already bought","Ya comprado")+' <span class="gsum">'+bought.length+'/'+wish.length+'</span></h2>'+
+      '<div class="ubar goal" style="height:8px;margin:0 2px 6px"><i style="width:'+pc+'%"></i></div>'+
+      '<p class="hint" style="margin:0 2px 8px">'+pc+'% '+L("of the list","de la lista")+(wTotal>0?' · '+money(wBought)+' '+L("of","de")+' '+money(wTotal):'')+'</p>'+
+      '<div class="list wl">'+bought.map(wRow).join("")+'</div>'; }
   h+='</div><div class="pcol">';
   const rows=(l,kind)=>l.length?'<div class="list">'+l.map(t=>{ const d=Object.assign({},txDisplay(t)); const f=ef(t);
     if(kind==="in"&&f.moved>0){ d.meta+=" · moved "+money(f.moved)+", new "+money(f.delta); t=Object.assign({},t,{amount:f.delta}); }
