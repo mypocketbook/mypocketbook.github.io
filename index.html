@@ -90,8 +90,17 @@ button.row:hover{background:var(--sunk)}
 .wli:first-child{border-top:0}
 .wchk{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--muted);background:none;color:var(--accent-ink);font-size:0.9375rem;font-weight:700;display:grid;place-items:center;padding:0;cursor:pointer}
 .wchk[aria-pressed="true"]{background:var(--pos);border-color:var(--pos)}
-.wn{font-size:0.9375rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wp{font-family:var(--f-num);font-size:0.875rem}
+.wn{font-size:0.9375rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wpw{position:relative;display:block;width:100px}
+.wpw i{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-style:normal;font-size:0.875rem;color:var(--muted);pointer-events:none}
+.wli.done .wpw i{text-decoration:line-through}
+.wp{font-family:var(--f-num);font-size:0.875rem;width:100%;padding-left:20px;box-sizing:border-box;text-align:right;color:var(--ink);background:none;border:1px solid transparent;border-radius:8px;height:34px;padding:0 8px;min-width:0}
+.wp::placeholder{color:var(--muted)}
+.wp:hover{border-color:var(--line)}
+.wp:focus{background:var(--bg);border-color:var(--accent);outline:none}
+.wp:focus+i,.wpw:focus-within i{color:var(--ink)}
 .wli.done .wn,.wli.done .wp{text-decoration:line-through;color:var(--muted)}
+.wli.done .wp:focus{text-decoration:none;color:var(--ink)}
 .wdel{border:0;background:none;color:var(--muted);font-size:1.25rem;cursor:pointer;padding:0;width:28px;height:28px;border-radius:8px}.wdel:hover{background:var(--sunk);color:var(--neg)}
 .wadd{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
 .wadd input{height:42px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:0.9375rem;color:var(--ink);min-width:0;font-family:inherit}
@@ -2577,7 +2586,7 @@ function viewProject(p){
   h+='<div class="pcols"><div class="pcol">';
   // wish list
   h+='<h2>Wish list <span class="gsum">'+(wish.length?money(wLeft)+' still to buy':'')+'</span></h2><div class="list wl">'+
-    wish.map(w=>'<div class="wli'+(w.done?' done':'')+'"><button type="button" class="wchk" data-wishtoggle="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" aria-pressed="'+(!!w.done)+'" aria-label="'+(w.done?"Mark as not bought":"Mark as bought")+'">'+(w.done?'✓':'')+'</button><span class="wn">'+esc(w.name)+'</span><span class="wp">'+money(w.price)+'</span><button type="button" class="wdel" data-wishdel="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" aria-label="Remove '+esc(w.name)+'">×</button></div>').join("")+
+    wish.map(w=>'<div class="wli'+(w.done?' done':'')+'"><button type="button" class="wchk" data-wishtoggle="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" aria-pressed="'+(!!w.done)+'" aria-label="'+(w.done?"Mark as not bought":"Mark as bought")+'">'+(w.done?'✓':'')+'</button><span class="wn">'+esc(w.name)+'</span><span class="wpw"><i aria-hidden="true">$</i><input class="wp amount" inputmode="decimal" placeholder="0.00" aria-label="'+esc("Price of "+w.name)+'" data-wishprice="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" value="'+(+w.price?esc((+w.price).toFixed(2)):"")+'"></span><button type="button" class="wdel" data-wishdel="'+esc(w.id)+'" data-wishproj="'+esc(p.id)+'" aria-label="Remove '+esc(w.name)+'">×</button></div>').join("")+
     '<form class="wadd" id="wishForm" data-pid="'+esc(p.id)+'" novalidate><input id="w_name" maxlength="60" placeholder="Item, like Floor mats" aria-label="Item"><input id="w_price" class="amount" inputmode="decimal" placeholder="Price" aria-label="Price"><button type="submit" class="btn primary">Add</button></form></div>';
   if(wish.length){ const short=wLeft-Math.max(0,bal);
     h+='<p class="hint" style="margin:8px 2px 0">List total '+money(wTotal)+'. '+(wLeft<=0?'Everything is bought.':(short>0?'You need '+money(short)+' more to buy what is left.':'You have enough to buy what is left.'))+'</p>'; }
@@ -3408,6 +3417,10 @@ function amountMask(el){
   try{ el.setSelectionRange(el.value.length,el.value.length); }catch(_){}
 }
 document.addEventListener("input",e=>{ const el=e.target; if(el&&el.classList&&el.classList.contains("amount")) amountMask(el); });
+document.addEventListener("change",async e=>{ const el=e.target, ds=el&&el.dataset; if(!ds||!ds.wishprice) return;
+  const v=parseFloat(String(el.value).replace(/[$,\s]/g,"")); const price=isFinite(v)&&v>0?Math.round(v*100)/100:0;
+  await wishUpdate(ds.wishproj,w=>w.map(x=>x.id===ds.wishprice?Object.assign({},x,{price:price}):x)); });
+document.addEventListener("keydown",e=>{ const el=e.target; if(e.key==="Enter"&&el&&el.dataset&&el.dataset.wishprice){ e.preventDefault(); el.blur(); } });
 function amountNorm(el){
   const v=parseFloat(String(el.value).replace(/[^0-9.-]/g,""));
   if(isFinite(v)) el.value=v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
