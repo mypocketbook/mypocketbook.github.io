@@ -106,6 +106,33 @@ button.row:hover{background:var(--sunk)}
 .wadd input{height:42px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:0 12px;font-size:0.9375rem;color:var(--ink);min-width:0;font-family:inherit}
 .wadd .btn{height:42px}
 /* category picker */
+/* projects: how the total divides */
+.psplit{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;margin:0 0 14px;display:grid;gap:14px}
+.pshead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.psbig{font-family:var(--f-disp);font-size:1.75rem;line-height:1.1;margin-top:2px}
+.pscount{font-size:0.75rem;color:var(--muted)}
+.psacct{display:grid;gap:9px}
+.psa{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.psan{font-weight:700;font-size:0.9375rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.psav{font-family:var(--f-num);font-size:0.9375rem;font-variant-numeric:tabular-nums;flex:none}
+.psbody{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;align-items:center}
+.pdw{position:relative;width:92px;height:92px}
+.pdonut{display:block}
+.pdonut .dfree{opacity:.55}
+.pdc{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1.15}
+.pdc b{font-family:var(--f-num);font-size:1.5rem;font-weight:600;line-height:1}
+.pslist{display:grid;gap:7px;min-width:0}
+@media(max-width:380px){.psbody{grid-template-columns:1fr;justify-items:center}.pslist{width:100%}}
+.psrow{display:grid;grid-template-columns:10px minmax(0,1fr) 34px max-content;gap:8px;align-items:center}
+.psd{width:10px;height:10px;border-radius:3px}
+.psrow.free .psd{background:repeating-linear-gradient(135deg,var(--sunk) 0 3px,color-mix(in srgb,var(--ink) 16%,var(--sunk)) 3px 6px)}
+.psn{font-size:0.8125rem;overflow:hidden;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.25;text-align:left;border:0;background:none;color:var(--ink);font-family:inherit;padding:4px 0;cursor:pointer;min-width:0}
+button.psn:hover{color:var(--accent);text-decoration:underline}
+.psn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.psrow.free .psn{color:var(--muted);cursor:default}
+.pspc{font-family:var(--f-num);font-size:0.75rem;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.psv{font-family:var(--f-num);font-size:0.8125rem;font-variant-numeric:tabular-nums}
+.psfoot{margin:0}
 .catpick{display:grid;gap:12px}
 .catgrp{display:grid;gap:8px}
 .catwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:8px}
@@ -2747,6 +2774,48 @@ function viewProject(p){
   const w=whereBlock(p.id); if(w) h+='<div class="mcard" style="margin-top:16px">'+w+'</div>';
   return h+'</div></div>';
 }
+/* ---------- how one account's money divides between the projects sitting in it ---------- */
+const PROJ_STEPS=[100,74,56,42,32];
+function projRank(){ const T=projLedger().total; return S.projects.slice().sort((a,b)=>(T[b.id]||0)-(T[a.id]||0)||(a.created||0)-(b.created||0)).map(x=>x.id); }
+function projColor(pid){
+  const i=projRank().indexOf(pid), m=PROJ_STEPS[(i<0?0:i)%PROJ_STEPS.length];
+  return m>=100?"var(--accent)":"color-mix(in srgb,var(--accent) "+m+"%,var(--surface))";
+}
+function projDonut(segs,label){
+  const R=48, C=2*Math.PI*R, tot=segs.reduce((s,x)=>s+x.v,0)||1;
+  let at=0, out='';
+  segs.forEach(x=>{ const len=x.v/tot*C; if(len<=0) return;
+    const gap=segs.length>1&&len>7?3:0, draw=Math.max(1,len-gap);
+    out+='<circle class="'+(x.free?"dfree":"")+'" cx="60" cy="60" r="'+R+'" fill="none" stroke="'+x.col+'" stroke-width="14" stroke-dasharray="'+draw.toFixed(2)+' '+(C-draw).toFixed(2)+'" stroke-dashoffset="'+(-at).toFixed(2)+'" transform="rotate(-90 60 60)"/>';
+    at+=len; });
+  return '<svg class="pdonut" viewBox="0 0 120 120" width="92" height="92" role="img" aria-label="'+esc(label)+'">'+
+    '<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="var(--sunk)" stroke-width="14"/>'+out+'</svg>';
+}
+function projSplitBlock(c){
+  const W=projLedger().where, byAcct={};
+  S.projects.forEach(p=>{ const m=W[p.id]||{};
+    Object.keys(m).forEach(aid=>{ if(Math.abs(m[aid])<0.005||!acctById(aid)) return; (byAcct[aid]||(byAcct[aid]=[])).push({p,amt:m[aid]}); }); });
+  const ids=Object.keys(byAcct).sort((a,b)=>byAcct[b].reduce((s,x)=>s+x.amt,0)-byAcct[a].reduce((s,x)=>s+x.amt,0));
+  if(!ids.length) return '';
+  const grand=ids.reduce((s,id)=>s+byAcct[id].reduce((t,x)=>t+x.amt,0),0);
+  let h='<section class="psplit"><div class="pshead"><div><div class="eyebrow">'+L("Set aside for projects","Apartado para proyectos")+'</div><div class="psbig">'+money(grand)+'</div></div>'+
+    '<div class="pscount">'+ids.length+' '+(ids.length===1?L("account","cuenta"):L("accounts","cuentas"))+'</div></div>';
+  ids.forEach(aid=>{
+    const rows=byAcct[aid].slice().sort((a,b)=>b.amt-a.amt);
+    const tot=rows.reduce((s,x)=>s+x.amt,0), bal=c.bal[aid]||0, free=Math.round((bal-tot)*100)/100;
+    const pos=rows.reduce((s,x)=>s+Math.max(0,x.amt),0), whole=(pos+Math.max(0,free))||1;
+    h+='<div class="psacct"><div class="psa"><span class="psan">'+esc(acctName(aid))+'</span><span class="psav">'+money(tot)+'</span></div>'+
+      '<div class="psbody">'+
+      '<div class="pdw">'+projDonut(rows.filter(r=>r.amt>0).map(r=>({v:r.amt,col:projColor(r.p.id)})).concat(free>0.004?[{v:free,col:"var(--line)",free:true}]:[]),
+        acctName(aid)+": "+rows.map(r=>r.p.name+" "+money(r.amt)).join(", ")+(free>0.004?", "+L("not assigned","sin asignar")+" "+money(free):""))+'<span class="pdc" aria-hidden="true"><b>'+rows.length+'</b></span></div>'+
+      '<div class="pslist">'+rows.map(r=>'<div class="psrow"><span class="psd" style="background:'+projColor(r.p.id)+'"></span>'+
+        '<button type="button" class="psn" data-cardopen="'+esc(r.p.id)+'">'+esc(r.p.name)+'</button>'+
+        '<span class="pspc">'+Math.round(Math.max(0,r.amt)/whole*100)+'%</span><span class="psv">'+money(r.amt)+'</span></div>').join("")+
+      (Math.abs(free)>0.004?'<div class="psrow free"><span class="psd" aria-hidden="true"></span><span class="psn">'+(free>0?L("Not assigned to a project","Sin asignar a un proyecto"):L("Assigned beyond the balance","Asignado de más"))+'</span><span class="pspc">'+(free>0?Math.round(free/whole*100)+'%':'')+'</span><span class="psv'+(free<0?' neg':'')+'">'+money(Math.abs(free))+'</span></div>':'')+
+      '</div></div><p class="hint psfoot">'+L("Account balance","Saldo de la cuenta")+' '+money(bal)+'</p></div>';
+  });
+  return h+'</section>';
+}
 function viewProjects(){
   const c=compute();
   let h=helpBox(L('How projects work','Cómo funcionan los proyectos'),L('Write the project name in the description, like <b>"Carmencita"</b>. A <b>Transfer</b> adds to the project. A <b>Card payment</b> from checking subtracts from it. Card purchases don\'t change it until you pay the card. The money stays in your accounts; this shows how much of it is for each project.',
@@ -2760,7 +2829,7 @@ function viewProjects(){
       '<div class="foot"><span>'+(goal?Math.round(pct)+'% of '+money(goal)+(b<goal?' · '+money(goal-b)+' to go':' · goal reached'):(p.fund?'Ongoing fund':'No goal set'))+'</span>'+
       '<span class="chev2" aria-hidden="true">›</span></div></div>';
   };
-  h+=prioRings(c)+tipRules();
+  h+=projSplitBlock(c)+prioRings(c)+tipRules();
   const F=S.prioFilter||"";
   const groups=PRIOS.map(r=>[r,S.projects.filter(p=>p.prio===r[0])]).concat([[["none","No priority yet","","var(--line)"],S.projects.filter(p=>!prioOf(p))]]).filter(g=>g[1].length&&(!F||g[0][0]===F));
   const col=([r,list])=>'<div class="prhead" style="--prc:'+r[3]+'"><i></i>'+r[1]+' <span>'+list.length+'</span></div><div class="pgrid">'+list.sort((a,b)=>(a.created||0)-(b.created||0)).map(card).join("")+'</div>';
