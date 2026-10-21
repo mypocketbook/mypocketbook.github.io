@@ -130,6 +130,8 @@ button.row:hover{background:var(--sunk)}
 .wkb.today .wkd{color:var(--accent)}
 .wktap{margin:0;text-align:center}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-top:1px solid var(--line);padding-top:11px}
+.three.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.three.four b{font-size:0.8125rem}
 .three div{display:grid;gap:2px;min-width:0}
 .three b{font-family:var(--f-num);font-size:0.9375rem;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .three em{font-style:normal;font-size:0.625rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
@@ -2906,13 +2908,15 @@ function shiftNet(sh){ return Math.round(((+sh.amount||0)-shiftGas(sh))*100)/100
 function weekTotals(ws){
   const we=weekEndOf(ws), list=S.shifts.filter(x=>x.date>=ws&&x.date<=we);
   const gross=list.reduce((t,x)=>t+(+x.amount||0),0), gas=list.reduce((t,x)=>t+shiftGas(x),0), hrs=list.reduce((t,x)=>t+hoursOf(x),0);
-  const net=Math.round((gross-gas)*100)/100;
-  return {list,gross:Math.round(gross*100)/100,gas:Math.round(gas*100)/100,hrs:Math.round(hrs*100)/100,net,rate:hrs>0?net/hrs:null};
+  const fee=workDeposits().filter(t=>t.date>=ws&&t.date<=we).reduce((t,x)=>t+(+x.fee||0),0);
+  const net=Math.round((gross-gas-fee)*100)/100;
+  return {list,gross:Math.round(gross*100)/100,gas:Math.round(gas*100)/100,fee:Math.round(fee*100)/100,hrs:Math.round(hrs*100)/100,net,rate:hrs>0?net/hrs:null};
 }
 // Gas put on a card while working, still waiting for a deposit to cover it.
 function workEarned(){ return Math.round(S.shifts.reduce((t,x)=>t+(+x.amount||0),0)*100)/100; }
 function workDeposits(){ return S.txns.filter(t=>t.type==="income"&&t.workPay); }
-function workPaid(){ return Math.round(workDeposits().reduce((t,x)=>t+(+x.amount||0),0)*100)/100; }
+// A fee settles the earning just as a dollar in your account does: both leave nothing owed.
+function workPaid(){ return Math.round(workDeposits().reduce((t,x)=>t+(+x.amount||0)+(+x.fee||0),0)*100)/100; }
 function workPending(){ return Math.round(Math.max(0,workEarned()-workPaid())*100)/100; }
 // Gas already covered by a deposit sits in that account, spoken for, until the card is paid.
 function gasReserve(){
@@ -2963,7 +2967,9 @@ function viewWork(){
           '<button type="button" class="btn wkedit" data-editshift="'+esc(sh.id)+'">'+L("Edit this shift","Editar este turno")+'</button></div>'; }).join("")
       :'<p class="hint" style="margin:0 0 10px">'+esc(dayName(sel))+' \u00b7 '+L("nothing logged.","sin registro.")+'</p><button type="button" class="btn primary" data-addshift="'+esc(sel)+'">'+L("Log this day","Registrar este día")+'</button>')+'</div>';
   } else h+='<p class="hint wktap">'+L("Tap a column to see that day.","Toca una columna para ver ese día.")+'</p>';
-  h+='<div class="three"><div><b>'+money(W.gross)+'</b><em>'+L("Made","Hiciste")+'</em></div><div><b>'+(W.gas?"\u2212":"")+money(W.gas)+'</b><em>'+L("Gas","Gasolina")+'</em></div><div><b>'+(W.hrs?hhmm(W.hrs):"0 h")+'</b><em>'+L("Worked","Trabajadas")+'</em></div></div>'+
+  h+='<div class="three'+(W.fee?' four':'')+'"><div><b>'+money(W.gross)+'</b><em>'+L("Made","Hiciste")+'</em></div><div><b>'+(W.gas?"\u2212":"")+money(W.gas)+'</b><em>'+L("Gas","Gasolina")+'</em></div>'+
+    (W.fee?'<div><b>\u2212'+money(W.fee)+'</b><em>'+L("Fees","Comisión")+'</em></div>':'')+
+    '<div><b>'+(W.hrs?hhmm(W.hrs):"0 h")+'</b><em>'+L("Worked","Trabajadas")+'</em></div></div>'+
     '<button type="button" class="btn primary" style="width:100%" data-addshift="1">+ '+L("Log a shift","Registrar turno")+'</button></section>';
   const pend=workPending();
   if(pend>0.004||workDeposits().length) h+='<div class="pendbox"><p class="gt"><span aria-hidden="true">\u23f3</span> '+L("Waiting to be paid by the apps","Por cobrar en las apps")+'</p>'+
@@ -3047,40 +3053,47 @@ async function deleteShift(id){
 let payDraft=null;
 function openWorkPay(){
   const ck=S.accounts.find(a=>a.type==="checking")||S.accounts.find(a=>a.type!=="credit");
-  payDraft={date:todayStr(),amount:"",to:ck?ck.id:""};
+  payDraft={date:todayStr(),amount:"",fee:"",to:ck?ck.id:""};
   renderWorkPay();
 }
 function renderWorkPay(err){
-  const t=payDraft, pend=workPending(), amt=parseFloat(String(t.amount).replace(/[$,\s]/g,""))||0;
+  const t=payDraft, pend=workPending(), amt=parseFloat(String(t.amount).replace(/[$,\s]/g,""))||0, fee=parseFloat(String(t.fee).replace(/[$,\s]/g,""))||0;
   let h=sheetHead(L("Register a deposit","Registrar un depósito"))+'<form id="payForm" novalidate>'+
     '<p class="hint" style="margin:0 0 10px">'+L("The money the apps owe you, landing in your account.","El dinero que te deben las apps, cayendo en tu cuenta.")+'</p>'+
     '<div class="two"><div class="field"><label for="w_date">'+L("Day","Día")+'</label>'+dateField("w_date",t.date)+'</div>'+
     '<div class="field"><label for="w_amt">'+L("Amount","Monto")+'</label><input id="w_amt" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount||"")+'"></div></div>'+
+    '<div class="field"><label for="w_fee">'+L("Fee they kept (optional)","Comisión que te quitaron (opcional)")+'</label><input id="w_fee" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.fee||"")+'">'+
+    '<p class="hint" style="margin:6px 0 0">'+L("What the app charged to pay you early. It lowers what you earned, not your balance: it never reached your account.","Lo que te cobró la app por adelantarte el pago. Baja lo que ganaste, no tu saldo: ese dinero nunca llegó a tu cuenta.")+'</p></div>'+
     '<div class="field"><label for="w_to">'+L("Into which account","A qué cuenta")+'</label><select id="w_to">'+opts(acctOpts(a=>a.type!=="credit"),t.to,L("Choose account","Elige una cuenta"))+'</select></div>'+
-    '<div class="live" id="w_live">'+payLive(pend,amt)+'</div>'+
+    '<div class="live" id="w_live">'+payLive(pend,amt,fee)+'</div>'+
     (err?'<p class="err" role="alert">'+esc(err)+'</p>':'')+
     '<div class="actions"><button type="submit" class="btn primary">'+L("Register deposit","Registrar depósito")+'</button></div></form>';
   openSheet(h);
   const f=$("payForm"); if(f) f.addEventListener("submit",submitWorkPay);
-  const el=$("w_amt"); if(el) el.addEventListener("input",()=>setTimeout(()=>{
-    $("w_live").innerHTML=payLive(pend,parseFloat($("w_amt").value.replace(/[$,\s]/g,""))||0); },0));
+  const sync=()=>setTimeout(()=>{ $("w_live").innerHTML=payLive(pend,
+      parseFloat($("w_amt").value.replace(/[$,\s]/g,""))||0,
+      parseFloat($("w_fee").value.replace(/[$,\s]/g,""))||0); },0);
+  ["w_amt","w_fee"].forEach(id=>{const el=$(id); if(el) el.addEventListener("input",sync);});
 }
-function payLive(pend,amt){
-  if(!amt) return '<div class="sl"><span>'+L("You logged working","Registraste trabajando")+'</span><span>'+money(pend)+'</span></div>';
-  const d=Math.round((amt-pend)*100)/100;
-  return '<div class="sl"><span>'+L("You logged working","Registraste trabajando")+'</span><span>'+money(pend)+'</span></div>'+
-    '<div class="sl"><span>'+L("They deposited","Te depositaron")+'</span><span>'+money(amt)+'</span></div>'+
-    '<div class="sl tot"><span>'+(Math.abs(d)<0.005?L("They match","Cuadra"):d<0?L("Difference (fees, adjustments)","Diferencia (comisiones, ajustes)"):L("More than you logged","Más de lo que registraste"))+'</span><span>'+(Math.abs(d)<0.005?"\u2014":(d<0?"\u2212":"+")+money(Math.abs(d)))+'</span></div>';
+function payLive(pend,amt,fee){
+  let h='<div class="sl"><span>'+L("You logged working","Registraste trabajando")+'</span><span>'+money(pend)+'</span></div>';
+  if(!amt) return h;
+  h+='<div class="sl"><span>'+L("They deposited","Te depositaron")+'</span><span>'+money(amt)+'</span></div>';
+  if(fee) h+='<div class="sl"><span>'+L("Fee they kept","Comisión que te quitaron")+'</span><span>\u2212'+money(fee)+'</span></div>';
+  const d=Math.round((amt+fee-pend)*100)/100;
+  h+='<div class="sl tot"><span>'+(Math.abs(d)<0.005?L("It all adds up","Todo cuadra"):d<0?L("Still unexplained","Sin explicar todavía"):L("More than you logged","Más de lo que registraste"))+'</span><span>'+(Math.abs(d)<0.005?"\u2014":(d<0?"\u2212":"+")+money(Math.abs(d)))+'</span></div>';
+  return h;
 }
 async function submitWorkPay(e){
   e.preventDefault();
-  const t=payDraft; t.date=$("w_date").value; t.amount=$("w_amt").value.trim(); t.to=$("w_to").value;
+  const t=payDraft; t.date=$("w_date").value; t.amount=$("w_amt").value.trim(); t.fee=$("w_fee").value.trim(); t.to=$("w_to").value;
   const amt=parseFloat(String(t.amount).replace(/[$,\s]/g,""));
   if(!t.date) return renderWorkPay(L("Pick the day it landed.","Elige el día que cayó."));
   if(!(amt>0)) return renderWorkPay(L("Write how much they deposited.","Escribe cuánto te depositaron."));
   if(!acctById(t.to)) return renderWorkPay(L("Choose the account it landed in.","Elige la cuenta donde cayó."));
   const doc={kind:"txn",type:"income",amount:Math.round(amt*100)/100,date:t.date,desc:L("Deposit from the apps","Depósito de las apps"),
-    payer:L("Driving apps","Apps de manejo"),to:t.to,category:"Freelance",workPay:true,created:Date.now()};
+    payer:L("Driving apps","Apps de manejo"),to:t.to,category:"Freelance",workPay:true,
+    fee:Math.round((parseFloat(String(t.fee).replace(/[$,\s]/g,""))||0)*100)/100,created:Date.now()};
   if(await save(null,doc)){ closeSheet(); toast(L("Deposit registered","Depósito registrado")); offerGasPay(t.to); render(); }
 }
 // A: right after the deposit, offer to pay back the cards that carried the gas.
