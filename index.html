@@ -1292,7 +1292,10 @@ function dayName(s){const [y,m,d]=s.split("-").map(Number);const dt=new Date(y,m
   if(dt.toDateString()===yd.toDateString()) return "Yesterday";
   return dt.toLocaleDateString(LOC(),{weekday:"short",month:"short",day:"numeric"});}
 const fmt=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"});
-function money(n,short){const v=Math.round((n||0)*100)/100; return short&&v%1===0?fmt.format(v).replace(/\.00$/,""):fmt.format(v);}
+function money(n,short){const v=(Math.round((n||0)*100)/100)||0; return short&&v%1===0?fmt.format(v).replace(/\.00$/,""):fmt.format(v);}
+// Rounding leaves balances like -0.0000000001. Anything under half a cent is zero.
+function neg(v){ return (+v||0)<-0.005; }
+function pos(v){ return (+v||0)>0.005; }
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function $(id){return document.getElementById(id);}
 function acctById(id){return S.accounts.find(a=>a.id===id);}
@@ -1959,7 +1962,7 @@ function viewAccount(a){
   const show=v=>credit?money(-v):money(v);
   const _g=acctGoal(a), _bal=compute().bal[a.id];
   let h=acctSwitcher(a,compute())+jumpBar(credit?"cards":(a.type==="savings"?"sav":"day"))+'<section class="hero"><div class="eyebrow">'+ACCT_TYPES[a.type]+(credit?" · amount owed":" · balance")+'</div>'+
-    '<div class="big '+((credit? -run>0 : run<0)?"neg":"")+'">'+show(run)+'</div>'+
+    '<div class="big '+((credit? pos(-run) : neg(run))?"neg":"")+'">'+show(run)+'</div>'+
     (_g?'<div class="ubar goal" style="height:8px;margin:10px 0 2px"><i style="width:'+Math.min(100,Math.max(0,_bal)/_g.goal*100).toFixed(1)+'%"></i></div><p class="hint" style="margin:0 0 2px">'+Math.round(Math.min(100,Math.max(0,_bal)/_g.goal*100))+'% of your '+money(_g.goal)+' goal'+(_g.date?' · '+esc(fmtDate(pDate(_g.date))):'')+'</p>'+goalPace(a,_bal):'')+
     ((a.asOf||a.created)?'<p class="hint" style="margin:-4px 0 12px">Starting balance of '+show(credit?-(+a.opening||0):(+a.opening||0))+' as of '+esc(fmtDate(a.asOf?pDate(a.asOf):new Date(a.created)))+'.</p>':'')+
     quickActs([{pri:1,icon:"plus",label:"Add transaction",attr:'data-addin="'+esc(a.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editacct="'+esc(a.id)+'"'},{icon:"hist",label:"History",attr:'data-scrollto="accthist"'}])+'</section><span id="accthist"></span>';
@@ -2308,7 +2311,7 @@ function projRow(p,c){
   const v=c.proj[p.id]||0, goal=+p.goal||0, pct=goal?Math.max(0,Math.min(100,v/goal*100)):0, pr=prioOf(p);
   return '<button class="row'+(pr?' prrow':'')+'"'+(pr?' style="--prc:'+pr[3]+'"':'')+' data-viewproj="'+esc(p.id)+'"><span class="badge fundb">'+esc(initials(p.name))+'</span><span class="main"><span class="t">'+esc(p.name)+prioTag(p)+'</span>'+
     (goal?'<span class="ubar goal"><i style="width:'+pct.toFixed(1)+'%"></i></span><span class="m">'+Math.round(pct)+'% of '+money(goal)+'</span>':'<span class="m">'+(p.fund?'Ongoing fund':'Project · no goal set')+'</span>')+
-    '</span><span class="amt '+(v<0?"neg":"")+'">'+money(v)+'</span></button>';
+    '</span><span class="amt '+(neg(v)?"neg":"")+'">'+money(v)+'</span></button>';
 }
 function acctGroups(c,withProjects){
   const by=t=>S.accounts.filter(a=>a.type===t);
@@ -2339,7 +2342,7 @@ function acctRows(c,editable){
     const shown = credit? money(-b) : money(b);
     return '<button class="row" data-openacct="'+esc(a.id)+'">'+acctBadge(a)+
       '<span class="main"><span class="t">'+esc(a.name)+'</span><span class="m">'+ACCT_TYPES[a.type]+'</span></span>'+
-      '<span class="amt '+(credit&&-b>0?"neg":(!credit&&b<0?"neg":""))+'">'+shown+(credit?'<span class="owed">owed</span>':'')+'</span></button>';
+      '<span class="amt '+((credit?pos(-b):neg(b))?"neg":"")+'">'+shown+(credit?'<span class="owed">owed</span>':'')+'</span></button>';
   }).join("")+'</div>';
 }
 
@@ -2803,7 +2806,7 @@ function viewProject(p){
   const all=projSorted();
   const projTot=all.reduce((t,q)=>t+Math.max(0,c.proj[q.id]||0),0);
   let h=switcher(all.map(q=>{ const qb=c.proj[q.id]||0, qg=+q.goal||0; const qr=prioOf(q); return {attr:'data-viewproj="'+esc(q.id)+'"',name:q.name,col:qr?qr[3]:undefined,value:qb,neg:qb<0,pct:qg?qb/qg*100:(projTot?Math.max(0,qb)/projTot*100:0),sub:qg?"of "+money(qg,true):"of projects",on:q.id===p.id}; }),"Projects")+jumpBar("proj")+
-    '<section class="hero"><div class="eyebrow">Available for this project'+prioTag(p)+'</div><div class="big '+(bal<0?"neg":"")+'">'+money(bal)+'</div>'+
+    '<section class="hero"><div class="eyebrow">Available for this project'+prioTag(p)+'</div><div class="big '+(neg(bal)?"neg":"")+'">'+money(bal)+'</div>'+
     (goal?'<div class="ubar goal" style="height:8px;margin:8px 0 4px"><i style="width:'+pct.toFixed(1)+'%"></i></div><p class="hint" style="margin:0">'+Math.round(pct)+'% of your '+money(goal)+' goal'+(bal<goal?' · '+money(goal-bal)+' to go':' · goal reached')+'</p>':(p.fund?'<p class="hint" style="margin:0">Ongoing fund, no goal. Add one anytime with Edit project.</p>':'<form class="goalf" id="goalForm" data-pid="'+esc(p.id)+'" novalidate><label for="g_amt">Saving for something specific? Set a goal (optional)</label><div class="gf"><input id="g_amt" class="amount" inputmode="decimal" placeholder="e.g. 1500"><button type="submit" class="btn primary">Save goal</button></div><button type="button" class="sadd" data-fundonly="'+esc(p.id)+'">No goal, it\'s an ongoing fund</button></form>'))+
     quickActs([{pri:1,icon:"plus",label:"Add money",attr:'data-saveto="'+esc(p.id)+'"'},{icon:"pen",label:"Edit",attr:'data-editproj="'+esc(p.id)+'"'},{icon:"hist",label:"History",attr:'data-projhist="'+esc(p.id)+'"'}])+'</section>';
   h+=cardBox(cardWaiting(p.id));
