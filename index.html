@@ -670,9 +670,9 @@ html[data-theme="dark"]{--pr-top:#B197FC;--pr-mid:#3BC9DB;--pr-low:#D59BD5}
 .gnote{font-size:0.75rem;font-weight:600;color:var(--muted)}
 .qa button{max-width:116px}.qa span{line-height:1.2}
 .ttlwrap{display:grid;min-width:0}#hello{font-size:0.8125rem;font-weight:700;color:var(--accent);line-height:1.1;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);opacity:0;transition:opacity .4s ease;cursor:pointer}
+#splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg);opacity:0;transition:opacity .25s ease;cursor:pointer}
 #splash.in{opacity:1}#splash.out{opacity:0}
-#splash .spin{display:grid;justify-items:center;text-align:center;transform:translateY(8px);transition:transform .6s cubic-bezier(.2,.8,.2,1)}#splash.in .spin{transform:none}
+#splash .spin{display:grid;justify-items:center;text-align:center;transform:translateY(8px);transition:transform .35s cubic-bezier(.2,.8,.2,1)}#splash.in .spin{transform:none}
 #splash .sp1{margin:18px 0 0;font-size:1.25rem;font-weight:600;color:var(--muted)}#splash .sp2{margin:2px 0 0;font-size:clamp(2.125rem,9vw,3rem);font-weight:800;letter-spacing:-.03em;color:var(--ink)}
 @media (prefers-reduced-motion:reduce){#splash,#splash .spin{transition:none}}
 .bring .bn{white-space:normal;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -2283,7 +2283,7 @@ function maybeWelcome(){ if(S.status!=="ready"||!userName()||LANG_RELOAD||WELCOM
   const el=document.createElement("div"); el.id="splash"; el.setAttribute("role","status"); el.setAttribute("data-noi18n","");
   el.innerHTML='<div class="spin"><div class="wring" aria-hidden="true"><i></i></div><p class="sp1">'+esc(back?L("Welcome back,",userGreet()==="f"?"¡Bienvenida de nuevo,":"¡Bienvenido de nuevo,"):L("Welcome,",userGreet()==="f"?"¡Bienvenida,":"¡Bienvenido,"))+'</p><p class="sp2">'+esc(userName())+'!</p></div>';
   document.body.appendChild(el); requestAnimationFrame(()=>el.classList.add("in"));
-  setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),450); },1700); el.addEventListener("click",()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),400); }); }
+  setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),300); },800); el.addEventListener("click",()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),400); }); }
 /* Ask once for a name if the account doesn't have one yet */
 function maybeAskName(){ if(S.status!=="ready"||MODE!=="cloud"||userName()||$("sheetRoot").innerHTML) return; try{ if(sessionStorage.getItem("pb_name_asked")) return; sessionStorage.setItem("pb_name_asked","1"); }catch(_){}
   openSheet(sheetHead(L("What should we call you?","¿Cómo te llamamos?"))+'<form id="nameForm" novalidate><p class="hint" style="margin:0 0 10px">'+L("Your name or nickname shows when you open Pocketbook.","Tu nombre o apodo aparece al abrir Pocketbook.")+'</p><div class="field"><label for="nm_name">'+L("Name or nickname","Nombre o apodo")+'</label><input id="nm_name" maxlength="30" autocomplete="given-name"></div><div class="field"'+(LANG()==="es"?'':' hidden')+'><label>Mensaje de bienvenida</label>'+greetPick("nm","m")+'</div><div class="actions"><button type="submit" class="btn primary">'+L("Save","Guardar")+'</button></div></form>');
@@ -2970,7 +2970,7 @@ function viewWork(){
   h+='<div class="three'+(W.fee?' four':'')+'"><div><b>'+money(W.gross)+'</b><em>'+L("Made","Hiciste")+'</em></div><div><b>'+(W.gas?"\u2212":"")+money(W.gas)+'</b><em>'+L("Gas","Gasolina")+'</em></div>'+
     (W.fee?'<div><b>\u2212'+money(W.fee)+'</b><em>'+L("Fees","Comisión")+'</em></div>':'')+
     '<div><b>'+(W.hrs?hhmm(W.hrs):"0 h")+'</b><em>'+L("Worked","Trabajadas")+'</em></div></div>'+
-    '<button type="button" class="btn primary" style="width:100%" data-addshift="1">+ '+L("Log a shift","Registrar turno")+'</button></section>';
+    '</section>';
   const pend=workPending();
   if(pend>0.004||workDeposits().length) h+='<div class="pendbox"><p class="gt"><span aria-hidden="true">\u23f3</span> '+L("Waiting to be paid by the apps","Por cobrar en las apps")+'</p>'+
     '<p class="pendv">'+money(pend)+'</p><p class="hint" style="margin:0">'+L("Logged as worked and not deposited yet. It is not in any of your accounts.","Registrado como trabajado y aún sin depositar. No está en ninguna de tus cuentas.")+'</p>'+
