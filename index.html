@@ -3750,6 +3750,8 @@ function renderTx(errMsg){
     h+='<div class="field"><label for="f_to">Destination account</label><select id="f_to">'+opts(acctOpts(),t.to,"Choose account")+'</select></div>';
     h+=catField(t);
     h+=borrowerField(t,"Paid back by",t.category!==REPAY);
+    if(t.workPay) h+='<div class="field"><label for="f_fee">'+L("Fee they kept","Comisión que te quitaron")+'</label><input id="f_fee" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.fee||"")+'">'+
+      '<p class="hint" style="margin:6px 0 0">'+L("This is a deposit from the driving apps. The amount above is what reached the account; the fee only lowers what you earned.","Este es un depósito de las apps de manejo. El monto de arriba es lo que llegó a la cuenta; la comisión solo baja lo que ganaste.")+'</p></div>';
     h+=projField(t,"Save it for a project (optional)","No project");
   } else if(t.type==="transfer"){
     h+='<div class="two"><div class="field"><label for="f_from">From</label><select id="f_from">'+opts(acctOpts(liquid),t.from,"Choose")+'</select></div>'+
@@ -3835,7 +3837,7 @@ function loanDefaults(){
 }
 function readTxForm(){
   const g=id=>{const el=$(id);return el?el.value.trim():undefined;};
-  const map={amount:"f_amount",date:"f_date",desc:"f_desc",from:"f_from",to:"f_to",category:"f_cat",subcat:"f_subcat",project:"f_proj",payee:"f_payee",payer:"f_payer",loan:"f_loan",interest:"f_int",borrower:"f_borrower"};
+  const map={amount:"f_amount",date:"f_date",desc:"f_desc",from:"f_from",to:"f_to",category:"f_cat",subcat:"f_subcat",fee:"f_fee",project:"f_proj",payee:"f_payee",payer:"f_payer",loan:"f_loan",interest:"f_int",borrower:"f_borrower"};
   for(const k in map){const v=g(map[k]); if(v!==undefined) draft[k]=v;}
   if(document.querySelector("[data-sp]")) draft.parts=readSplit();
 }
@@ -3873,6 +3875,7 @@ async function submitTx(e){
       : L("The split is "+money(got-want)+" more than "+money(want)+".","El reparto pasa por "+money(got-want)+" de "+money(want)+"."));
     doc.parts=parts.map(p=>({pid:p.pid,amt:Math.round((+p.amt||0)*100)/100}));
   }
+  { const o=t.id&&STORE[t.id]; if(o&&o.workPay&&doc.type==="income"){ doc.workPay=true; doc.fee=Math.round((parseFloat(String(t.fee!==undefined?t.fee:o.fee).replace(/[$,\s]/g,""))||0)*100)/100; } }
   if(t.type==="loanpay"){ doc.loan=t.loan; doc.from=lentLoan?"":t.from; doc.to=lentLoan?t.to:""; doc.interest=Math.round(intr*100)/100; doc.borrower=lentLoan?String(t.borrower||"").trim():""; }
   if(t.type==="expense"){ const ac=acctById(doc.from), old=t.id&&STORE[t.id];
     if(ac&&ac.type==="credit"&&txParts(doc).length){ if(!t.id) doc.cardWait=true; else if(old&&old.cardWait){ doc.cardWait=true; if(old.cardPaid){ doc.cardPaid=old.cardPaid; doc.cardPaidOn=old.cardPaidOn; } } } }
