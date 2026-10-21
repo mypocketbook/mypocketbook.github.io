@@ -3061,9 +3061,10 @@ function renderWorkPay(err){
   let h=sheetHead(L("Register a deposit","Registrar un depósito"))+'<form id="payForm" novalidate>'+
     '<p class="hint" style="margin:0 0 10px">'+L("The money the apps owe you, landing in your account.","El dinero que te deben las apps, cayendo en tu cuenta.")+'</p>'+
     '<div class="two"><div class="field"><label for="w_date">'+L("Day","Día")+'</label>'+dateField("w_date",t.date)+'</div>'+
-    '<div class="field"><label for="w_amt">'+L("Amount","Monto")+'</label><input id="w_amt" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount||"")+'"></div></div>'+
+    '<div class="field"><label for="w_amt">'+L("Cash out total","Total del cash out")+'</label><input id="w_amt" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.amount||"")+'"></div></div>'+
+    '<p class="hint" style="margin:-4px 0 0">'+L("What left your balance in the app, before any fee.","Lo que salió de tu saldo en la app, antes de la comisión.")+'</p>'+
     '<div class="field"><label for="w_fee">'+L("Fee they kept (optional)","Comisión que te quitaron (opcional)")+'</label><input id="w_fee" class="amount" inputmode="decimal" placeholder="0.00" value="'+esc(t.fee||"")+'">'+
-    '<p class="hint" style="margin:6px 0 0">'+L("What the app charged to pay you early. It lowers what you earned, not your balance: it never reached your account.","Lo que te cobró la app por adelantarte el pago. Baja lo que ganaste, no tu saldo: ese dinero nunca llegó a tu cuenta.")+'</p></div>'+
+    '<p class="hint" style="margin:6px 0 0">'+L("Pocketbook subtracts it: your account goes up by the rest. The fee lowers what you earned, never your balance.","Pocketbook la resta: tu cuenta sube solo por el resto. La comisión baja lo que ganaste, nunca tu saldo.")+'</p></div>'+
     '<div class="field"><label for="w_to">'+L("Into which account","A qué cuenta")+'</label><select id="w_to">'+opts(acctOpts(a=>a.type!=="credit"),t.to,L("Choose account","Elige una cuenta"))+'</select></div>'+
     '<div class="live" id="w_live">'+payLive(pend,amt,fee)+'</div>'+
     (err?'<p class="err" role="alert">'+esc(err)+'</p>':'')+
@@ -3078,10 +3079,13 @@ function renderWorkPay(err){
 function payLive(pend,amt,fee){
   let h='<div class="sl"><span>'+L("You logged working","Registraste trabajando")+'</span><span>'+money(pend)+'</span></div>';
   if(!amt) return h;
-  h+='<div class="sl"><span>'+L("They deposited","Te depositaron")+'</span><span>'+money(amt)+'</span></div>';
+  h+='<div class="sl"><span>'+L("Cash out total","Total del cash out")+'</span><span>'+money(amt)+'</span></div>';
   if(fee) h+='<div class="sl"><span>'+L("Fee they kept","Comisión que te quitaron")+'</span><span>\u2212'+money(fee)+'</span></div>';
-  const d=Math.round((amt+fee-pend)*100)/100;
-  h+='<div class="sl tot"><span>'+(Math.abs(d)<0.005?L("It all adds up","Todo cuadra"):d<0?L("Still unexplained","Sin explicar todavía"):L("More than you logged","Más de lo que registraste"))+'</span><span>'+(Math.abs(d)<0.005?"\u2014":(d<0?"\u2212":"+")+money(Math.abs(d)))+'</span></div>';
+  h+='<div class="sl tot"><span>'+L("Into your account","Entra a tu cuenta")+'</span><span>'+money(Math.round((amt-fee)*100)/100)+'</span></div>';
+  const d=Math.round((amt-pend)*100)/100;
+  h+='<p class="hint" style="margin:4px 0 0">'+(Math.abs(d)<0.005?L("It matches what you logged working.","Cuadra con lo que registraste trabajando.")
+      :d>0?L("That is "+money(d)+" more than you logged working.","Son "+money(d)+" más de lo que registraste trabajando.")
+      :L("That is "+money(-d)+" less than you logged working.","Son "+money(-d)+" menos de lo que registraste trabajando."))+'</p>';
   return h;
 }
 async function submitWorkPay(e){
@@ -3091,9 +3095,11 @@ async function submitWorkPay(e){
   if(!t.date) return renderWorkPay(L("Pick the day it landed.","Elige el día que cayó."));
   if(!(amt>0)) return renderWorkPay(L("Write how much they deposited.","Escribe cuánto te depositaron."));
   if(!acctById(t.to)) return renderWorkPay(L("Choose the account it landed in.","Elige la cuenta donde cayó."));
-  const doc={kind:"txn",type:"income",amount:Math.round(amt*100)/100,date:t.date,desc:L("Deposit from the apps","Depósito de las apps"),
+  const feeV=Math.round((parseFloat(String(t.fee).replace(/[$,\s]/g,""))||0)*100)/100;
+  if(feeV>=amt) return renderWorkPay(L("The fee cannot be the whole cash out.","La comisión no puede ser todo el cash out."));
+  const doc={kind:"txn",type:"income",amount:Math.round((amt-feeV)*100)/100,date:t.date,desc:L("Deposit from the apps","Depósito de las apps"),
     payer:L("Driving apps","Apps de manejo"),to:t.to,category:"Freelance",workPay:true,
-    fee:Math.round((parseFloat(String(t.fee).replace(/[$,\s]/g,""))||0)*100)/100,created:Date.now()};
+    fee:feeV,created:Date.now()};
   if(await save(null,doc)){ closeSheet(); toast(L("Deposit registered","Depósito registrado")); offerGasPay(t.to); render(); }
 }
 // A: right after the deposit, offer to pay back the cards that carried the gas.
@@ -3103,9 +3109,9 @@ function offerGasPay(acctId){
   openSheet(sheetHead(L("Part of this is gas","Parte de esto es gasolina"))+
     '<p>'+L("<b>"+money(tot)+"</b> of what just landed is gas you put on a card while working.","<b>"+money(tot)+"</b> de lo que acaba de caer es gasolina que pusiste con tarjeta trabajando.")+'</p>'+
     '<div class="list">'+g.map(x=>'<div class="row" style="cursor:default"><span class="badge tx" style="--tint:#7048E8" aria-hidden="true">\ud83d\udcb3</span><span class="main"><span class="t">'+esc(acctName(x.id))+'</span><span class="m">'+x.n+' '+(x.n===1?L("fill-up","carga"):L("cargas","cargas"))+'</span></span><span class="amt">'+money(x.amt)+'</span></div>').join("")+'</div>'+
-    '<p class="hint">'+L("Until you pay them, this money stays set aside and does not count as available.","Hasta que las pagues, este dinero queda apartado y no cuenta como disponible.")+'</p>'+
-    '<div class="actions" style="margin-top:14px"><button type="button" class="btn" data-act="close">'+L("Not now","Ahora no")+'</button>'+
-    '<button type="button" class="btn primary" data-gaspay="'+esc(g[0].id)+'" data-gasfrom="'+esc(acctId)+'">'+L("Pay","Pagar")+' '+esc(acctName(g[0].id))+'</button></div>');
+    '<p class="hint">'+L("Until you pay them, this money stays set aside and does not count as available. Only record the payment once you have actually made it, and from the account it really came out of.","Hasta que las pagues, este dinero queda apartado y no cuenta como disponible. Registra el pago solo cuando lo hayas hecho de verdad, y desde la cuenta de donde salió.")+'</p>'+
+    '<div class="actions" style="margin-top:14px"><button type="button" class="btn" data-act="close">'+L("Not yet","Todavía no")+'</button>'+
+    '<button type="button" class="btn primary" data-gaspay="'+esc(g[0].id)+'">'+L("I already paid","Ya la pagué")+' '+esc(acctName(g[0].id))+'</button></div>');
 }
 // Any payment to a card clears the gas it was carrying, oldest fill-up first.
 async function coverGas(cardId,amount){
@@ -4034,7 +4040,7 @@ document.addEventListener("click",async e=>{
   if(ds.wkgo){ S.workWeek=weekShift(S.workWeek||weekStartOf(todayStr()),+ds.wkgo); S.workDay=""; render(); return; }
   if(ds.wkday){ S.workDay=S.workDay===ds.wkday?"":ds.wkday; render(); return; }
   if(ds.addpay){ openWorkPay(); return; }
-  if(ds.gaspay){ const g=gasOwed().find(x=>x.id===ds.gaspay); if(g){ closeSheet(); openTx(null,{type:"cardpay",from:ds.gasfrom,to:g.id,amount:g.amt.toFixed(2),desc:L("Work gas","Gasolina de trabajo")}); } return; }
+  if(ds.gaspay){ const g=gasOwed().find(x=>x.id===ds.gaspay); if(g){ closeSheet(); openTx(null,{type:"cardpay",from:"",to:g.id,amount:g.amt.toFixed(2),desc:L("Work gas","Gasolina de trabajo")}); } return; }
   if(ds.movedtx){ const t=S.txns.find(x=>x.id===ds.movedtx); if(t){ closeSheet(); openTx(t,{project:ds.movedpid}); } return; }
   if(ds.calfor){ if(CAL&&CAL.for===ds.calfor) closeCal(); else openCal(ds.calfor); return; }
   if(ds.calnav){ const [y,m]=CAL.ym.split("-").map(Number); const d=new Date(y,m-1+(+ds.calnav),1); CAL.ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); drawCal(); return; }
