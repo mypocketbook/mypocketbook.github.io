@@ -3118,6 +3118,16 @@ async function coverGas(cardId,amount){
     await save(sh.id,Object.assign({},STORE[sh.id],{covered:true}));
   }
 }
+async function uncoverGas(cardId,amount){
+  let left=Math.round((+amount||0)*100)/100; if(!(left>0)) return;
+  const list=S.shifts.filter(sh=>{ if(!sh.covered) return false; const t=sh.gasTx&&S.txns.find(x=>x.id===sh.gasTx); return t&&t.from===cardId; })
+    .sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  for(const sh of list){ const t=S.txns.find(x=>x.id===sh.gasTx), amt=+t.amount||0;
+    if(amt-0.005>left) break;
+    left=Math.round((left-amt)*100)/100;
+    await save(sh.id,Object.assign({},STORE[sh.id],{covered:false}));
+  }
+}
 function viewProjects(){
   const c=compute();
   let h=helpBox(L('How projects work','Cómo funcionan los proyectos'),L('Write the project name in the description, like <b>"Carmencita"</b>. A <b>Transfer</b> adds to the project. A <b>Card payment</b> from checking subtracts from it. Card purchases don\'t change it until you pay the card. The money stays in your accounts; this shows how much of it is for each project.',
@@ -4112,7 +4122,8 @@ document.addEventListener("click",async e=>{
     case "newloan": openLoanForm(); break;
     case "askdel": askDelete(); break;
     case "canceldel": $("delBox").innerHTML=""; break;
-    case "dodel": if(await remove(draft.id)){closeSheet();toast("Deleted");} break;
+    case "dodel": { const gone=(draft.kind&&draft.kind!=="txn")?null:S.txns.find(x=>x.id===draft.id);
+      if(await remove(draft.id)){ if(gone&&gone.type==="cardpay"&&gone.to) await uncoverGas(gone.to,gone.amount); closeSheet();toast("Deleted"); } break; }
     case "export": await backupNow(); break;
     case "import": await listBackups(); openRestore(); break;
     case "cancelrestore": pendingRestore=null; $("restoreBox").innerHTML=""; break;
